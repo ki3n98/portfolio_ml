@@ -160,6 +160,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
   var targetDotReveal = 0;
   var targetActiveIndex = -1;
   var targetOverviewProgress = 0;
+  var fastProjectTransition = false;
 
   // Lerp speeds per property (lower = smoother)
   var LERP_ZOOM = 0.08;
@@ -674,6 +675,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     var projectProgress = Math.max(0, rawStep - 1); // 0..N
     var focusPhaseEnd = N - 1;
     var floatIndex = Math.min(N - 1, projectProgress); // 0..(N-1)
+    fastProjectTransition = projectProgress > 0 && projectProgress < 2.6;
 
     // Pre-compute first dot position for smooth lead-in
     var firstDotPt = mathToCanvas(PROJECTS[0].x, f(PROJECTS[0].x));
@@ -756,13 +758,17 @@ fadeElements.forEach(el => fadeObserver.observe(el));
   }
 
   function animLoop() {
+    var zoomLerp = fastProjectTransition ? 0.12 : LERP_ZOOM;
+    var panLerp = fastProjectTransition ? 0.18 : LERP_PAN;
+    var tangentLerp = fastProjectTransition ? 0.14 : LERP_TANGENT;
+
     // Lerp each property at its own speed
     introProgress = lerp(introProgress, targetIntroProgress, LERP_INTRO);
     dotReveal = lerp(dotReveal, targetDotReveal, LERP_INTRO);
-    zoomLevel = lerp(zoomLevel, targetZoom, LERP_ZOOM);
-    zoomCenterX = lerp(zoomCenterX, targetCenterX, LERP_PAN);
-    zoomCenterY = lerp(zoomCenterY, targetCenterY, LERP_PAN);
-    tangentProgress = lerp(tangentProgress, targetTangent, LERP_TANGENT);
+    zoomLevel = lerp(zoomLevel, targetZoom, zoomLerp);
+    zoomCenterX = lerp(zoomCenterX, targetCenterX, panLerp);
+    zoomCenterY = lerp(zoomCenterY, targetCenterY, panLerp);
+    tangentProgress = lerp(tangentProgress, targetTangent, tangentLerp);
     overviewProgress = lerp(overviewProgress, targetOverviewProgress, LERP_OVERVIEW);
 
     activeIndex = targetActiveIndex;
