@@ -139,14 +139,15 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       desc: 'I build real-time computer vision and AI systems with a focus on performance, product thinking, and production-ready deployment.',
       tags: ['Applied ML', 'AI Engineer', 'Computer Vision', 'Full-Stack AI'],
       includeInOverview: false,
-      hideMedia: true,
+      hideMedia: false,
+      mediaType: 'Image',
+      mediaSrc: 'assets/img/emi.jpg',
+      mediaText: 'Kien Pham',
       link: '#contact',
       ctaLabel: 'Get In Touch →',
       secondaryLink: 'assets/resume/Kien_Pham_resume.pdf',
       secondaryLabel: 'Download Resume',
       step: 'Step 5 - Hire Me',
-      mediaType: 'CTA',
-      mediaText: 'Recruiter call-to-action placeholder',
     },
   ];
 
@@ -206,6 +207,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
   const infoGradient = document.getElementById('gd-info-gradient');
   const infoMedia = document.getElementById('gd-info-media');
   const infoMediaVideo = document.getElementById('gd-info-media-video');
+  const infoMediaImg = document.getElementById('gd-info-media-img');
   const infoMediaEmbed = document.getElementById('gd-info-media-embed');
   const infoMediaType = document.getElementById('gd-info-media-type');
   const infoMediaText = document.getElementById('gd-info-media-text');
@@ -877,8 +879,10 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       infoMedia.hidden = !!proj.hideMedia;
       infoMedia.classList.toggle('is-hidden', !!proj.hideMedia);
       infoMedia.dataset.type = (proj.mediaType || 'image').toLowerCase();
-      infoMedia.dataset.hasVideo = proj.mediaSrc ? 'true' : 'false';
+      var isImage = (proj.mediaType || '').toLowerCase() === 'image' && proj.mediaSrc;
+      infoMedia.dataset.hasVideo = (!isImage && proj.mediaSrc) ? 'true' : 'false';
       infoMedia.dataset.hasEmbed = proj.mediaEmbed ? 'true' : 'false';
+      infoMedia.dataset.hasImage = isImage ? 'true' : 'false';
       infoMediaType.textContent = proj.mediaType || 'Image';
       infoMediaText.textContent = proj.mediaText || 'Project media placeholder';
       if (proj.mediaEmbed) {
@@ -893,7 +897,14 @@ fadeElements.forEach(el => fadeObserver.observe(el));
         infoMediaEmbed.removeAttribute('src');
         infoMediaEmbed.title = '';
       }
-      if (proj.mediaSrc) {
+      if (isImage) {
+        infoMediaImg.src = proj.mediaSrc;
+        infoMediaImg.alt = proj.mediaText || proj.title;
+        infoMediaVideo.pause();
+        infoMediaVideo.removeAttribute('src');
+        infoMediaVideo.load();
+      } else if (proj.mediaSrc) {
+        infoMediaImg.removeAttribute('src');
         infoMediaEmbed.removeAttribute('src');
         infoMediaEmbed.title = '';
         if (infoMediaVideo.getAttribute('src') !== proj.mediaSrc) {
@@ -902,6 +913,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
         }
         infoMediaVideo.play().catch(function () {});
       } else {
+        infoMediaImg.removeAttribute('src');
         infoMediaVideo.pause();
         infoMediaVideo.removeAttribute('src');
         infoMediaVideo.load();
