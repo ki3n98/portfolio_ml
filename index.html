@@ -22,6 +22,7 @@
       </button>
       <div class="nav__menu" id="nav-links">
         <ul class="nav__links">
+          <li><a href="#experience" class="nav__link">Experience</a></li>
           <li><a href="#projects" class="nav__link">Projects</a></li>
           <li><a href="#contact" class="nav__link">Contact</a></li>
         </ul>
@@ -69,6 +70,27 @@
     </div>
   </section>
 
+  <!-- Experience Section -->
+  <section class="experience" id="experience">
+    <div class="experience__container">
+      <h2 class="section-heading fade-in">Experience</h2>
+      <article class="experience-card fade-in">
+        <div class="experience-card__header">
+          <div>
+            <p class="experience-card__eyebrow">CSCSU 2026</p>
+            <h3 class="experience-card__title">Vision-Based Distracted Driving Detection</h3>
+            <p class="experience-card__role">Undergraduate Research Assistant</p>
+          </div>
+        </div>
+        <ul class="experience-card__list">
+          <li>Developed a vision-based driver distraction detection system and benchmarked Faster R-CNN, SSD, and YOLOv11 on the Roboflow Mobile Detection dataset, identifying YOLOv11 as the optimal model for real-time deployment with <b>mAP = 0.604</b> at <b>86.1 FPS</b>.</li>
+          <li>Designed a controlled experimental framework to compare two-stage and single-stage object detectors using mAP and FPS, determining the best accuracy-latency trade-off for safety-critical driver monitoring systems.</li>
+          <li>Conducted quantitative performance analysis across model architectures, producing deployment guidance for real-time, latency-sensitive object detection applications.</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
   <!-- Projects Section -->
   <section class="projects" id="projects">
     <div class="gd-sticky">
@@ -91,6 +113,7 @@
         </div>
         <div class="gd-info__media" id="gd-info-media" aria-hidden="true">
           <video class="gd-info__media-video" id="gd-info-media-video" muted loop playsinline preload="metadata"></video>
+          <iframe class="gd-info__media-embed" id="gd-info-media-embed" title="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
           <div class="gd-info__media-type" id="gd-info-media-type"></div>
           <div class="gd-info__media-text" id="gd-info-media-text"></div>
         </div>

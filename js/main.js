@@ -113,13 +113,15 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     },
     {
       x: -0.4,
-      title: 'Open Source Contribution Tracker',
-      desc: 'A GitHub-integrated app that helps developers discover, track, and manage their open source contributions.',
-      tags: ['Vue.js', 'GraphQL', 'GitHub API'],
-      link: '#',
+      title: 'DocGenix',
+      desc: 'AI-powered software project blueprint generator. Describe your idea, get back a full set of production-ready documentation — requirements, architecture, data model, API spec, DevOps pipeline, and testing strategy — in minutes.',
+      award: 'BeachHack 9.0 2026',
+      tags: ['LangChain', 'Agents', 'Multi-agent orchestration'],
+      link: 'https://docgenix-frontend-production.up.railway.app/',
       step: 'Step 4 - Local Optimum',
-      mediaType: 'Image',
-      mediaText: 'Contribution board placeholder',
+      mediaType: 'Video',
+      mediaEmbed: 'https://www.youtube.com/embed/SqQycaZNr4Q?start=115&autoplay=1&mute=1&playsinline=1&rel=0',
+      mediaText: 'DocGenix demo',
     },
     {
       x: 0,
@@ -190,6 +192,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
   const infoGradient = document.getElementById('gd-info-gradient');
   const infoMedia = document.getElementById('gd-info-media');
   const infoMediaVideo = document.getElementById('gd-info-media-video');
+  const infoMediaEmbed = document.getElementById('gd-info-media-embed');
   const infoMediaType = document.getElementById('gd-info-media-type');
   const infoMediaText = document.getElementById('gd-info-media-text');
   const overviewPanel = document.getElementById('gd-overview');
@@ -627,7 +630,8 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     var scrollable = section.offsetHeight - window.innerHeight;
     if (scrollable <= 0) return;
 
-    var targetProgress = (idx + 1) / TOTAL_STEPS;
+    var phaseNudge = idx === 0 ? 0.08 : 0;
+    var targetProgress = (idx + 1 + phaseNudge) / TOTAL_STEPS;
     var targetTop = sectionTop + scrollable * targetProgress;
     window.scrollTo({ top: targetTop, behavior: 'smooth' });
   }
@@ -854,9 +858,24 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       infoDesc.textContent = proj.desc;
       infoMedia.dataset.type = (proj.mediaType || 'image').toLowerCase();
       infoMedia.dataset.hasVideo = proj.mediaSrc ? 'true' : 'false';
+      infoMedia.dataset.hasEmbed = proj.mediaEmbed ? 'true' : 'false';
       infoMediaType.textContent = proj.mediaType || 'Image';
       infoMediaText.textContent = proj.mediaText || 'Project media placeholder';
+      if (proj.mediaEmbed) {
+        infoMediaVideo.pause();
+        infoMediaVideo.removeAttribute('src');
+        infoMediaVideo.load();
+        if (infoMediaEmbed.getAttribute('src') !== proj.mediaEmbed) {
+          infoMediaEmbed.src = proj.mediaEmbed;
+        }
+        infoMediaEmbed.title = proj.title + ' demo';
+      } else {
+        infoMediaEmbed.removeAttribute('src');
+        infoMediaEmbed.title = '';
+      }
       if (proj.mediaSrc) {
+        infoMediaEmbed.removeAttribute('src');
+        infoMediaEmbed.title = '';
         if (infoMediaVideo.getAttribute('src') !== proj.mediaSrc) {
           infoMediaVideo.src = proj.mediaSrc;
           infoMediaVideo.load();
