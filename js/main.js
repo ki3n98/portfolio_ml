@@ -132,6 +132,8 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       hideMedia: true,
       link: '#contact',
       ctaLabel: 'Get In Touch →',
+      secondaryLink: 'assets/resume/Kien_Pham_resume.pdf',
+      secondaryLabel: 'Download Resume',
       step: 'Step 5 - Hire Me',
       mediaType: 'CTA',
       mediaText: 'Recruiter call-to-action placeholder',
@@ -190,6 +192,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
   const infoDesc = document.getElementById('gd-info-desc');
   const infoTags = document.getElementById('gd-info-tags');
   const infoLink = document.getElementById('gd-info-link');
+  const infoSecondaryLink = document.getElementById('gd-info-secondary-link');
   const infoGradient = document.getElementById('gd-info-gradient');
   const infoMedia = document.getElementById('gd-info-media');
   const infoMediaVideo = document.getElementById('gd-info-media-video');
@@ -898,6 +901,16 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       infoLink.target = isExternalLink ? '_blank' : '';
       infoLink.rel = isExternalLink ? 'noopener noreferrer' : '';
       infoLink.textContent = proj.ctaLabel || 'View Project →';
+      infoSecondaryLink.hidden = !proj.secondaryLink;
+      infoSecondaryLink.classList.toggle('is-hidden', !proj.secondaryLink);
+      if (proj.secondaryLink) {
+        infoSecondaryLink.href = proj.secondaryLink;
+        infoSecondaryLink.textContent = proj.secondaryLabel || 'Learn More';
+        infoSecondaryLink.setAttribute('download', '');
+      } else {
+        infoSecondaryLink.removeAttribute('href');
+        infoSecondaryLink.removeAttribute('download');
+      }
       // Progress bar
       infoPanel.style.setProperty('--gd-progress', ((idx + 1) / N * 100) + '%');
       void infoPanel.offsetHeight;
