@@ -83,6 +83,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       x: -1.9,
       title: 'Shape & Sign',
       desc: 'Shape-Sign is an interactive application that utilizes hand gesture recognition models to help users learn and engage with sign language.',
+      award: 'BeachHacks 8.0 2025 • Best Overall',
       tags: ['Next.js', 'Computer Vision', 'LSTM', 'TensorFlow.js', 'MediaPipe'],
       link: 'https://shape-sign-mu.vercel.app/',
       step: 'Step 1 - High Loss',
@@ -182,6 +183,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
   const infoPanel = document.getElementById('gd-info');
   const infoStep = document.getElementById('gd-info-step');
   const infoTitle = document.getElementById('gd-info-title');
+  const infoAward = document.getElementById('gd-info-award');
   const infoDesc = document.getElementById('gd-info-desc');
   const infoTags = document.getElementById('gd-info-tags');
   const infoLink = document.getElementById('gd-info-link');
@@ -591,14 +593,27 @@ fadeElements.forEach(el => fadeObserver.observe(el));
   // Each gd-step is 100vh, so total scrollable = (N+1) * 100vh - 100vh = N * 100vh
   var TOTAL_STEPS = N + 1; // intro + 4 projects
 
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function renderOverviewCards() {
     if (!overviewGrid) return;
     overviewGrid.innerHTML = PROJECTS.filter(function (proj) {
       return proj.includeInOverview !== false;
     }).map(function (proj) {
+      var awardMarkup = proj.award
+        ? '<span class="gd-overview__award">' + escapeHtml(proj.award) + '</span>'
+        : '';
       return (
         '<a class="gd-overview__card" href="#projects" data-project-index="' + PROJECTS.indexOf(proj) + '">' +
           '<span class="gd-overview__step">' + proj.step + '</span>' +
+          awardMarkup +
           '<h4 class="gd-overview__card-title">' + proj.title + '</h4>' +
           '<p class="gd-overview__desc">' + proj.desc + '</p>' +
         '</a>'
@@ -834,6 +849,8 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       infoStep.textContent = proj.step;
       infoGradient.textContent = '\u2207 = ' + slope.toFixed(2);
       infoTitle.textContent = proj.title;
+      infoAward.textContent = proj.award || '';
+      infoAward.hidden = !proj.award;
       infoDesc.textContent = proj.desc;
       infoMedia.dataset.type = (proj.mediaType || 'image').toLowerCase();
       infoMedia.dataset.hasVideo = proj.mediaSrc ? 'true' : 'false';
