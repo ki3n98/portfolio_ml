@@ -81,13 +81,14 @@ fadeElements.forEach(el => fadeObserver.observe(el));
   const PROJECTS = [
     {
       x: -1.9,
-      title: 'E-Commerce Platform',
-      desc: 'A full-stack marketplace with real-time inventory management, payment processing, and an admin dashboard.',
-      tags: ['React', 'Node.js', 'PostgreSQL', 'Stripe'],
+      title: 'Shape & Sign',
+      desc: 'Shape-Sign is an interactive application that utilizes hand gesture recognition models to help users learn and engage with sign language.',
+      tags: ['Next.js', 'Computer Vision', 'LSTM', 'TensorFlow.js', 'MediaPipe'],
       link: 'https://shape-sign-mu.vercel.app/',
       step: 'Step 1 - High Loss',
       mediaType: 'Video',
-      mediaText: 'Product walk-through placeholder',
+      mediaSrc: 'assets/videos/shape_sign_demo.mp4',
+      mediaText: 'Shape & Sign demo',
     },
     {
       x: -1.4,
@@ -186,6 +187,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
   const infoLink = document.getElementById('gd-info-link');
   const infoGradient = document.getElementById('gd-info-gradient');
   const infoMedia = document.getElementById('gd-info-media');
+  const infoMediaVideo = document.getElementById('gd-info-media-video');
   const infoMediaType = document.getElementById('gd-info-media-type');
   const infoMediaText = document.getElementById('gd-info-media-text');
   const overviewPanel = document.getElementById('gd-overview');
@@ -834,8 +836,20 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       infoTitle.textContent = proj.title;
       infoDesc.textContent = proj.desc;
       infoMedia.dataset.type = (proj.mediaType || 'image').toLowerCase();
+      infoMedia.dataset.hasVideo = proj.mediaSrc ? 'true' : 'false';
       infoMediaType.textContent = proj.mediaType || 'Image';
       infoMediaText.textContent = proj.mediaText || 'Project media placeholder';
+      if (proj.mediaSrc) {
+        if (infoMediaVideo.getAttribute('src') !== proj.mediaSrc) {
+          infoMediaVideo.src = proj.mediaSrc;
+          infoMediaVideo.load();
+        }
+        infoMediaVideo.play().catch(function () {});
+      } else {
+        infoMediaVideo.pause();
+        infoMediaVideo.removeAttribute('src');
+        infoMediaVideo.load();
+      }
       infoTags.innerHTML = proj.tags.map(function (t) {
         return '<span class="tag">' + t + '</span>';
       }).join('');

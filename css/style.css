@@ -560,6 +560,17 @@ img {
   overflow: hidden;
 }
 
+.gd-info__media-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
 .gd-info__media::before,
 .gd-info__media::after {
   content: '';
@@ -601,6 +612,14 @@ img {
 .gd-info__media-text {
   position: relative;
   z-index: 1;
+}
+
+.gd-info__media[data-has-video='true'] .gd-info__media-video {
+  opacity: 1;
+}
+
+.gd-info__media[data-has-video='true'] .gd-info__media-text {
+  display: none;
 }
 
 .gd-info__media-type {
