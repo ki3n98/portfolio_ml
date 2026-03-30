@@ -135,7 +135,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     },
     {
       x: 0,
-      title: 'Applied ML / AI Engineer',
+      title: 'Hire Me',
       desc: 'I build real-time computer vision and AI systems with a focus on performance, product thinking, and production-ready deployment.',
       tags: ['Applied ML', 'AI Engineer', 'Computer Vision', 'Full-Stack AI'],
       includeInOverview: false,
