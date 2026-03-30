@@ -3,8 +3,11 @@
 // ===========================
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', (e) => {
+    const href = anchor.getAttribute('href');
+    if (!href || !href.startsWith('#')) return;
+
     e.preventDefault();
-    const target = document.querySelector(anchor.getAttribute('href'));
+    const target = document.querySelector(href);
     if (target) {
       target.scrollIntoView({ behavior: 'smooth' });
     }
@@ -81,7 +84,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       title: 'E-Commerce Platform',
       desc: 'A full-stack marketplace with real-time inventory management, payment processing, and an admin dashboard.',
       tags: ['React', 'Node.js', 'PostgreSQL', 'Stripe'],
-      link: '#',
+      link: 'https://shape-sign-mu.vercel.app/',
       step: 'Step 1 - High Loss',
       mediaType: 'Video',
       mediaText: 'Product walk-through placeholder',
@@ -837,6 +840,9 @@ fadeElements.forEach(el => fadeObserver.observe(el));
         return '<span class="tag">' + t + '</span>';
       }).join('');
       infoLink.href = proj.link;
+      var isExternalLink = /^https?:\/\//i.test(proj.link || '');
+      infoLink.target = isExternalLink ? '_blank' : '';
+      infoLink.rel = isExternalLink ? 'noopener noreferrer' : '';
       infoLink.textContent = proj.ctaLabel || 'View Project →';
       // Progress bar
       infoPanel.style.setProperty('--gd-progress', ((idx + 1) / N * 100) + '%');
