@@ -86,6 +86,9 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       award: 'BeachHacks 8.0 2025 • Best Overall',
       tags: ['Next.js', 'Computer Vision', 'LSTM', 'TensorFlow.js', 'MediaPipe'],
       link: 'https://shape-sign-mu.vercel.app/',
+      ctaLabel: 'Live Demo →',
+      secondaryLink: 'https://github.com/ki3n98/shape-sign',
+      secondaryLabel: 'Source Code',
       step: 'Step 1 - High Loss',
       mediaType: 'Video',
       mediaSrc: 'assets/videos/shape_sign_demo.mp4',
@@ -93,31 +96,38 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     },
     {
       x: -1.4,
-      title: 'Task Automation CLI',
-      desc: 'A command-line tool that automates repetitive development workflows, saving teams hours per week.',
-      tags: ['Python', 'Click', 'Docker'],
-      link: '#',
+      title: '911 Operator Assistance',
+      desc: 'A 911 operator co-pilot. The system pairs a Next.js dashboard with a FastAPI inference service that transcribes audio, classifies incidents, geocodes caller locations, and lets dispatchers confirm markers or request field units.',
+      award: 'Marina Hack 5.0 • Best Overall',
+      tags: ['Pytorch', 'WhisperSTT', 'Google Geocoding API', 'Gemini', 'Next.js', 'FastAPI', ],
+      link: 'https://github.com/Ben2104/911-Operator-Assistant',
       step: 'Step 2 - Descending',
-      mediaType: 'Image',
-      mediaText: 'Terminal screenshot placeholder',
+      mediaType: 'Video',
+      mediaEmbed: 'https://www.youtube.com/embed/okCDJyBionU?start=40&autoplay=1&mute=1&playsinline=1&rel=0',
+      mediaText: '911 Operator demo video',
     },
     {
       x: -0.9,
-      title: 'Real-Time Analytics Dashboard',
-      desc: 'Interactive data visualization platform processing millions of events with sub-second latency.',
-      tags: ['TypeScript', 'D3.js', 'WebSockets', 'Redis'],
-      link: '#',
+      title: 'VeriFace',
+      desc: 'An AI-assisted check-in system using facial recognition for classrooms and social events.',
+      award: 'Senior Project',
+      tags: [ 'FaceNet', 'FastAPI', 'SQLAlchemy', 'PostgreSQL', 'Docker', 'JWT', 'bcrypt', 'ngrok', 'websockets' ],
+      link: 'https://github.com/ki3n98/VeriFace',
       step: 'Step 3 - Converging',
       mediaType: 'Video',
-      mediaText: 'Dashboard demo placeholder',
+      mediaSrc: 'assets/videos/veriface_demo.mp4',
+      mediaText: 'VeriFace demo',
     },
     {
       x: -0.4,
       title: 'DocGenix',
-      desc: 'AI-powered software project blueprint generator. Describe your idea, get back a full set of production-ready documentation — requirements, architecture, data model, API spec, DevOps pipeline, and testing strategy — in minutes.',
+      desc: 'AI-powered software project blueprint generator. Describe your idea, get back a full set of production-ready documentation in minutes.',
       award: 'BeachHack 9.0 2026',
       tags: ['LangChain', 'Agents', 'Multi-agent orchestration'],
       link: 'https://docgenix-frontend-production.up.railway.app/',
+      ctaLabel: 'Live Demo →',
+      secondaryLink: 'https://github.com/zokoxa/DocGenix',
+      secondaryLabel: 'Source Code',
       step: 'Step 4 - Local Optimum',
       mediaType: 'Video',
       mediaEmbed: 'https://www.youtube.com/embed/SqQycaZNr4Q?start=115&autoplay=1&mute=1&playsinline=1&rel=0',
@@ -623,6 +633,9 @@ fadeElements.forEach(el => fadeObserver.observe(el));
           awardMarkup +
           '<h4 class="gd-overview__card-title">' + proj.title + '</h4>' +
           '<p class="gd-overview__desc">' + proj.desc + '</p>' +
+          '<div class="gd-overview__tags">' + proj.tags.map(function (t) {
+            return '<span class="gd-overview__tag">' + escapeHtml(t) + '</span>';
+          }).join('') + '</div>' +
         '</a>'
       );
     }).join('');
@@ -906,7 +919,14 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       if (proj.secondaryLink) {
         infoSecondaryLink.href = proj.secondaryLink;
         infoSecondaryLink.textContent = proj.secondaryLabel || 'Learn More';
-        infoSecondaryLink.setAttribute('download', '');
+        if (proj.secondaryLink.match(/\.(pdf|zip|tar|gz)$/i)) {
+          infoSecondaryLink.setAttribute('download', '');
+        } else {
+          infoSecondaryLink.removeAttribute('download');
+        }
+        var isExternal = /^https?:\/\//i.test(proj.secondaryLink);
+        infoSecondaryLink.target = isExternal ? '_blank' : '';
+        infoSecondaryLink.rel = isExternal ? 'noopener noreferrer' : '';
       } else {
         infoSecondaryLink.removeAttribute('href');
         infoSecondaryLink.removeAttribute('download');
