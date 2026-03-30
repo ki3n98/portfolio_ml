@@ -629,6 +629,11 @@ img {
   overflow: hidden;
 }
 
+.gd-info__media.is-hidden,
+.gd-info__award.is-hidden {
+  display: none !important;
+}
+
 .gd-info__media-video {
   position: absolute;
   inset: 0;

@@ -125,10 +125,11 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     },
     {
       x: 0,
-      title: "Let's Work Together",
-      desc: 'If you are hiring for ML, AI, or full-stack engineering roles, this is the point where the optimization path turns into a conversation.',
-      tags: ['Open to Internships', 'ML/AI', 'Full-Stack'],
+      title: 'Applied ML / AI Engineer',
+      desc: 'I build real-time computer vision and AI systems with a focus on performance, product thinking, and production-ready deployment.',
+      tags: ['Applied ML', 'AI Engineer', 'Computer Vision', 'Full-Stack AI'],
       includeInOverview: false,
+      hideMedia: true,
       link: '#contact',
       ctaLabel: 'Get In Touch →',
       step: 'Step 5 - Hire Me',
@@ -855,7 +856,10 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       infoTitle.textContent = proj.title;
       infoAward.textContent = proj.award || '';
       infoAward.hidden = !proj.award;
+      infoAward.classList.toggle('is-hidden', !proj.award);
       infoDesc.textContent = proj.desc;
+      infoMedia.hidden = !!proj.hideMedia;
+      infoMedia.classList.toggle('is-hidden', !!proj.hideMedia);
       infoMedia.dataset.type = (proj.mediaType || 'image').toLowerCase();
       infoMedia.dataset.hasVideo = proj.mediaSrc ? 'true' : 'false';
       infoMedia.dataset.hasEmbed = proj.mediaEmbed ? 'true' : 'false';
