@@ -364,12 +364,10 @@ img {
 
 .experience-card {
   position: relative;
-  padding: 2rem;
-  border: 1px solid rgba(154, 171, 184, 0.18);
-  background:
-    linear-gradient(135deg, rgba(255, 155, 81, 0.1), rgba(255, 255, 255, 0.02) 45%, rgba(255, 255, 255, 0.03)),
-    rgba(14, 14, 14, 0.72);
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
 }
 
 .experience-card__header {
@@ -377,23 +375,28 @@ img {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(51, 69, 80, 0.5);
 }
 
 .experience-card__eyebrow {
-  margin: 0 0 0.45rem;
+  margin: 0 0 0.6rem;
   font-size: 0.72rem;
+  font-weight: 500;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--primary-accent);
 }
 
 .experience-card__title {
-  margin: 0 0 0.35rem;
+  margin: 0 0 0.4rem;
   font-family: var(--font-heading);
-  font-size: clamp(1.4rem, 2.2vw, 1.9rem);
-  line-height: 1.12;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-weight: 700;
+  line-height: 1.15;
   letter-spacing: -0.02em;
+  color: var(--text);
 }
 
 .experience-card__role {
@@ -404,13 +407,24 @@ img {
 
 .experience-card__list {
   margin: 0;
-  padding-left: 1.2rem;
+  padding-left: 0;
+  list-style: none;
   color: var(--text-muted);
 }
 
 .experience-card__list li {
-  margin-bottom: 0.9rem;
+  position: relative;
+  margin-bottom: 1rem;
+  padding-left: 1.4rem;
   line-height: 1.7;
+}
+
+.experience-card__list li::before {
+  content: "\2014";
+  position: absolute;
+  left: 0;
+  color: var(--primary-accent);
+  opacity: 0.45;
 }
 
 .experience-card__list li:last-child {
@@ -1250,7 +1264,7 @@ img {
   }
 
   .experience-card {
-    padding: 1.5rem;
+    padding: 0;
   }
 
   .gd-info {
