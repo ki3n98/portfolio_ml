@@ -327,7 +327,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
   }
 
   function drawParabola() {
-    var steps = 200;
+    var steps = 100;
     var drawSteps = Math.floor(introProgress * steps);
     if (drawSteps < 2) return;
 
@@ -344,10 +344,8 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     }
     ctx.strokeStyle = colors.primary;
     ctx.lineWidth = 2.5;
-    ctx.shadowColor = colors.primary;
-    ctx.shadowBlur = 16;
+    ctx.strokeStyle = colors.primary;
     ctx.stroke();
-    ctx.shadowBlur = 0;
     ctx.restore();
   }
 
@@ -393,7 +391,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     // Glow
     if (isActive || isHovered) {
       ctx.shadowColor = colors.primary;
-      ctx.shadowBlur = isActive ? 24 : 14;
+      ctx.shadowBlur = isActive ? 12 : 8;
     }
 
     // Main dot
@@ -490,7 +488,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
 
     ctx.save();
     ctx.beginPath();
-    var steps = 60;
+    var steps = 30;
     for (var i = 0; i <= steps; i++) {
       var mx = fromX + (i / steps) * (toX - fromX);
       var my = f(mx);
@@ -501,10 +499,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     ctx.strokeStyle = colors.primary;
     ctx.globalAlpha = trailAlpha;
     ctx.lineWidth = 4;
-    ctx.shadowColor = colors.primary;
-    ctx.shadowBlur = 10;
     ctx.stroke();
-    ctx.shadowBlur = 0;
     ctx.restore();
   }
 
