@@ -173,6 +173,29 @@ img {
   width: 100%;
 }
 
+.nav__resume-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  color: var(--primary-accent);
+  background: rgba(255, 255, 255, 0.02);
+  transition: color 0.3s ease, transform 0.3s ease, background 0.3s ease;
+}
+
+.nav__resume-btn:hover {
+  color: var(--primary-accent);
+  transform: translateY(-1px);
+  background: rgba(255, 155, 81, 0.08);
+}
+
+.nav__resume-btn svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
 .nav__icon-link {
   display: inline-flex;
   align-items: center;
@@ -252,6 +275,15 @@ img {
   line-height: 1.1;
   letter-spacing: -0.02em;
   margin-bottom: 1.25rem;
+}
+
+.hero__role {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--primary-accent);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
 }
 
 .hero__subtitle {
@@ -1181,6 +1213,11 @@ img {
   .nav__links {
     flex-direction: column;
     gap: 1.25rem;
+  }
+
+  .nav__resume-btn {
+    width: 2.25rem;
+    height: 2.25rem;
   }
 
   .nav__socials {
