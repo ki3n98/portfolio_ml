@@ -19,6 +19,23 @@
 }
 
 /* ===========================
+   Icon (mask-image base)
+   =========================== */
+.icon {
+  display: inline-block;
+  width: 1.05rem;
+  height: 1.05rem;
+  background-color: currentColor;
+  -webkit-mask: var(--icon-url) no-repeat center / contain;
+  mask: var(--icon-url) no-repeat center / contain;
+}
+
+.icon--social {
+  width: 20px;
+  height: 20px;
+}
+
+/* ===========================
    Reset & Base
    =========================== */
 *,
@@ -214,7 +231,7 @@ img {
   background: rgba(255, 155, 81, 0.08);
 }
 
-.nav__icon-link svg {
+.nav__icon-link .icon {
   width: 1.05rem;
   height: 1.05rem;
 }
@@ -1055,10 +1072,13 @@ img {
 }
 
 .skill__icon {
+  display: inline-block;
   width: 14px;
   height: 14px;
-  fill: currentColor;
   flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask: var(--icon-url) no-repeat center / contain;
+  mask: var(--icon-url) no-repeat center / contain;
 }
 
 .skill__icon--postgres {
@@ -1172,7 +1192,7 @@ img {
   color: var(--primary-accent);
 }
 
-.social-link svg {
+.social-link .icon {
   width: 20px;
   height: 20px;
 }
