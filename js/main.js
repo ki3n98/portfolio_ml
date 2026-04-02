@@ -1,6 +1,26 @@
+/**
+ * main.js — Portfolio site interactions
+ *
+ * Sections:
+ *   1. Navigation (smooth scroll, mobile menu, active state, fade-in)
+ *   2. Gradient Descent Visualization
+ *      a. Project data
+ *      b. Utilities (math, easing, escapeHtml, lerp)
+ *      c. State & configuration
+ *      d. DOM references
+ *      e. Layout & coordinate mapping
+ *      f. Drawing functions
+ *      g. Scroll-driven animation
+ *      h. Info panel management
+ *      i. Mouse interaction
+ *      j. Initialization
+ */
+
 // ===========================
-// Smooth Scroll for Nav Links
+// 1. Navigation
 // ===========================
+
+// --- Smooth Scroll for Nav Links ---
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', (e) => {
     const href = anchor.getAttribute('href');
@@ -17,9 +37,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 });
 
-// ===========================
-// Mobile Menu Toggle
-// ===========================
+// --- Mobile Menu Toggle ---
 const navToggle = document.getElementById('nav-toggle');
 const navLinks = document.getElementById('nav-links');
 
@@ -28,9 +46,7 @@ navToggle.addEventListener('click', () => {
   navLinks.classList.toggle('open');
 });
 
-// ===========================
-// Active Nav Link on Scroll
-// ===========================
+// --- Active Nav Link on Scroll ---
 const sections = document.querySelectorAll('section[id]');
 const navItems = document.querySelectorAll('.nav__link');
 
@@ -52,9 +68,7 @@ const navObserver = new IntersectionObserver(
 
 sections.forEach(section => navObserver.observe(section));
 
-// ===========================
-// Scroll-Triggered Fade-In
-// ===========================
+// --- Scroll-Triggered Fade-In ---
 const fadeElements = document.querySelectorAll('.fade-in');
 
 const fadeObserver = new IntersectionObserver(
@@ -75,9 +89,32 @@ const fadeObserver = new IntersectionObserver(
 fadeElements.forEach(el => fadeObserver.observe(el));
 
 // ===========================
-// Gradient Descent Visualization
+// 2. Gradient Descent Visualization
 // ===========================
 (function () {
+
+  // ----- 2a. Project Data -----
+
+  /**
+   * Project data for the gradient descent visualization.
+   * @typedef {Object} Project
+   * @property {number}   x               - Position on the parabola (-2.2 to 2.2)
+   * @property {string}   title
+   * @property {string}   desc
+   * @property {string}   [award]
+   * @property {string[]} tags
+   * @property {string}   link            - Primary CTA URL
+   * @property {string}   [ctaLabel]      - Defaults to "View Project →"
+   * @property {string}   [secondaryLink]
+   * @property {string}   [secondaryLabel]
+   * @property {string}   step            - Label like "Step 1 - High Loss"
+   * @property {string}   [mediaType]     - "Video" | "Image"
+   * @property {string}   [mediaSrc]      - Local video/image path
+   * @property {string}   [mediaEmbed]    - YouTube embed URL
+   * @property {string}   [mediaText]     - Alt text / caption
+   * @property {boolean}  [includeInOverview] - Defaults to true
+   * @property {boolean}  [hideMedia]
+   */
   const PROJECTS = [
     {
       x: -1.9,
@@ -99,7 +136,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       title: '911 Operator Assistance',
       desc: 'A 911 operator co-pilot. The system pairs a Next.js dashboard with a FastAPI inference service that transcribes audio, classifies incidents, geocodes caller locations, and lets dispatchers confirm markers or request field units.',
       award: 'Marina Hack 5.0 • Best Overall',
-      tags: ['Pytorch', 'WhisperSTT', 'Google Geocoding API', 'Gemini', 'Next.js', 'FastAPI', ],
+      tags: ['Pytorch', 'WhisperSTT', 'Google Geocoding API', 'Gemini', 'Next.js', 'FastAPI'],
       link: 'https://github.com/Ben2104/911-Operator-Assistant',
       step: 'Step 2 - Descending',
       mediaType: 'Video',
@@ -111,7 +148,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       title: 'VeriFace',
       desc: 'An AI-assisted check-in system using facial recognition for classrooms and social events.',
       award: 'Senior Project',
-      tags: [ 'FaceNet', 'FastAPI', 'SQLAlchemy', 'PostgreSQL', 'Docker', 'JWT', 'bcrypt', 'ngrok', 'websockets' ],
+      tags: ['FaceNet', 'FastAPI', 'SQLAlchemy', 'PostgreSQL', 'Docker', 'JWT', 'bcrypt', 'ngrok', 'websockets'],
       link: 'https://github.com/ki3n98/VeriFace',
       step: 'Step 3 - Converging',
       mediaType: 'Video',
@@ -153,44 +190,87 @@ fadeElements.forEach(el => fadeObserver.observe(el));
 
   const N = PROJECTS.length;
 
-  // Math
+  // ----- 2b. Utilities -----
+
   function f(x) { return x * x; }
   function fPrime(x) { return 2 * x; }
   function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
 
-  // State
-  let activeIndex = -1;
-  let hoveredIndex = -1;
-  let tangentProgress = 0;
-  let introProgress = 0;   // 0..1 how much of the parabola is drawn
-  let dotReveal = 0;       // continuous float: 2.5 = dots 0,1 full, dot 2 at 50%
-  let overviewProgress = 0;
+  function easeOutBack(t) {
+    const c = 1.4;
+    return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2);
+  }
 
-  // Zoom / animation state (current = rendered, target = from scroll)
-  let zoomLevel = 1;
-  let zoomCenterX = 0;
-  let zoomCenterY = 0;
-  var ZOOM_AMOUNT = 2.2;
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
 
-  // Lerp targets
-  var targetZoom = 1;
-  var targetCenterX = 0;
-  var targetCenterY = 0;
-  var targetTangent = 0;
-  var targetIntroProgress = 0;
-  var targetDotReveal = 0;
-  var targetActiveIndex = -1;
-  var targetOverviewProgress = 0;
-  var fastProjectTransition = false;
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
 
-  // Lerp speeds per property (lower = smoother)
-  var LERP_ZOOM = 0.08;
-  var LERP_PAN = 0.12;
-  var LERP_TANGENT = 0.10;
-  var LERP_INTRO = 0.10;
-  var LERP_OVERVIEW = 0.1;
+  // ----- 2c. State & Configuration -----
 
-  // DOM
+  const ZOOM_AMOUNT = 2.2;
+
+  // Scroll phase tuning constants
+  const INTRO_DRAW_FRACTION = 0.6;
+  const DOT_APPEAR_START = 0.4;
+  const TANGENT_FADE_THRESHOLD = 0.35;
+  const CARD_HOLD_THRESHOLD = 0.28;
+  const OVERVIEW_SHOW_THRESHOLD = 0.22;
+
+  // Lerp speeds (lower = smoother)
+  const LERP_SPEED = {
+    zoom: 0.08,
+    pan: 0.12,
+    tangent: 0.10,
+    intro: 0.10,
+    overview: 0.1,
+  };
+
+  // Current rendered state
+  const state = {
+    activeIndex: -1,
+    hoveredIndex: -1,
+    tangentProgress: 0,
+    introProgress: 0,
+    dotReveal: 0,
+    overviewProgress: 0,
+    zoomLevel: 1,
+    zoomCenterX: 0,
+    zoomCenterY: 0,
+  };
+
+  // Lerp targets (scroll-derived, smoothly approached by animLoop)
+  const target = {
+    zoom: 1,
+    centerX: 0,
+    centerY: 0,
+    tangent: 0,
+    introProgress: 0,
+    dotReveal: 0,
+    activeIndex: -1,
+    overviewProgress: 0,
+    fastTransition: false,
+  };
+
+  let prevScrollIndex = -1;
+  let animLoopRunning = false;
+  let overviewVisible = false;
+  let infoSwapTimer = null;
+  let currentInfoIdx = -1;
+
+  // Total scroll phases: 1 intro step + N project steps
+  const TOTAL_STEPS = N + 1;
+
+  // ----- 2d. DOM References -----
+
   const canvas = document.getElementById('gd-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
@@ -215,13 +295,14 @@ fadeElements.forEach(el => fadeObserver.observe(el));
   const overviewGrid = document.getElementById('gd-overview-grid');
   const scrollHint = document.getElementById('gd-scroll-hint');
 
-  // Layout
+  // ----- 2e. Layout & Coordinate Mapping -----
+
   let W = 0, H = 0, dpr = 1;
   let padL, padR, padT, padB, plotW, plotH;
   const xMin = -2.2, xMax = 2.2, yMin = -0.2, yMax = 5;
 
-  // Colors
   let colors = {};
+
   function readColors() {
     const s = getComputedStyle(document.documentElement);
     colors.bg = s.getPropertyValue('--bg').trim();
@@ -233,14 +314,12 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     colors.border = s.getPropertyValue('--border').trim();
   }
 
-  // Coordinate mapping
   function mathToCanvas(mx, my) {
     const cx = padL + ((mx - xMin) / (xMax - xMin)) * plotW;
     const cy = padT + plotH - ((my - yMin) / (yMax - yMin)) * plotH;
     return [cx, cy];
   }
 
-  // Resize
   function resize() {
     const wrap = canvas.parentElement;
     dpr = window.devicePixelRatio || 1;
@@ -258,15 +337,15 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     plotH = H - padT - padB;
 
     // Seed zoom center to canvas center if not yet set
-    if (zoomCenterX === 0 && zoomCenterY === 0) {
-      zoomCenterX = targetCenterX = W / 2;
-      zoomCenterY = targetCenterY = H / 2;
+    if (state.zoomCenterX === 0 && state.zoomCenterY === 0) {
+      state.zoomCenterX = target.centerX = W / 2;
+      state.zoomCenterY = target.centerY = H / 2;
     }
 
     render();
   }
 
-  // --- Drawing ---
+  // ----- 2f. Drawing Functions -----
 
   function drawGrid() {
     ctx.save();
@@ -274,14 +353,12 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     ctx.lineWidth = 0.5;
     ctx.globalAlpha = 0.25;
 
-    var tickLen = 6;
-    var fontSize = Math.max(9, Math.min(W, H) * 0.012);
-    var [axisX] = mathToCanvas(-2, 0);
-    var [, axisY] = mathToCanvas(0, 0);
+    const tickLen = 6;
+    const fontSize = Math.max(9, Math.min(W, H) * 0.012);
 
     // Horizontal lines + Y-axis ticks/labels
-    for (var y = 0; y <= 4; y++) {
-      var [, cy] = mathToCanvas(0, y);
+    for (let y = 0; y <= 4; y++) {
+      const [, cy] = mathToCanvas(0, y);
       ctx.beginPath();
       ctx.moveTo(padL, cy);
       ctx.lineTo(padL + plotW, cy);
@@ -302,8 +379,8 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     }
 
     // Vertical lines + X-axis ticks/labels
-    for (var x = -2; x <= 2; x++) {
-      var [cx] = mathToCanvas(x, 0);
+    for (let x = -2; x <= 2; x++) {
+      const [cx] = mathToCanvas(x, 0);
       ctx.beginPath();
       ctx.moveTo(cx, padT);
       ctx.lineTo(cx, padT + plotH);
@@ -327,52 +404,51 @@ fadeElements.forEach(el => fadeObserver.observe(el));
   }
 
   function drawParabola() {
-    var steps = 100;
-    var drawSteps = Math.floor(introProgress * steps);
+    const steps = 100;
+    const drawSteps = Math.floor(state.introProgress * steps);
     if (drawSteps < 2) return;
 
     ctx.save();
     ctx.beginPath();
-    var started = false;
-    for (var i = 0; i <= drawSteps; i++) {
-      var mx = xMin + (i / steps) * (xMax - xMin);
-      var my = f(mx);
+    let started = false;
+    for (let i = 0; i <= drawSteps; i++) {
+      const mx = xMin + (i / steps) * (xMax - xMin);
+      const my = f(mx);
       if (my > yMax) { started = false; continue; }
-      var pt = mathToCanvas(mx, my);
+      const pt = mathToCanvas(mx, my);
       if (!started) { ctx.moveTo(pt[0], pt[1]); started = true; }
       else ctx.lineTo(pt[0], pt[1]);
     }
     ctx.strokeStyle = colors.primary;
     ctx.lineWidth = 2.5;
-    ctx.strokeStyle = colors.primary;
     ctx.stroke();
     ctx.restore();
   }
 
   function drawDot(i) {
     // Per-dot reveal: how much this dot has appeared (0 = hidden, 1 = full)
-    var dotT = Math.max(0, Math.min(1, dotReveal - i));
+    const dotT = Math.max(0, Math.min(1, state.dotReveal - i));
     if (dotT <= 0) return;
 
     // Overshoot ease for pop-in: goes to ~1.1 then settles to 1
-    var scale = dotT < 1 ? easeOutBack(dotT) : 1;
+    const scale = dotT < 1 ? easeOutBack(dotT) : 1;
 
-    var proj = PROJECTS[i];
-    var pt = mathToCanvas(proj.x, f(proj.x));
-    var cx = pt[0], cy = pt[1];
-    var isActive = i === activeIndex;
-    var isHovered = i === hoveredIndex;
-    var baseRadius = isActive ? 12 : isHovered ? 10 : 7;
-    var radius = baseRadius * scale;
+    const proj = PROJECTS[i];
+    const pt = mathToCanvas(proj.x, f(proj.x));
+    const cx = pt[0], cy = pt[1];
+    const isActive = i === state.activeIndex;
+    const isHovered = i === state.hoveredIndex;
+    const baseRadius = isActive ? 12 : isHovered ? 10 : 7;
+    const radius = baseRadius * scale;
 
     ctx.save();
-    ctx.globalAlpha = Math.min(1, dotT * 2); // fade in during first half
+    ctx.globalAlpha = Math.min(1, dotT * 2);
 
     // Pulsing glow ring for active
     if (isActive && scale >= 0.95) {
-      var pulse = Math.sin(performance.now() * 0.003) * 0.5 + 0.5;
-      var pulseRadius = radius + 6 + pulse * 4;
-      var pulseAlpha = 0.12 + pulse * 0.1;
+      const pulse = Math.sin(performance.now() * 0.003) * 0.5 + 0.5;
+      const pulseRadius = radius + 6 + pulse * 4;
+      const pulseAlpha = 0.12 + pulse * 0.1;
       ctx.beginPath();
       ctx.arc(cx, cy, pulseRadius, 0, Math.PI * 2);
       ctx.strokeStyle = colors.primary;
@@ -413,8 +489,8 @@ fadeElements.forEach(el => fadeObserver.observe(el));
 
     // Step label (fade in with dot)
     if (scale > 0.6) {
-      var labelAlpha = (scale - 0.6) / 0.4; // 0..1
-      var fontSize = Math.max(11, Math.min(W, H) * 0.016);
+      const labelAlpha = (scale - 0.6) / 0.4;
+      const fontSize = Math.max(11, Math.min(W, H) * 0.016);
       ctx.font = '500 ' + fontSize + 'px Inter, sans-serif';
       ctx.fillStyle = isActive ? colors.text : colors.muted;
       ctx.textAlign = 'left';
@@ -425,23 +501,17 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     ctx.restore();
   }
 
-  // Overshoot ease for dot pop-in
-  function easeOutBack(t) {
-    var c = 1.4; // overshoot amount
-    return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2);
-  }
-
   function drawTangent(i) {
-    if (tangentProgress <= 0 || i < 0) return;
-    var proj = PROJECTS[i];
-    var x0 = proj.x;
-    var slope = fPrime(x0);
-    var extent = 1.0 * tangentProgress;
+    if (state.tangentProgress <= 0 || i < 0) return;
+    const proj = PROJECTS[i];
+    const x0 = proj.x;
+    const slope = fPrime(x0);
+    const extent = 1.0 * state.tangentProgress;
 
-    var xA = x0 - extent, xB = x0 + extent;
-    var yA = slope * (xA - x0) + f(x0);
-    var yB = slope * (xB - x0) + f(x0);
-    var ptA = mathToCanvas(xA, yA), ptB = mathToCanvas(xB, yB);
+    const xA = x0 - extent, xB = x0 + extent;
+    const yA = slope * (xA - x0) + f(x0);
+    const yB = slope * (xB - x0) + f(x0);
+    const ptA = mathToCanvas(xA, yA), ptB = mathToCanvas(xB, yB);
 
     ctx.save();
     ctx.beginPath();
@@ -453,13 +523,12 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     ctx.lineWidth = 1.5;
     ctx.stroke();
     ctx.setLineDash([]);
-
     ctx.restore();
   }
 
   function drawConnectors() {
-    if (dotReveal < 1.5) return;
-    var count = Math.floor(dotReveal);
+    if (state.dotReveal < 1.5) return;
+    const count = Math.floor(state.dotReveal);
 
     ctx.save();
     ctx.setLineDash([3, 6]);
@@ -467,9 +536,9 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     ctx.globalAlpha = 0.25;
     ctx.lineWidth = 1;
 
-    for (var i = 0; i < count - 1; i++) {
-      var p1 = mathToCanvas(PROJECTS[i].x, f(PROJECTS[i].x));
-      var p2 = mathToCanvas(PROJECTS[i + 1].x, f(PROJECTS[i + 1].x));
+    for (let i = 0; i < count - 1; i++) {
+      const p1 = mathToCanvas(PROJECTS[i].x, f(PROJECTS[i].x));
+      const p2 = mathToCanvas(PROJECTS[i + 1].x, f(PROJECTS[i + 1].x));
       ctx.beginPath();
       ctx.moveTo(p1[0], p1[1]);
       ctx.lineTo(p2[0], p2[1]);
@@ -479,20 +548,19 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     ctx.restore();
   }
 
-  // Trail: glowing path along parabola from active dot toward the next
   function drawTrail() {
-    if (activeIndex < 0 || activeIndex >= N - 1 || tangentProgress < 0.3 || dotReveal < activeIndex + 2) return;
-    var fromX = PROJECTS[activeIndex].x;
-    var toX = PROJECTS[activeIndex + 1].x;
-    var trailAlpha = 0.2 * Math.min(1, (tangentProgress - 0.3) / 0.4);
+    if (state.activeIndex < 0 || state.activeIndex >= N - 1 || state.tangentProgress < 0.3 || state.dotReveal < state.activeIndex + 2) return;
+    const fromX = PROJECTS[state.activeIndex].x;
+    const toX = PROJECTS[state.activeIndex + 1].x;
+    const trailAlpha = 0.2 * Math.min(1, (state.tangentProgress - 0.3) / 0.4);
 
     ctx.save();
     ctx.beginPath();
-    var steps = 30;
-    for (var i = 0; i <= steps; i++) {
-      var mx = fromX + (i / steps) * (toX - fromX);
-      var my = f(mx);
-      var pt = mathToCanvas(mx, my);
+    const steps = 30;
+    for (let i = 0; i <= steps; i++) {
+      const mx = fromX + (i / steps) * (toX - fromX);
+      const my = f(mx);
+      const pt = mathToCanvas(mx, my);
       if (i === 0) ctx.moveTo(pt[0], pt[1]);
       else ctx.lineTo(pt[0], pt[1]);
     }
@@ -503,33 +571,30 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     ctx.restore();
   }
 
-  // Arrow: small descent direction arrow at the active dot
   function drawArrow() {
-    if (activeIndex < 0 || activeIndex >= N - 1 || tangentProgress < 0.5) return;
-    var proj = PROJECTS[activeIndex];
-    var x0 = proj.x;
-    var arrowAlpha = 0.4 * Math.min(1, (tangentProgress - 0.5) * 3);
+    if (state.activeIndex < 0 || state.activeIndex >= N - 1 || state.tangentProgress < 0.5) return;
+    const proj = PROJECTS[state.activeIndex];
+    const x0 = proj.x;
+    const arrowAlpha = 0.4 * Math.min(1, (state.tangentProgress - 0.5) * 3);
 
-    // Arrow tip along the parabola, slightly ahead of the dot
-    var dx = 0.15;
-    var tipX = x0 + dx;
-    var tipY = f(tipX);
-    var baseX = x0 + dx * 0.4;
-    var baseY = f(baseX);
+    const dx = 0.15;
+    const tipX = x0 + dx;
+    const tipY = f(tipX);
+    const baseX = x0 + dx * 0.4;
+    const baseY = f(baseX);
 
-    var tip = mathToCanvas(tipX, tipY);
-    var base = mathToCanvas(baseX, baseY);
+    const tip = mathToCanvas(tipX, tipY);
+    const base = mathToCanvas(baseX, baseY);
 
-    // Direction vector
-    var dirX = tip[0] - base[0];
-    var dirY = tip[1] - base[1];
-    var len = Math.hypot(dirX, dirY);
+    let dirX = tip[0] - base[0];
+    let dirY = tip[1] - base[1];
+    const len = Math.hypot(dirX, dirY);
     if (len < 1) return;
     dirX /= len; dirY /= len;
 
-    var arrowSize = 8;
-    var perpX = -dirY * arrowSize;
-    var perpY = dirX * arrowSize;
+    const arrowSize = 8;
+    const perpX = -dirY * arrowSize;
+    const perpY = dirX * arrowSize;
 
     ctx.save();
     ctx.globalAlpha = arrowAlpha;
@@ -543,14 +608,12 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     ctx.restore();
   }
 
-  // Equation label: L(θ) = θ²
   function drawEquationLabel() {
-    if (introProgress < 0.5) return;
-    var labelAlpha = Math.min(0.3, (introProgress - 0.5) * 0.6);
-    var fontSize = Math.max(12, Math.min(W, H) * 0.018);
+    if (state.introProgress < 0.5) return;
+    const labelAlpha = Math.min(0.3, (state.introProgress - 0.5) * 0.6);
+    const fontSize = Math.max(12, Math.min(W, H) * 0.018);
 
-    // Position in upper-right area of the plot
-    var pt = mathToCanvas(1.2, 3.5);
+    const pt = mathToCanvas(1.2, 3.5);
 
     ctx.save();
     ctx.font = 'italic 400 ' + fontSize + 'px "Playfair Display", Georgia, serif';
@@ -562,17 +625,16 @@ fadeElements.forEach(el => fadeObserver.observe(el));
   }
 
   function render() {
-    // Reset transform to clear properly
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
 
     // Apply zoom: translate so zoomCenter stays in place, then scale
-    if (zoomLevel > 1.001) {
-      var vpCx = W / 2;
-      var vpCy = H / 2;
+    if (state.zoomLevel > 1.001) {
+      const vpCx = W / 2;
+      const vpCy = H / 2;
       ctx.translate(vpCx, vpCy);
-      ctx.scale(zoomLevel, zoomLevel);
-      ctx.translate(-zoomCenterX, -zoomCenterY);
+      ctx.scale(state.zoomLevel, state.zoomLevel);
+      ctx.translate(-state.zoomCenterX, -state.zoomCenterY);
     }
 
     drawGrid();
@@ -580,81 +642,61 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     drawEquationLabel();
     drawTrail();
     drawConnectors();
-    for (var i = 0; i < N; i++) drawDot(i);
-    drawTangent(activeIndex);
+    for (let i = 0; i < N; i++) drawDot(i);
+    drawTangent(state.activeIndex);
     drawArrow();
 
-    // Reset transform after drawing
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  // --- Scroll-driven logic ---
+  // ----- 2g. Scroll-Driven Animation -----
 
   function getScrollProgress() {
-    var rect = section.getBoundingClientRect();
-    var scrollable = section.offsetHeight - window.innerHeight;
+    const rect = section.getBoundingClientRect();
+    const scrollable = section.offsetHeight - window.innerHeight;
     if (scrollable <= 0) return 0;
-    var scrolled = -rect.top;
+    const scrolled = -rect.top;
     return Math.max(0, Math.min(1, scrolled / scrollable));
-  }
-
-  var prevScrollIndex = -1;
-  var animLoopRunning = false;
-  var overviewVisible = false;
-  var infoSwapTimer = null;
-
-  // Total scroll phases: 1 intro step + N project steps = N+1 steps
-  // Each gd-step is 100vh, so total scrollable = (N+1) * 100vh - 100vh = N * 100vh
-  var TOTAL_STEPS = N + 1; // intro + 4 projects
-
-  function escapeHtml(value) {
-    return String(value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
   }
 
   function renderOverviewCards() {
     if (!overviewGrid) return;
-    overviewGrid.innerHTML = PROJECTS.filter(function (proj) {
-      return proj.includeInOverview !== false;
-    }).map(function (proj) {
-      var awardMarkup = proj.award
-        ? '<span class="gd-overview__award">' + escapeHtml(proj.award) + '</span>'
-        : '';
-      return (
-        '<a class="gd-overview__card" href="#projects" data-project-index="' + PROJECTS.indexOf(proj) + '">' +
-          '<span class="gd-overview__step">' + proj.step + '</span>' +
-          awardMarkup +
-          '<h4 class="gd-overview__card-title">' + proj.title + '</h4>' +
-          '<p class="gd-overview__desc">' + proj.desc + '</p>' +
-          '<div class="gd-overview__tags">' + proj.tags.map(function (t) {
-            return '<span class="gd-overview__tag">' + escapeHtml(t) + '</span>';
-          }).join('') + '</div>' +
-        '</a>'
-      );
-    }).join('');
+    overviewGrid.innerHTML = PROJECTS.filter(proj => proj.includeInOverview !== false)
+      .map(proj => {
+        const awardMarkup = proj.award
+          ? '<span class="gd-overview__award">' + escapeHtml(proj.award) + '</span>'
+          : '';
+        return (
+          '<a class="gd-overview__card" href="#projects" data-project-index="' + PROJECTS.indexOf(proj) + '">' +
+            '<span class="gd-overview__step">' + proj.step + '</span>' +
+            awardMarkup +
+            '<h4 class="gd-overview__card-title">' + proj.title + '</h4>' +
+            '<p class="gd-overview__desc">' + proj.desc + '</p>' +
+            '<div class="gd-overview__tags">' + proj.tags.map(t =>
+              '<span class="gd-overview__tag">' + escapeHtml(t) + '</span>'
+            ).join('') + '</div>' +
+          '</a>'
+        );
+      }).join('');
   }
 
   function scrollToProjectIndex(idx) {
     if (idx < 0 || idx >= N) return;
-    var sectionTop = window.scrollY + section.getBoundingClientRect().top;
-    var scrollable = section.offsetHeight - window.innerHeight;
+    const sectionTop = window.scrollY + section.getBoundingClientRect().top;
+    const scrollable = section.offsetHeight - window.innerHeight;
     if (scrollable <= 0) return;
 
-    var phaseNudge = idx === 0 ? 0.08 : 0;
-    var targetProgress = (idx + 1 + phaseNudge) / TOTAL_STEPS;
-    var targetTop = sectionTop + scrollable * targetProgress;
+    const phaseNudge = idx === 0 ? 0.08 : 0;
+    const targetProgress = (idx + 1 + phaseNudge) / TOTAL_STEPS;
+    const targetTop = sectionTop + scrollable * targetProgress;
     window.scrollTo({ top: targetTop, behavior: 'smooth' });
   }
 
   function handleOverviewClick(e) {
-    var card = e.target.closest('.gd-overview__card');
+    const card = e.target.closest('.gd-overview__card');
     if (!card) return;
     e.preventDefault();
-    var idx = Number(card.dataset.projectIndex);
+    const idx = Number(card.dataset.projectIndex);
     if (Number.isNaN(idx)) return;
     scrollToProjectIndex(idx);
   }
@@ -668,22 +710,73 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     infoPanel.classList.toggle('hidden', isVisible);
   }
 
+  // --- Scroll phase helpers ---
+
+  function computeIntroTargets(introPhase) {
+    // Parabola draws during first portion of intro step
+    target.introProgress = easeOut(Math.min(1, introPhase / INTRO_DRAW_FRACTION));
+
+    // Dots appear during latter portion — continuous float for smooth scale-in
+    const dotPhase = Math.max(0, (introPhase - DOT_APPEAR_START) / (1 - DOT_APPEAR_START));
+    target.dotReveal = Math.min(N, dotPhase * N);
+  }
+
+  function computeProjectTargets(projectProgress, floatIndex) {
+    const nearestIndex = Math.max(0, Math.min(N - 1, Math.round(floatIndex)));
+    const distToNearest = Math.abs(floatIndex - nearestIndex);
+
+    // Tangent: full when close to a dot, fades when panning between dots
+    const tangentT = 1 - Math.min(1, distToNearest / TANGENT_FADE_THRESHOLD);
+    target.tangent = easeOut(Math.max(0, tangentT));
+    target.overviewProgress = 0;
+
+    // Zoom: ramp to full over first half-step
+    const zoomEntry = Math.min(1, projectProgress / 0.5);
+    target.zoom = 1 + (ZOOM_AMOUNT - 1) * (0.5 + 0.5 * easeOut(zoomEntry));
+
+    // Center: smoothly interpolate between adjacent dot positions
+    const lowerIdx = Math.max(0, Math.min(N - 2, Math.floor(floatIndex)));
+    const upperIdx = lowerIdx + 1;
+    const t = floatIndex - lowerIdx;
+    const easedT = t * t * (3 - 2 * t); // smoothstep
+
+    const ptA = mathToCanvas(PROJECTS[lowerIdx].x, f(PROJECTS[lowerIdx].x));
+    const ptB = mathToCanvas(PROJECTS[upperIdx].x, f(PROJECTS[upperIdx].x));
+    target.centerX = ptA[0] + (ptB[0] - ptA[0]) * easedT;
+    target.centerY = ptA[1] + (ptB[1] - ptA[1]) * easedT;
+
+    target.activeIndex = nearestIndex;
+  }
+
+  function computeOverviewTargets(projectProgress, focusPhaseEnd, lastDotPt) {
+    const overviewT = Math.max(0, Math.min(1, projectProgress - focusPhaseEnd));
+    const easedOverview = overviewT * overviewT * (3 - 2 * overviewT);
+    const cardHoldT = Math.max(0, Math.min(1, overviewT / CARD_HOLD_THRESHOLD));
+
+    target.activeIndex = overviewT < CARD_HOLD_THRESHOLD ? N - 1 : -1;
+    target.tangent = 1 - cardHoldT;
+    target.overviewProgress = overviewT;
+    target.zoom = ZOOM_AMOUNT + (1 - ZOOM_AMOUNT) * easedOverview;
+    target.centerX = lastDotPt[0] + (W / 2 - lastDotPt[0]) * easedOverview;
+    target.centerY = lastDotPt[1] + (H / 2 - lastDotPt[1]) * easedOverview;
+  }
+
   function onScroll() {
-    var rect = section.getBoundingClientRect();
+    const rect = section.getBoundingClientRect();
     if (rect.top >= window.innerHeight || rect.bottom <= 0) {
-      targetActiveIndex = -1;
-      targetTangent = 0;
-      targetOverviewProgress = 0;
+      target.activeIndex = -1;
+      target.tangent = 0;
+      target.overviewProgress = 0;
       prevScrollIndex = -1;
-      activeIndex = -1;
-      hoveredIndex = -1;
+      state.activeIndex = -1;
+      state.hoveredIndex = -1;
       setOverviewState(false);
       updateInfo(-1);
       render();
       return;
     }
 
-    var progress = getScrollProgress();
+    const progress = getScrollProgress();
 
     // Hide scroll hint once scrolling begins
     if (progress > 0.01 && scrollHint) {
@@ -695,94 +788,48 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     }
 
     // Map progress across all steps (intro + projects)
-    var rawStep = progress * TOTAL_STEPS;
+    const rawStep = progress * TOTAL_STEPS;
+    const introPhase = Math.max(0, Math.min(1, rawStep));
 
-    // --- Phase 1: Intro (step 0) — parabola draws + dots appear ---
-    // First step is the intro: rawStep 0..1
-    var introPhase = Math.max(0, Math.min(1, rawStep));
+    computeIntroTargets(introPhase);
 
-    // Parabola draws during first 60% of intro step
-    targetIntroProgress = easeOut(Math.min(1, introPhase / 0.6));
+    // Project focus + overview (steps 1..N)
+    const projectProgress = Math.max(0, rawStep - 1);
+    const focusPhaseEnd = N - 1;
+    const floatIndex = Math.min(N - 1, projectProgress);
+    target.fastTransition = projectProgress > 0 && projectProgress < 2.6;
 
-    // Dots appear during last 60% of intro step — continuous float for smooth scale-in
-    var dotPhase = Math.max(0, (introPhase - 0.4) / 0.6);
-    targetDotReveal = Math.min(N, dotPhase * N);
+    const firstDotPt = mathToCanvas(PROJECTS[0].x, f(PROJECTS[0].x));
+    const lastDotPt = mathToCanvas(PROJECTS[N - 1].x, f(PROJECTS[N - 1].x));
 
-    // --- Phase 2: Project focus + overview (steps 1..N) ---
-    // floatIndex is a continuous 0.0 .. (N-1) across the project steps
-    var projectProgress = Math.max(0, rawStep - 1); // 0..N
-    var focusPhaseEnd = N - 1;
-    var floatIndex = Math.min(N - 1, projectProgress); // 0..(N-1)
-    fastProjectTransition = projectProgress > 0 && projectProgress < 2.6;
-
-    // Pre-compute first dot position for smooth lead-in
-    var firstDotPt = mathToCanvas(PROJECTS[0].x, f(PROJECTS[0].x));
-    var lastDotPt = mathToCanvas(PROJECTS[N - 1].x, f(PROJECTS[N - 1].x));
-
-    // Start panning toward first dot and zooming during last 40% of intro
-    var leadIn = Math.max(0, (introPhase - 0.6) / 0.4); // 0..1 during intro tail
-    var easedLeadIn = leadIn * leadIn * (3 - 2 * leadIn); // smoothstep
+    // Start panning toward first dot and zooming during last portion of intro
+    const leadIn = Math.max(0, (introPhase - INTRO_DRAW_FRACTION) / (1 - INTRO_DRAW_FRACTION));
+    const easedLeadIn = leadIn * leadIn * (3 - 2 * leadIn); // smoothstep
 
     if (projectProgress <= 0) {
       // Still in intro, no project focused
-      targetActiveIndex = -1;
-      targetTangent = 0;
-      targetOverviewProgress = 0;
+      target.activeIndex = -1;
+      target.tangent = 0;
+      target.overviewProgress = 0;
 
       // Smoothly ramp zoom and center toward first dot during intro tail
-      targetZoom = 1 + (ZOOM_AMOUNT - 1) * easedLeadIn * 0.5;
-      targetCenterX = W / 2 + (firstDotPt[0] - W / 2) * easedLeadIn;
-      targetCenterY = H / 2 + (firstDotPt[1] - H / 2) * easedLeadIn;
+      target.zoom = 1 + (ZOOM_AMOUNT - 1) * easedLeadIn * 0.5;
+      target.centerX = W / 2 + (firstDotPt[0] - W / 2) * easedLeadIn;
+      target.centerY = H / 2 + (firstDotPt[1] - H / 2) * easedLeadIn;
     } else if (projectProgress > focusPhaseEnd) {
-      var overviewT = Math.max(0, Math.min(1, projectProgress - focusPhaseEnd));
-      var easedOverview = overviewT * overviewT * (3 - 2 * overviewT);
-      var cardHoldT = Math.max(0, Math.min(1, overviewT / 0.28));
-
-      targetActiveIndex = overviewT < 0.28 ? N - 1 : -1;
-      targetTangent = 1 - cardHoldT;
-      targetOverviewProgress = overviewT;
-      targetZoom = ZOOM_AMOUNT + (1 - ZOOM_AMOUNT) * easedOverview;
-      targetCenterX = lastDotPt[0] + (W / 2 - lastDotPt[0]) * easedOverview;
-      targetCenterY = lastDotPt[1] + (H / 2 - lastDotPt[1]) * easedOverview;
+      computeOverviewTargets(projectProgress, focusPhaseEnd, lastDotPt);
     } else {
-      // Which dot are we closest to?
-      var nearestIndex = Math.round(floatIndex);
-      nearestIndex = Math.max(0, Math.min(N - 1, nearestIndex));
-      var distToNearest = Math.abs(floatIndex - nearestIndex);
-
-      // Tangent: full when close to a dot, fades when panning between dots
-      // distToNearest is 0 at dot center, 0.5 at midpoint between dots
-      var tangentT = 1 - Math.min(1, distToNearest / 0.35);
-      targetTangent = easeOut(Math.max(0, tangentT));
-      targetOverviewProgress = 0;
-
-      // Zoom: continue from lead-in, ramp to full over first half-step
-      var zoomEntry = Math.min(1, projectProgress / 0.5);
-      targetZoom = 1 + (ZOOM_AMOUNT - 1) * (0.5 + 0.5 * easeOut(zoomEntry));
-
-      // Center: smoothly interpolate between adjacent dot positions
-      var lowerIdx = Math.max(0, Math.min(N - 2, Math.floor(floatIndex)));
-      var upperIdx = lowerIdx + 1;
-      var t = floatIndex - lowerIdx; // 0..1 between lowerIdx and upperIdx
-      // Ease the panning so it slows near dots and speeds between them
-      var easedT = t * t * (3 - 2 * t); // smoothstep
-
-      var ptA = mathToCanvas(PROJECTS[lowerIdx].x, f(PROJECTS[lowerIdx].x));
-      var ptB = mathToCanvas(PROJECTS[upperIdx].x, f(PROJECTS[upperIdx].x));
-      targetCenterX = ptA[0] + (ptB[0] - ptA[0]) * easedT;
-      targetCenterY = ptA[1] + (ptB[1] - ptA[1]) * easedT;
-
-      targetActiveIndex = nearestIndex;
+      computeProjectTargets(projectProgress, floatIndex);
     }
 
-    var newIndex = targetActiveIndex;
+    const newIndex = target.activeIndex;
     if (newIndex !== prevScrollIndex) {
       prevScrollIndex = newIndex;
-      activeIndex = newIndex;
+      state.activeIndex = newIndex;
       updateInfo(newIndex);
     }
 
-    setOverviewState(targetOverviewProgress > 0.22);
+    setOverviewState(target.overviewProgress > OVERVIEW_SHOW_THRESHOLD);
 
     // Start animation loop if not running
     if (!animLoopRunning) {
@@ -791,50 +838,44 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     }
   }
 
-  function lerp(a, b, t) {
-    return a + (b - a) * t;
-  }
-
   function animLoop() {
-    var zoomLerp = fastProjectTransition ? 0.12 : LERP_ZOOM;
-    var panLerp = fastProjectTransition ? 0.18 : LERP_PAN;
-    var tangentLerp = fastProjectTransition ? 0.14 : LERP_TANGENT;
+    const zoomLerp = target.fastTransition ? 0.12 : LERP_SPEED.zoom;
+    const panLerp = target.fastTransition ? 0.18 : LERP_SPEED.pan;
+    const tangentLerp = target.fastTransition ? 0.14 : LERP_SPEED.tangent;
 
-    // Lerp each property at its own speed
-    introProgress = lerp(introProgress, targetIntroProgress, LERP_INTRO);
-    dotReveal = lerp(dotReveal, targetDotReveal, LERP_INTRO);
-    zoomLevel = lerp(zoomLevel, targetZoom, zoomLerp);
-    zoomCenterX = lerp(zoomCenterX, targetCenterX, panLerp);
-    zoomCenterY = lerp(zoomCenterY, targetCenterY, panLerp);
-    tangentProgress = lerp(tangentProgress, targetTangent, tangentLerp);
-    overviewProgress = lerp(overviewProgress, targetOverviewProgress, LERP_OVERVIEW);
+    state.introProgress = lerp(state.introProgress, target.introProgress, LERP_SPEED.intro);
+    state.dotReveal = lerp(state.dotReveal, target.dotReveal, LERP_SPEED.intro);
+    state.zoomLevel = lerp(state.zoomLevel, target.zoom, zoomLerp);
+    state.zoomCenterX = lerp(state.zoomCenterX, target.centerX, panLerp);
+    state.zoomCenterY = lerp(state.zoomCenterY, target.centerY, panLerp);
+    state.tangentProgress = lerp(state.tangentProgress, target.tangent, tangentLerp);
+    state.overviewProgress = lerp(state.overviewProgress, target.overviewProgress, LERP_SPEED.overview);
 
-    activeIndex = targetActiveIndex;
+    state.activeIndex = target.activeIndex;
 
     render();
 
     // Check if values have settled
-    var settled =
-      Math.abs(introProgress - targetIntroProgress) < 0.003 &&
-      Math.abs(dotReveal - targetDotReveal) < 0.01 &&
-      Math.abs(zoomLevel - targetZoom) < 0.002 &&
-      Math.abs(zoomCenterX - targetCenterX) < 0.5 &&
-      Math.abs(zoomCenterY - targetCenterY) < 0.5 &&
-      Math.abs(tangentProgress - targetTangent) < 0.005 &&
-      Math.abs(overviewProgress - targetOverviewProgress) < 0.01;
+    const settled =
+      Math.abs(state.introProgress - target.introProgress) < 0.003 &&
+      Math.abs(state.dotReveal - target.dotReveal) < 0.01 &&
+      Math.abs(state.zoomLevel - target.zoom) < 0.002 &&
+      Math.abs(state.zoomCenterX - target.centerX) < 0.5 &&
+      Math.abs(state.zoomCenterY - target.centerY) < 0.5 &&
+      Math.abs(state.tangentProgress - target.tangent) < 0.005 &&
+      Math.abs(state.overviewProgress - target.overviewProgress) < 0.01;
 
     if (settled) {
-      introProgress = targetIntroProgress;
-      dotReveal = targetDotReveal;
-      zoomLevel = targetZoom;
-      zoomCenterX = targetCenterX;
-      zoomCenterY = targetCenterY;
-      tangentProgress = targetTangent;
-      overviewProgress = targetOverviewProgress;
+      state.introProgress = target.introProgress;
+      state.dotReveal = target.dotReveal;
+      state.zoomLevel = target.zoom;
+      state.zoomCenterX = target.centerX;
+      state.zoomCenterY = target.centerY;
+      state.tangentProgress = target.tangent;
+      state.overviewProgress = target.overviewProgress;
     }
 
-    // Keep running while a dot is active (for pulsing glow) or values haven't settled
-    if (!settled || activeIndex >= 0) {
+    if (!settled || state.activeIndex >= 0) {
       requestAnimationFrame(animLoop);
     } else {
       render();
@@ -842,7 +883,81 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     }
   }
 
-  var currentInfoIdx = -1;
+  // ----- 2h. Info Panel Management -----
+
+  function updateMediaPanel(proj) {
+    infoMedia.hidden = !!proj.hideMedia;
+    infoMedia.classList.toggle('is-hidden', !!proj.hideMedia);
+    infoMedia.dataset.type = (proj.mediaType || 'image').toLowerCase();
+
+    const isImage = (proj.mediaType || '').toLowerCase() === 'image' && proj.mediaSrc;
+    infoMedia.dataset.hasVideo = (!isImage && proj.mediaSrc) ? 'true' : 'false';
+    infoMedia.dataset.hasEmbed = proj.mediaEmbed ? 'true' : 'false';
+    infoMedia.dataset.hasImage = isImage ? 'true' : 'false';
+    infoMediaType.textContent = proj.mediaType || 'Image';
+    infoMediaText.textContent = proj.mediaText || 'Project media placeholder';
+
+    if (proj.mediaEmbed) {
+      infoMediaVideo.pause();
+      infoMediaVideo.removeAttribute('src');
+      infoMediaVideo.load();
+      if (infoMediaEmbed.getAttribute('src') !== proj.mediaEmbed) {
+        infoMediaEmbed.src = proj.mediaEmbed;
+      }
+      infoMediaEmbed.title = proj.title + ' demo';
+    } else {
+      infoMediaEmbed.removeAttribute('src');
+      infoMediaEmbed.title = '';
+    }
+
+    if (isImage) {
+      infoMediaImg.src = proj.mediaSrc;
+      infoMediaImg.alt = proj.mediaText || proj.title;
+      infoMediaVideo.pause();
+      infoMediaVideo.removeAttribute('src');
+      infoMediaVideo.load();
+    } else if (proj.mediaSrc) {
+      infoMediaImg.removeAttribute('src');
+      infoMediaEmbed.removeAttribute('src');
+      infoMediaEmbed.title = '';
+      if (infoMediaVideo.getAttribute('src') !== proj.mediaSrc) {
+        infoMediaVideo.src = proj.mediaSrc;
+        infoMediaVideo.load();
+      }
+      infoMediaVideo.play().catch(() => {});
+    } else {
+      infoMediaImg.removeAttribute('src');
+      infoMediaVideo.pause();
+      infoMediaVideo.removeAttribute('src');
+      infoMediaVideo.load();
+    }
+  }
+
+  function updateLinks(proj) {
+    infoLink.href = proj.link;
+    const isExternalLink = /^https?:\/\//i.test(proj.link || '');
+    infoLink.target = isExternalLink ? '_blank' : '';
+    infoLink.rel = isExternalLink ? 'noopener noreferrer' : '';
+    infoLink.textContent = proj.ctaLabel || 'View Project →';
+
+    infoSecondaryLink.hidden = !proj.secondaryLink;
+    infoSecondaryLink.classList.toggle('is-hidden', !proj.secondaryLink);
+    if (proj.secondaryLink) {
+      infoSecondaryLink.href = proj.secondaryLink;
+      infoSecondaryLink.textContent = proj.secondaryLabel || 'Learn More';
+      if (proj.secondaryLink.match(/\.(pdf|zip|tar|gz)$/i)) {
+        infoSecondaryLink.setAttribute('download', '');
+      } else {
+        infoSecondaryLink.removeAttribute('download');
+      }
+      const isExternal = /^https?:\/\//i.test(proj.secondaryLink);
+      infoSecondaryLink.target = isExternal ? '_blank' : '';
+      infoSecondaryLink.rel = isExternal ? 'noopener noreferrer' : '';
+    } else {
+      infoSecondaryLink.removeAttribute('href');
+      infoSecondaryLink.removeAttribute('download');
+    }
+  }
 
   function updateInfo(idx) {
     if (infoSwapTimer) {
@@ -861,9 +976,10 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     // Fade out, swap content, fade in
     infoPanel.classList.remove('active');
 
-    infoSwapTimer = setTimeout(function () {
-      var proj = PROJECTS[idx];
-      var slope = fPrime(proj.x);
+    infoSwapTimer = setTimeout(() => {
+      const proj = PROJECTS[idx];
+      const slope = fPrime(proj.x);
+
       infoStep.textContent = proj.step;
       infoGradient.textContent = '\u2207 = ' + slope.toFixed(2);
       infoTitle.textContent = proj.title;
@@ -871,73 +987,15 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       infoAward.hidden = !proj.award;
       infoAward.classList.toggle('is-hidden', !proj.award);
       infoDesc.textContent = proj.desc;
-      infoMedia.hidden = !!proj.hideMedia;
-      infoMedia.classList.toggle('is-hidden', !!proj.hideMedia);
-      infoMedia.dataset.type = (proj.mediaType || 'image').toLowerCase();
-      var isImage = (proj.mediaType || '').toLowerCase() === 'image' && proj.mediaSrc;
-      infoMedia.dataset.hasVideo = (!isImage && proj.mediaSrc) ? 'true' : 'false';
-      infoMedia.dataset.hasEmbed = proj.mediaEmbed ? 'true' : 'false';
-      infoMedia.dataset.hasImage = isImage ? 'true' : 'false';
-      infoMediaType.textContent = proj.mediaType || 'Image';
-      infoMediaText.textContent = proj.mediaText || 'Project media placeholder';
-      if (proj.mediaEmbed) {
-        infoMediaVideo.pause();
-        infoMediaVideo.removeAttribute('src');
-        infoMediaVideo.load();
-        if (infoMediaEmbed.getAttribute('src') !== proj.mediaEmbed) {
-          infoMediaEmbed.src = proj.mediaEmbed;
-        }
-        infoMediaEmbed.title = proj.title + ' demo';
-      } else {
-        infoMediaEmbed.removeAttribute('src');
-        infoMediaEmbed.title = '';
-      }
-      if (isImage) {
-        infoMediaImg.src = proj.mediaSrc;
-        infoMediaImg.alt = proj.mediaText || proj.title;
-        infoMediaVideo.pause();
-        infoMediaVideo.removeAttribute('src');
-        infoMediaVideo.load();
-      } else if (proj.mediaSrc) {
-        infoMediaImg.removeAttribute('src');
-        infoMediaEmbed.removeAttribute('src');
-        infoMediaEmbed.title = '';
-        if (infoMediaVideo.getAttribute('src') !== proj.mediaSrc) {
-          infoMediaVideo.src = proj.mediaSrc;
-          infoMediaVideo.load();
-        }
-        infoMediaVideo.play().catch(function () {});
-      } else {
-        infoMediaImg.removeAttribute('src');
-        infoMediaVideo.pause();
-        infoMediaVideo.removeAttribute('src');
-        infoMediaVideo.load();
-      }
-      infoTags.innerHTML = proj.tags.map(function (t) {
-        return '<span class="tag">' + t + '</span>';
-      }).join('');
-      infoLink.href = proj.link;
-      var isExternalLink = /^https?:\/\//i.test(proj.link || '');
-      infoLink.target = isExternalLink ? '_blank' : '';
-      infoLink.rel = isExternalLink ? 'noopener noreferrer' : '';
-      infoLink.textContent = proj.ctaLabel || 'View Project →';
-      infoSecondaryLink.hidden = !proj.secondaryLink;
-      infoSecondaryLink.classList.toggle('is-hidden', !proj.secondaryLink);
-      if (proj.secondaryLink) {
-        infoSecondaryLink.href = proj.secondaryLink;
-        infoSecondaryLink.textContent = proj.secondaryLabel || 'Learn More';
-        if (proj.secondaryLink.match(/\.(pdf|zip|tar|gz)$/i)) {
-          infoSecondaryLink.setAttribute('download', '');
-        } else {
-          infoSecondaryLink.removeAttribute('download');
-        }
-        var isExternal = /^https?:\/\//i.test(proj.secondaryLink);
-        infoSecondaryLink.target = isExternal ? '_blank' : '';
-        infoSecondaryLink.rel = isExternal ? 'noopener noreferrer' : '';
-      } else {
-        infoSecondaryLink.removeAttribute('href');
-        infoSecondaryLink.removeAttribute('download');
-      }
+
+      updateMediaPanel(proj);
+
+      infoTags.innerHTML = proj.tags.map(t =>
+        '<span class="tag">' + t + '</span>'
+      ).join('');
+
+      updateLinks(proj);
+
       // Progress bar
       infoPanel.style.setProperty('--gd-progress', ((idx + 1) / N * 100) + '%');
       void infoPanel.offsetHeight;
@@ -946,48 +1004,48 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     }, 250);
   }
 
-  // --- Mouse interaction (secondary) ---
+  // ----- 2i. Mouse Interaction -----
 
   function getHoveredDot(cx, cy) {
-    var hitRadius = 28;
-    for (var i = 0; i < N; i++) {
-      var pt = mathToCanvas(PROJECTS[i].x, f(PROJECTS[i].x));
+    const hitRadius = 28;
+    for (let i = 0; i < N; i++) {
+      const pt = mathToCanvas(PROJECTS[i].x, f(PROJECTS[i].x));
       if (Math.hypot(cx - pt[0], cy - pt[1]) < hitRadius) return i;
     }
     return -1;
   }
 
   function screenToCanvas(sx, sy) {
-    var mx = sx, my = sy;
-    if (zoomLevel > 1.001) {
-      var vpCx = W / 2, vpCy = H / 2;
-      mx = (sx - vpCx) / zoomLevel + zoomCenterX;
-      my = (sy - vpCy) / zoomLevel + zoomCenterY;
+    let mx = sx, my = sy;
+    if (state.zoomLevel > 1.001) {
+      const vpCx = W / 2, vpCy = H / 2;
+      mx = (sx - vpCx) / state.zoomLevel + state.zoomCenterX;
+      my = (sy - vpCy) / state.zoomLevel + state.zoomCenterY;
     }
     return [mx, my];
   }
 
   function handleMouseMove(e) {
-    var rect = canvas.getBoundingClientRect();
-    var pt = screenToCanvas(e.clientX - rect.left, e.clientY - rect.top);
-    var idx = getHoveredDot(pt[0], pt[1]);
-    if (idx !== hoveredIndex) {
-      hoveredIndex = idx;
+    const rect = canvas.getBoundingClientRect();
+    const pt = screenToCanvas(e.clientX - rect.left, e.clientY - rect.top);
+    const idx = getHoveredDot(pt[0], pt[1]);
+    if (idx !== state.hoveredIndex) {
+      state.hoveredIndex = idx;
       canvas.style.cursor = idx >= 0 ? 'pointer' : 'default';
       render();
     }
   }
 
   function handleClick(e) {
-    var rect = canvas.getBoundingClientRect();
-    var pt = screenToCanvas(e.clientX - rect.left, e.clientY - rect.top);
-    var idx = getHoveredDot(pt[0], pt[1]);
-    if (idx >= 0 && idx !== activeIndex) {
+    const rect = canvas.getBoundingClientRect();
+    const pt = screenToCanvas(e.clientX - rect.left, e.clientY - rect.top);
+    const idx = getHoveredDot(pt[0], pt[1]);
+    if (idx >= 0 && idx !== state.activeIndex) {
       scrollToProjectIndex(idx);
     }
   }
 
-  // --- Init ---
+  // ----- 2j. Initialization -----
 
   function init() {
     readColors();
@@ -995,8 +1053,8 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     resize();
 
     canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('mouseleave', function () {
-      hoveredIndex = -1;
+    canvas.addEventListener('mouseleave', () => {
+      state.hoveredIndex = -1;
       canvas.style.cursor = 'default';
       render();
     });
@@ -1005,11 +1063,11 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       overviewGrid.addEventListener('click', handleOverviewClick);
     }
 
-    // Scroll listener
-    var ticking = false;
-    window.addEventListener('scroll', function () {
+    // Scroll listener (RAF-throttled)
+    let ticking = false;
+    window.addEventListener('scroll', () => {
       if (!ticking) {
-        requestAnimationFrame(function () {
+        requestAnimationFrame(() => {
           onScroll();
           ticking = false;
         });
@@ -1017,16 +1075,16 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       }
     }, { passive: true });
 
-    var resizeTimer;
-    window.addEventListener('resize', function () {
+    // Debounced resize
+    let resizeTimer;
+    window.addEventListener('resize', () => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(function () {
+      resizeTimer = setTimeout(() => {
         resize();
         onScroll();
       }, 100);
     });
 
-    // Kick initial scroll check in case already scrolled into view
     onScroll();
   }
 
