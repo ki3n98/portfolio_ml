@@ -156,6 +156,10 @@
         <span class="desktop-icon__img" style="--icon-url: url('/assets/icons/email.png')" aria-hidden="true"></span>
         <span class="desktop-icon__label">Contact</span>
       </button>
+      <button type="button" class="desktop-icon" data-window="resume" aria-label="Open Resume">
+        <span class="desktop-icon__img" style="--icon-url: url('/assets/icons/resume-pdf.png')" aria-hidden="true"></span>
+        <span class="desktop-icon__label">Resume.pdf</span>
+      </button>
     </div>
   </div>
 
@@ -164,7 +168,7 @@
 
   <!-- Hero Window -->
   <section class="window" id="window-hero" data-window="hero" data-default-open="true"
-            style="--win-left: calc(50vw - 340px); --win-top: calc(50vh - 330px); --win-w: 680px; --win-h: 660px;">
+            style="--win-left: calc(50vw - 390px); --win-top: calc(50vh - 400px); --win-w: 780px; --win-h: 800px;">
     <header class="window__titlebar" data-drag-handle>
       <span class="window__title">About Me</span>
       <div class="window__controls">
@@ -206,6 +210,7 @@
     </div>
     </div>
     </div>
+    <div class="window__resize-handle" data-resize-handle aria-hidden="true"></div>
   </section>
 
   <!-- Experience Window -->
@@ -264,6 +269,7 @@
     </div>
     </div>
     </div>
+    <div class="window__resize-handle" data-resize-handle aria-hidden="true"></div>
   </section>
 
   <!-- Projects Window (fullscreen variant) -->
@@ -320,6 +326,15 @@
           <h3 class="gd-overview__title">From high loss to convergence across my projects</h3>
         </div>
         <div class="gd-overview__grid" id="gd-overview-grid"></div>
+      </div>
+
+      <div class="gd-overview-cta" id="gd-overview-cta" aria-hidden="true">
+        <button type="button" class="gd-overview-cta__btn" data-open-window="experience" data-close-window="projects">
+          View Experience <span class="arrow">&rarr;</span>
+        </button>
+        <button type="button" class="gd-overview-cta__btn" data-open-window="contact" data-close-window="projects">
+          Get in Touch <span class="arrow">&rarr;</span>
+        </button>
       </div>
 
       <div class="gd-scroll-hint" id="gd-scroll-hint">
@@ -416,6 +431,24 @@
     </div>
     </div>
     </div>
+    <div class="window__resize-handle" data-resize-handle aria-hidden="true"></div>
+  </section>
+
+  <!-- Resume Window (simulated PDF viewer) -->
+  <section class="window" id="window-resume" data-window="resume"
+            style="--win-left: 8vw; --win-top: 6vh; --win-w: 1000px; --win-h: 780px;">
+    <header class="window__titlebar" data-drag-handle>
+      <span class="window__title">Kien_Pham_resume.pdf - Adobe Reader</span>
+      <div class="window__controls">
+        <button type="button" class="window__btn window__btn--minimize" data-minimize aria-label="Minimize"></button>
+        <button type="button" class="window__btn window__btn--maximize" data-maximize aria-label="Maximize"></button>
+        <button type="button" class="window__btn window__btn--close" data-close aria-label="Close"></button>
+      </div>
+    </header>
+    <div class="window__body">
+      <iframe class="resume-viewer__frame" src="assets/resume/Kien_Pham_resume.pdf" title="Kien Pham Resume"></iframe>
+    </div>
+    <div class="window__resize-handle" data-resize-handle aria-hidden="true"></div>
   </section>
 
   </div>
