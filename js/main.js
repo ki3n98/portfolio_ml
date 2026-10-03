@@ -98,6 +98,16 @@ WINDOW_IDS.forEach(id => {
 let topZ = 10;
 const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
 
+// Windows that have never been opened, or were explicitly closed via the X
+// button, drop out of the taskbar entirely. Minimizing just hides them
+// (win.hidden) while leaving them in this set's complement, so their
+// taskbar button stays put and can restore them.
+const closedWindows = new Set(WINDOW_IDS);
+
+// Saved --win-left/top/w/h (as authored, so calc()/vw expressions survive)
+// for windows currently maximized, so the maximize button can restore them.
+const maximizedState = {};
+
 function revealFadeInsWithin(win) {
   win.querySelectorAll('.fade-in:not(.visible)').forEach(el => el.classList.add('visible'));
 }
@@ -129,6 +139,7 @@ function openWindow(id) {
   const win = windowEls[id];
   if (!win) return;
   win.hidden = false;
+  closedWindows.delete(id);
   focusWindow(id);
   revealFadeInsWithin(win);
   if (id === 'projects' && window.__gdRefresh) window.__gdRefresh();
@@ -136,11 +147,47 @@ function openWindow(id) {
   updateTaskbar();
 }
 
-function closeWindow(id) {
+// Hides the window but keeps its taskbar button around so it can be
+// restored from there — distinct from closeWindow, which drops it from
+// the taskbar entirely.
+function minimizeWindow(id) {
   const win = windowEls[id];
   if (!win) return;
   win.hidden = true;
   updateTaskbar();
+}
+
+function closeWindow(id) {
+  const win = windowEls[id];
+  if (!win) return;
+  win.hidden = true;
+  closedWindows.add(id);
+  updateTaskbar();
+}
+
+function toggleMaximize(id) {
+  const win = windowEls[id];
+  if (!win || win.classList.contains('window--fullscreen')) return;
+  if (win.classList.contains('window--maximized')) {
+    win.classList.remove('window--maximized');
+    const saved = maximizedState[id];
+    if (saved) {
+      win.style.setProperty('--win-left', saved.left);
+      win.style.setProperty('--win-top', saved.top);
+      win.style.setProperty('--win-w', saved.w);
+      win.style.setProperty('--win-h', saved.h);
+      delete maximizedState[id];
+    }
+  } else {
+    maximizedState[id] = {
+      left: win.style.getPropertyValue('--win-left'),
+      top: win.style.getPropertyValue('--win-top'),
+      w: win.style.getPropertyValue('--win-w'),
+      h: win.style.getPropertyValue('--win-h'),
+    };
+    win.classList.add('window--maximized');
+  }
+  focusWindow(id);
 }
 
 function toggleOrFocusWindow(id) {
@@ -177,7 +224,7 @@ if (navWindows) {
       if (win.hidden) {
         openWindow(id);
       } else if (isTopWindow(id)) {
-        closeWindow(id);
+        minimizeWindow(id);
       } else {
         focusWindow(id);
       }
@@ -192,7 +239,7 @@ function updateTaskbar() {
     const btn = taskbarBtns[id];
     const win = windowEls[id];
     if (!btn || !win) return;
-    btn.hidden = win.hidden;
+    btn.hidden = closedWindows.has(id);
     btn.classList.toggle('active', !win.hidden && isTopWindow(id));
   });
 }
@@ -220,6 +267,22 @@ document.querySelectorAll('[data-close]').forEach(btn => {
   });
 });
 
+document.querySelectorAll('[data-minimize]').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const win = btn.closest('.window');
+    if (win) minimizeWindow(win.dataset.window);
+  });
+});
+
+document.querySelectorAll('[data-maximize]').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const win = btn.closest('.window');
+    if (win) toggleMaximize(win.dataset.window);
+  });
+});
+
 // Any stray `href="#windowId"` link (e.g. the gradient-descent info panel's
 // dynamically-populated cross-links) opens/focuses that window instead of
 // doing a no-op anchor jump to a possibly-hidden section.
@@ -242,10 +305,10 @@ let dragState = null;
 
 function onTitlebarPointerDown(e) {
   if (isMobile()) return;
-  if (e.target.closest('[data-close]')) return;
+  if (e.target.closest('.window__btn')) return;
   const titlebar = e.currentTarget;
   const win = titlebar.closest('.window');
-  if (!win || win.classList.contains('window--fullscreen')) return;
+  if (!win || win.classList.contains('window--fullscreen') || win.classList.contains('window--maximized')) return;
   focusWindow(win.dataset.window);
   const rect = win.getBoundingClientRect();
   dragState = {
@@ -293,6 +356,7 @@ WINDOW_IDS.forEach(id => {
   if (!win) return;
   if (win.dataset.defaultOpen === 'true') {
     win.hidden = false;
+    closedWindows.delete(id);
     focusWindow(id);
     revealFadeInsWithin(win);
   } else {

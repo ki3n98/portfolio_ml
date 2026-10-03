@@ -512,6 +512,10 @@ img {
   overflow: hidden;
 }
 
+.taskbar-btn[hidden] {
+  display: none;
+}
+
 .taskbar-btn:hover {
   filter: brightness(1.08);
 }
@@ -721,13 +725,20 @@ img {
   letter-spacing: 0.01em;
 }
 
-.window__close {
+.window__controls {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.window__btn {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
   border-radius: 2px;
   border: 1px solid rgba(0, 0, 0, 0.35);
-  background: #D33B2E;
+  background: linear-gradient(to bottom, #4D96F2 0%, #1D53B8 100%);
   box-shadow:
     inset 1px 1px 0 rgba(255, 255, 255, 0.4),
     inset -1px -1px 0 rgba(0, 0, 0, 0.3);
@@ -735,8 +746,54 @@ img {
   position: relative;
 }
 
-.window__close::before,
-.window__close::after {
+.window__btn:hover {
+  filter: brightness(1.12);
+}
+
+.window__btn:active {
+  filter: brightness(0.9);
+}
+
+.window__btn:disabled {
+  background: linear-gradient(to bottom, #B9BCC2 0%, #8C8F96 100%);
+  cursor: default;
+  pointer-events: none;
+}
+
+.window__btn:disabled::before,
+.window__btn:disabled::after {
+  opacity: 0.6;
+}
+
+.window__btn--minimize::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 5px;
+  width: 9px;
+  height: 2px;
+  background: #fff;
+  transform: translateX(-50%);
+}
+
+.window__btn--maximize::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 9px;
+  height: 8px;
+  border: 1.5px solid #fff;
+  box-sizing: border-box;
+  transform: translate(-50%, -50%);
+}
+
+.window__btn--close {
+  background: #D33B2E;
+}
+
+.window__btn--close::before,
+.window__btn--close::after {
   content: '';
   position: absolute;
   left: 50%;
@@ -746,20 +803,12 @@ img {
   background: #fff;
 }
 
-.window__close::before {
+.window__btn--close::before {
   transform: translate(-50%, -50%) rotate(45deg);
 }
 
-.window__close::after {
+.window__btn--close::after {
   transform: translate(-50%, -50%) rotate(-45deg);
-}
-
-.window__close:hover {
-  filter: brightness(1.12);
-}
-
-.window__close:active {
-  filter: brightness(0.9);
 }
 
 .window__body {
@@ -787,6 +836,21 @@ img {
 .window--fullscreen .window__body--scroll {
   padding: 0;
   overflow-y: auto;
+}
+
+.window--maximized {
+  left: 0 !important;
+  top: 0 !important;
+  width: 100vw !important;
+  height: calc(100vh - var(--nav-height)) !important;
+  max-width: none !important;
+  max-height: none !important;
+  border-radius: 0 !important;
+}
+
+.window--maximized .window__titlebar[data-drag-handle] {
+  cursor: default;
+  touch-action: auto;
 }
 
 @media (max-width: 768px) {
