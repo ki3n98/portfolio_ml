@@ -52,12 +52,12 @@
               <span class="start-menu__item-arrow" style="--icon-url: url('/assets/icons/submenu-arrow-green.svg')" aria-hidden="true"></span>
             </button></li>
             <li><button type="button" class="start-menu__item" data-window="projects">
-              <span class="start-menu__item-icon" style="--icon-url: url('/assets/icons/my-documents.png')" aria-hidden="true"></span>
+              <span class="start-menu__item-icon" style="--icon-url: url('/assets/icons/slideshow.png')" aria-hidden="true"></span>
               <span class="start-menu__item-label">Projects</span>
               <span class="start-menu__item-arrow" style="--icon-url: url('/assets/icons/submenu-arrow-green.svg')" aria-hidden="true"></span>
             </button></li>
             <li><button type="button" class="start-menu__item" data-window="contact">
-              <span class="start-menu__item-icon" style="--icon-url: url('/assets/icons/address-book.png')" aria-hidden="true"></span>
+              <span class="start-menu__item-icon" style="--icon-url: url('/assets/icons/email.png')" aria-hidden="true"></span>
               <span class="start-menu__item-label">Contact</span>
               <span class="start-menu__item-arrow" style="--icon-url: url('/assets/icons/submenu-arrow-green.svg')" aria-hidden="true"></span>
             </button></li>
@@ -141,19 +141,19 @@
   <div class="desktop" id="desktop">
     <div class="desktop__icons">
       <button type="button" class="desktop-icon" data-window="hero" aria-label="Open About Me">
-        <span class="desktop-icon__img" style="--icon-url: url('/assets/icons/windows-xp.png')" aria-hidden="true"></span>
+        <span class="desktop-icon__img" style="--icon-url: url('/assets/icons/my-computer.png')" aria-hidden="true"></span>
         <span class="desktop-icon__label">About Me</span>
       </button>
       <button type="button" class="desktop-icon" data-window="experience" aria-label="Open Experience">
-        <span class="desktop-icon__img" style="--icon-url: url('/assets/icons/resume.svg')" aria-hidden="true"></span>
+        <span class="desktop-icon__img" style="--icon-url: url('/assets/icons/briefcase.png')" aria-hidden="true"></span>
         <span class="desktop-icon__label">Experience</span>
       </button>
       <button type="button" class="desktop-icon" data-window="projects" aria-label="Open Projects">
-        <span class="desktop-icon__img" style="--icon-url: url('/assets/icons/python.svg')" aria-hidden="true"></span>
+        <span class="desktop-icon__img" style="--icon-url: url('/assets/icons/slideshow.png')" aria-hidden="true"></span>
         <span class="desktop-icon__label">Projects</span>
       </button>
       <button type="button" class="desktop-icon" data-window="contact" aria-label="Open Contact">
-        <span class="desktop-icon__img" style="--icon-url: url('/assets/icons/github.svg')" aria-hidden="true"></span>
+        <span class="desktop-icon__img" style="--icon-url: url('/assets/icons/email.png')" aria-hidden="true"></span>
         <span class="desktop-icon__label">Contact</span>
       </button>
     </div>
@@ -164,7 +164,7 @@
 
   <!-- Hero Window -->
   <section class="window" id="window-hero" data-window="hero" data-default-open="true"
-            style="--win-left: 6vw; --win-top: 8vh; --win-w: 640px; --win-h: 580px;">
+            style="--win-left: calc(50vw - 340px); --win-top: calc(50vh - 330px); --win-w: 680px; --win-h: 660px;">
     <header class="window__titlebar" data-drag-handle>
       <span class="window__title">About Me</span>
       <button type="button" class="window__close" data-close aria-label="Close"></button>
@@ -175,7 +175,7 @@
       <h1 class="hero__title fade-in">Kien Pham</h1>
       <p class="hero__role fade-in">Data Scientist · Southern California</p>
       <p class="hero__subtitle fade-in">
-        Computer Science student at CSU, Long Beach, specializing in <b>Data Science</b>. Experienced in developing real-time computer vision systems and multi-agent AI architectures, with a strong focus on performance optimization and production-ready design. Have fun creating end-to-end ML projects.
+        I build and <b>deploy machine learning systems</b>, specializing in <b>Data Science</b>, <b>NLP</b>, and <b>Computer Vision</b>. B.S. in Computer Science from CSU Long Beach, admitted to the Master's program at Georgia Tech. Open to opportunities to turn data into real-world impact.
       </p>
       <div class="hero__skills fade-in">
         <span class="skill"><span class="skill__icon" style="--icon-url: url('/assets/icons/pytorch.svg')"></span>PyTorch</span>
@@ -195,7 +195,7 @@
         <span class="skill"><span class="skill__icon" style="--icon-url: url('/assets/icons/javascript.svg')"></span>JavaScript</span>
         <span class="skill"><span class="skill__icon" style="--icon-url: url('/assets/icons/aws.svg')"></span>AWS</span>
       </div>
-      <p class="hero__education fade-in">B.S. Computer Science, California State University, Long Beach</p>
+      <p class="hero__education fade-in">B.S. Computer Science, CSU Long Beach · M.S. (admitted), Georgia Institute of Technology</p>
       <button type="button" class="hero__cta fade-in" data-open-window="projects">
         View My Projects <span class="arrow">&rarr;</span>
       </button>

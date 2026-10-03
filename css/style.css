@@ -771,7 +771,6 @@ img {
 
 #window-hero .window__body {
   padding: 0;
-  background: linear-gradient(160deg, var(--xp-taskbar-light) 0%, var(--xp-desktop) 55%, var(--xp-titlebar-dark) 100%);
 }
 
 .window--fullscreen {
@@ -815,59 +814,55 @@ img {
    Hero Section
    =========================== */
 .hero {
-  padding: 2rem 0;
+  padding: 1.5rem 0;
 }
 
 .hero__container {
   max-width: 600px;
   margin: 0 auto;
-  padding: 1.5rem 2rem 2.5rem;
+  padding: 1.25rem 2rem 1.75rem;
   text-align: center;
 }
 
 .hero__title {
   font-family: var(--font-heading);
-  font-size: clamp(3.5rem, 8vw, 6rem);
+  font-size: clamp(2.4rem, 6vw, 3.2rem);
   font-weight: 700;
   line-height: 1.05;
-  margin-bottom: 0.75rem;
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  margin-bottom: 0.5rem;
+  color: var(--text);
 }
 
 .hero__role {
   font-family: var(--font-hand);
-  font-size: 1.35rem;
-  color: var(--xp-titlebar-pale);
+  font-size: 1.2rem;
+  color: var(--primary-accent);
   letter-spacing: 0.02em;
-  margin-bottom: 1.25rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  margin-bottom: 1rem;
 }
 
 .hero__subtitle {
-  font-size: 1.05rem;
-  color: rgba(255, 255, 255, 0.88);
-  line-height: 1.75;
-  margin-bottom: 2rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
 }
 
 .hero__skills {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.6rem;
-  margin-bottom: 1.5rem;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
   max-width: 520px;
   margin-left: auto;
   margin-right: auto;
 }
 
 .hero__education {
-  font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 2.5rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
 }
 
 .hero__cta {
