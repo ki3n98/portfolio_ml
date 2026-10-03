@@ -277,7 +277,7 @@
         <div class="gd-info__media" id="gd-info-media" aria-hidden="true">
           <video class="gd-info__media-video" id="gd-info-media-video" muted loop playsinline preload="metadata"></video>
           <img class="gd-info__media-img" id="gd-info-media-img" alt="" />
-          <iframe class="gd-info__media-embed" id="gd-info-media-embed" title="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          <iframe class="gd-info__media-embed" id="gd-info-media-embed" title="" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
           <div class="gd-info__media-type" id="gd-info-media-type"></div>
           <div class="gd-info__media-text" id="gd-info-media-text"></div>
         </div>
@@ -300,7 +300,10 @@
         <div class="gd-overview__grid" id="gd-overview-grid"></div>
       </div>
 
-      <div class="gd-scroll-hint" id="gd-scroll-hint">Scroll to follow the optimization path</div>
+      <div class="gd-scroll-hint" id="gd-scroll-hint">
+        <span class="gd-scroll-hint__text">Scroll to follow the optimization path</span>
+        <span class="gd-scroll-hint__arrow" aria-hidden="true"></span>
+      </div>
     </div>
 
     <div class="gd-steps">

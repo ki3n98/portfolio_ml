@@ -381,7 +381,7 @@ setInterval(updateTrayClock, 30000);
       secondaryLabel: 'Devpost',
       step: 'Step 2 - Descending',
       mediaType: 'Video',
-      mediaEmbed: 'https://www.youtube.com/embed/okCDJyBionU?start=40&autoplay=1&mute=1&playsinline=1&rel=0',
+      mediaEmbed: 'https://www.youtube-nocookie.com/embed/okCDJyBionU?start=40&autoplay=1&mute=1&playsinline=1&rel=0',
       mediaText: '911 Operator demo video',
     },
     {
@@ -408,7 +408,7 @@ setInterval(updateTrayClock, 30000);
       secondaryLabel: 'Devpost',
       step: 'Step 4 - Local Optimum',
       mediaType: 'Video',
-      mediaEmbed: 'https://www.youtube.com/embed/SqQycaZNr4Q?start=115&autoplay=1&mute=1&playsinline=1&rel=0',
+      mediaEmbed: 'https://www.youtube-nocookie.com/embed/SqQycaZNr4Q?start=115&autoplay=1&mute=1&playsinline=1&rel=0',
       mediaText: 'DocGenix demo',
     },
     {
