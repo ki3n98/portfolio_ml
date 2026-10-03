@@ -44,18 +44,22 @@
             <li><button type="button" class="start-menu__item" data-window="hero">
               <span class="start-menu__item-icon" style="--icon-url: url('/assets/icons/my-computer.png')" aria-hidden="true"></span>
               <span class="start-menu__item-label">About Me</span>
+              <span class="start-menu__item-arrow" style="--icon-url: url('/assets/icons/submenu-arrow-green.svg')" aria-hidden="true"></span>
             </button></li>
             <li><button type="button" class="start-menu__item" data-window="experience">
               <span class="start-menu__item-icon" style="--icon-url: url('/assets/icons/briefcase.png')" aria-hidden="true"></span>
               <span class="start-menu__item-label">Experience</span>
+              <span class="start-menu__item-arrow" style="--icon-url: url('/assets/icons/submenu-arrow-green.svg')" aria-hidden="true"></span>
             </button></li>
             <li><button type="button" class="start-menu__item" data-window="projects">
               <span class="start-menu__item-icon" style="--icon-url: url('/assets/icons/my-documents.png')" aria-hidden="true"></span>
               <span class="start-menu__item-label">Projects</span>
+              <span class="start-menu__item-arrow" style="--icon-url: url('/assets/icons/submenu-arrow-green.svg')" aria-hidden="true"></span>
             </button></li>
             <li><button type="button" class="start-menu__item" data-window="contact">
               <span class="start-menu__item-icon" style="--icon-url: url('/assets/icons/address-book.png')" aria-hidden="true"></span>
               <span class="start-menu__item-label">Contact</span>
+              <span class="start-menu__item-arrow" style="--icon-url: url('/assets/icons/submenu-arrow-green.svg')" aria-hidden="true"></span>
             </button></li>
             <li class="start-menu__divider" role="separator"></li>
             <li><button type="button" class="start-menu__item" disabled>
@@ -74,7 +78,7 @@
             <li><button type="button" class="start-menu__item start-menu__item--all" disabled>
               <span class="start-menu__item-icon" style="--icon-url: url('/assets/icons/start-menu-programs.png')" aria-hidden="true"></span>
               <span class="start-menu__item-label">All Programs</span>
-              <span class="start-menu__item-arrow" aria-hidden="true">&#9656;</span>
+              <span class="start-menu__item-arrow" style="--icon-url: url('/assets/icons/submenu-arrow-green.svg')" aria-hidden="true"></span>
             </button></li>
           </ul>
           <ul class="start-menu__col start-menu__col--right">
@@ -103,18 +107,17 @@
               <span class="start-menu__item-icon" style="--icon-url: url('/assets/icons/help-support.png')" aria-hidden="true"></span>
               Help and Support
             </button></li>
+            <li class="start-menu__divider" role="separator"></li>
+            <li><button type="button" class="start-menu__item start-menu__item--right" disabled>
+              <span class="start-menu__item-icon start-menu__item-icon--bordered" style="--icon-url: url('/assets/icons/logoff.png')" aria-hidden="true"></span>
+              Log off
+            </button></li>
+            <li><button type="button" class="start-menu__item start-menu__item--right" disabled>
+              <span class="start-menu__item-icon" style="--icon-url: url('/assets/icons/turn-off.png')" aria-hidden="true"></span>
+              Turn Off Computer
+            </button></li>
           </ul>
         </div>
-        <footer class="start-menu__footer">
-          <button type="button" class="start-menu__power" disabled>
-            <span class="start-menu__power-icon" style="--icon-url: url('/assets/icons/key.png')" aria-hidden="true"></span>
-            Log Off
-          </button>
-          <button type="button" class="start-menu__power" disabled>
-            <span class="start-menu__power-icon" style="--icon-url: url('/assets/icons/turn-off.png')" aria-hidden="true"></span>
-            Turn Off Computer
-          </button>
-        </footer>
       </div>
       <div class="nav__windows" id="nav-windows" aria-label="Open windows"></div>
       <div class="nav__tray" aria-label="Quick links and clock">

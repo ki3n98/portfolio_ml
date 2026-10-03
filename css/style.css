@@ -439,12 +439,13 @@ img {
 
 .start-menu__item-arrow {
   margin-left: auto;
-  font-size: 0.7rem;
-  color: var(--xp-titlebar-mid);
-}
-
-.start-menu__item--all:not(:disabled):hover .start-menu__item-arrow {
-  color: #fff;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  background-image: var(--icon-url);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 .start-menu__divider {
@@ -457,44 +458,9 @@ img {
   flex: 1 1 auto;
 }
 
-.start-menu__footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  flex-shrink: 0;
-  padding: 0.5rem 0.7rem;
-  background: var(--xp-titlebar-mid);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.start-menu__power {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: none;
-  border: none;
-  font-family: inherit;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #fff;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
-  padding: 0.3rem 0.5rem;
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-.start-menu__power:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.start-menu__power-icon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-  background-image: var(--icon-url);
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
+.start-menu__item-icon--bordered {
+  border: 1.5px solid #fff;
+  border-radius: 4px;
 }
 
 @media (max-width: 480px) {
