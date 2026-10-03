@@ -1,0 +1,437 @@
+﻿# NLP Juvenile Detection — Presenter Script
+Spotlight / TRSS — "What 86 models taught us about detecting Juvenile escort ads"
+
+
+
+
+---
+
+
+## Slide 1 — Title
+* My Project focuses on text classification
+* Text classification is one of the most fascinating problems in NLP. 
+* Researchers wanted to know: 
+* How much can language alone tell us about the person behind it? 
+* Can a few sentences give away Age, gender, mood, and intent.
+
+
+* That question turns out to be directly relevant to one of the highest-stakes problems in law enforcement today: 
+* That is identifying juvenile victims of sex trafficking. 
+* That's the exact problem Spotlight was built to help investigators with, and this project set out to make it better.
+
+
+
+
+## Slide 2 — Agenda
+Five stops: 
+* Introduction — why this project exists. 
+* Methodology — how the data and evaluation were built
+* Result —
+* Deep Dives — what the models actually learned, and how pairing text with the existing image classifier performs. 
+* Discussion/Next Steps — questions, and what ships next.
+
+
+## Slide 3 — Spotlight
+* Spotlight collects escort advertisements from public websites and analyzes them to help surface information about suspected juvenile trafficking victims to law enforcement
+* Built and maintained by Canary in partnership with TRSS
+* The impact so far has been substantial:
+   * Since 2016,
+   * Spotlight has helped identify 28,459 children and 28,926 traffickers
+   * And for investigators using it day to day, it’s cut research time by 50%
+
+
+## Slide 4 — Spotlight’s Gap
+* This is a real, redacted ad pulled from Spotlight 
+* The images and text are blurred and scrambled. 
+* Today, the juvenile flag is driven almost entirely by an image classifier.
+* When an ad’s photos are run through the classifier, and it detects a signal of a suspected minor, Spotlight pops up a warning banner as you can see here:
+   * “This ad features a suspected juvenile” - and prompts an investigator to confirm the age.
+* But look at the second half of the ad: the text. 
+   * None of that text is being analyzed as a signal for juvenile detection.
+* That’s the gap: 
+   * Spotlight currently relies on an image classifier — the text in these ads is largely untapped, and it's a huge amount of potential signal that could strengthen the system..
+
+
+## Slide 5 - Motivation
+* Given that gap, we set out with this project to answer three questions.
+* First: Can an NLP model actually improve the classifier’s performance
+* Second: Can this give law enforcement real insight into the language being used so investigators understand why an ad was flagged? 
+* And third: Is this worth pursuing? Does the effort of building and maintaining a text model pay off in real value? 
+* And spoiler: the answer to all three turned out to be yes!
+
+
+## Slide 6 — Methodology
+Approach bullets: 
+* 11 embeddings crossed with up to 10 classifiers, plus a zero-shot Opus 4.8 pass, total to 86 ML models, 
+* Every one run through an identical split and evaluation protocol, so comparisons across models are apples-to-apples. 
+* The baseline for everything is Spotlight's current production image classifier
+
+
+Data bullets: 
+* My dataset starts at 100,000 samples of Ads from 2025. Only 15,700 are labeled. After deduplication, the sample size is 4,952; 26.3% are juvenile. 
+* We stratified into a 70/15/15 split. 
+   * 70% of the data is used for training, where the model actually learns from.
+   * - 15% is validation — it’s used to tune and check the model while building it
+   * - last 15% is for test — held back and never touched until the very end, to see how the model performs on completely new data.
+
+
+* The bar chart shows: juvenile rate sits at 26.2%, 26.1%, and 26.5% across train, val, and test, respectively — essentially identical, so no split is accidentally easier or harder than another.
+
+
+## Slide 7 — Embeddings
+* "Backbone of NLP."
+* Turns text into numbers that can capture its meaning
+* Similar meaning words stay close together in the vector space, while different meanings stay away
+* It represents words as sub-word pieces, so misspelled or altered words still resemble the correct word closely enough to be understood
+
+
+* That scatter plot is an actual 2D projection of this project's Word2Vec model, trained on the ad text corpus. 
+
+
+* The cluster of greetings words (hey/hi/hello/hola) sits together in one corner, 
+   * please/pls/plz cluster tightly together, 
+   * As you can see, even slang, abbreviations, and typos land near their intended meaning — 
+   * that's what lets a model built on this embeddings generalize better than exact keyword matching.
+
+
+## Slide 9 — Pipeline
+Verbally: 
+* So here’s the pipeline we built to turn that raw ad text into a juvenile flag
+* It breaks into 3 stages: 
+* Preprocessing or cleaning
+   * Raw ad text is messy by design. It was designed to capture customers' attention while evading detection from law enforcement.  
+   * We clean the ad by lowercasing, removing phone numbers, punctuation and special characters, and normalizing whitespace and emojis. 
+
+
+Once the text is clean, it moves to the embedding stage. 
+* Embedding:
+      * Turn words into numbers the model actually uses.
+   * We did not commit to one approach here: 
+      * We tested a range, from simple parsing and lexical features, to static word embeddings, to contextual transformer embeddings, up through large-scale embeddings
+   * A total of 11 embeddings models
+
+
+That feeds into the final stage: 
+* Classification:
+   * Again, we tested a lot of models- linear models, tree ensembles, neural networks, and deep sequence models.
+
+
+And every combination trains and evaluates on the exact same split. 
+
+
+
+
+## Slide 10 — Example
+* A single concrete walkthrough of the pipeline. "New Girl!!! Call 555-123-4567" gets preprocessed down to "new girl call" (phone number and punctuation are removed, then lowercased). 
+* That clean text goes through OpenAI's Text Embedding 3L to produce a numeric vector, 
+* which Logistic Regression scores at P(Juvenile) = 0.80 (PRED instead of P(Juv). Since that clears the 0.50 threshold, the model outputs True. 
+
+
+
+
+## Slide 9 — Metrics
+* Precision: of everything we flag as juvenile, how much did we get correct 
+* Recall: of every real juvenile ad in the data, how many did we actually catch 
+* F1 is the single metric that will be used for optimizing our models, because it balances between precision and recall, staying low if either precision or recall is low.
+
+
+
+
+
+
+
+
+## Slide 11 — 2025 Test F1 heatmap
+* This is the heatmap of the F1 score of every embedding paired with every possible classifier on the Test split.
+* "Baseline: Image Classifier's F1 = 0.50."
+   * Embeddings which turn text into numeric vector are down the rows, 
+   * Classifiers turn those numeric vector into probability are across the columns. 
+   * TextCNN, GRU, BiLSTM can only work with a sequence of per-token vectors, where every word has its own vector, and a document is naturally a variable-length sequence of those vectors.
+
+
+   * Most populated cell in this grid beats the 0.50 image-only baseline: 
+   * With just text, on its own, outperforms the current production detector 
+   * Top performers cluster around Word2Vec + TextCNN at 0.702, 
+   * TF-IDF + LinearSVC at 0.698, 
+
+
+* Worth calling out the top-right corner: Opus 4.8
+only reaches 0.405 — a frontier LLM prompted directly actually underperforms a small, purpose-trained classifier here. 
+
+
+Transition: As you can see most of the models beat the Image classifier’s F1 score of 0.5. 
+But 2025 test-set performance alone can be misleading if it’s just capturing patterns specific to that one year. 
+So, the real question is whether any of these models survives with messier, real-world ads from a different year. Thus, let's put every one of these same models in front of 2024 data they've never seen and find out.
+
+
+
+
+## Slide 12 — 2024 F1 heatmap
+EMPHASIS on the color scale ( CHANGE COLOR SCHEME)
+* This is f1 score of every combination of models on the 2024 dataset
+* New baseline of F1 = 0.617"
+* Same embedding-by-classifier grid,
+* but now I want to color the cell by its delta versus the 2025 test score. 
+* So, the color now shows the different between 2025 and 2024 f1 score!  
+*  — blue means the model held up or improved, green means it degraded. 
+
+
+* our 2025 top performer Word2Vec + TextCNN was at 0.702, collapses to 0.487 on 2024. 
+
+
+* TF-IDF + LinearSVC drops to 0.449. 
+* Our new top performer is OpenAI Text Embedding paired with LR at 0.653
+
+
+* Noticeably: Logistic Regression is the most consistent classifier, in the entire grid. Almost every cell in LR stays blue on 2024 holdout, regardless of which embedding it’s paired with.
+   * That makes sense since it’s the simplest model here. Simple linear boundaries are less prone to overfitting of one year’s ad language. So LR’s performance barely degrade when we move to unseen 2024 data. 
+* 
+
+
+
+## Slide 13 What happened?
+* Let’s see where that performance drop actually come from.
+
+
+* Here we have two bar-chart panels split precision from recall, 
+* Quick reminder:
+   * Precision is of everything the model flag as juvenile, how much did it get correct 
+   * Recall is of every real juvenile ad in the data, how many did we actually catch
+* 2025 test (light color) versus 2024 real-world holdout (darker color), 
+* And the bars are the top model per embedding. 
+* Precision drop is modest and expected. 
+   * The models that were flagging ads accurately have mostly continued to flag them accurately
+Now look at the Recall panel:  
+* TF-IDF/LinearSVC, 0.612 down to 0.313; and so on. 
+   * The models colored in blue are missing more than half the real juveniles it used to catch.
+
+
+* In this context, a recall collapse isn't just a metric moving — it's real ads with real kids in them slipping through the gap.
+
+
+* And notice which model doesn’t follow that pattern:
+   * OpenAI-3L + LR barely moves, 
+   * Its recall move from 0.750 to 0.744. 
+   * Logistic Regression pair with a large embedding model generalizes very well; 
+   * This is exactly what we saw on the heatmap
+
+
+## Slide 14 — Better together
+* Now let’s combine Text with Image Signal
+* We took the text models’ probability output and paired it with the image classifier’s existing 0/1 flag, 
+   * And fed them into a lightweight 2-feature LR, basically letting the model decide and how much to trust each signal, rather than us guessing.
+* They were trained on val+test split of previous experiemen, evaluated on the 2024 holdout. 
+
+
+* Look at these bar graphs;
+   * Light blue is the Text model alone, while dark blue is the combination of Text and Image models
+   * Green bar is the production image classifer
+   * precision stays the same between the text and combined model. 
+   * While F1 increases solely contributed by Recall
+* Meaning pairing the two signals, they catch more real victims while keeping the same confidence. 
+
+
+* So, in a 6,000 samples dataset:
+   * Image Classifier alone caught 1,494 true juveniles
+   * On average, each combined model catches about 350 more real juveniles compared to the Image Classifier (23% increase). 
+   * Keep in mind, Spotlight gets about 150,000 new ads a day. So a gain like this, scale up to 150,000 ads a day, adds up to a lot more real kids getting surface to investigators.
+
+
+
+
+
+
+
+
+Transition: So we’ve shown the combined model performs better, but F1 score alone doesn’t tell investigators why an ad got flagged. A model that just outputs a probability isn’t going to build trust with LE
+So the next question we wanted to answer is: what is the model actually picking up on? That’s where explainability comes in. 
+
+
+TRIGGER WARNING: BY THE NATURE OF THIS PROJECT, Next 2 slides will have sexual words 
+
+
+## Slide 16 — Interesting signal from words
+* To actually see what’s driving these predictions, we stepped back from the complex models and used the simplest, most interpretable one we have, which is TF-IDF paired with Logistic Regression. 
+   * Every word gets a direct, readable coefficient. 
+* But we did not train it once; we trained it 3 separate times: on 2025 data alone, on 2024 data alone, and both pooled together.
+
+
+* Words with positive coefficients (yellow bars) push toward a juvenile prediction
+* Words with negative coefficients (blue bars) push toward adult
+* * The highlighted terms — "hmu," "contact," "onlyfans" — appear as top signal in *both* the 2024-only and 2025-only models independently,
+* “Hmu” is an acronym for “hit me up” often used by teens.
+* “OnlyFans” has age verification, so if the person has an OnlyFans, then they’re most likely to be an adult
+   * With OnlyFans such a strong adult signal, maybe it is worthwhile to add an OnlyFans flag to the current system
+* This isn't a pattern the model found by memorizing one year's slang; it's a durable signal that held across years. 
+
+
+##new slide -- Concept drift
+Intro:
+* So that's a nice case where a couple of words held up over time. 
+* However, language just doesn't stay the same 
+   * the words people use, and what those words actually mean, change from year to year. 
+* So, if the words themselves are shifting under our feet, the performance of our text model will be impacted
+
+
+* This dumbbell chart shows the probability that an ad is labeled juvenile, given that a specific word appears in it 
+   * 2025 in blue and 2024 in yellow.
+
+
+* And check this out — every single word on this chart changes its juvenile signal from year to year. 
+   * Some, like "respectable," "foreign," "disrespect," swing higher in 2024 than they were in 2025. 
+   * Others, like "nude" and "dominatrix," swing the opposite way. 
+
+
+* Nothing about the words changed — they still mean what they mean. 
+* What changed is who's using them and how. 
+* And that right there is exactly what concept drift is.
+
+
+Right chart — F1 vs. concept drift:
+
+
+* Now here's the good news about concept drift
+* We can actually detect it early
+* And measure how much the vocabulary has shifted, before it tanks the model's performance. 
+
+
+That's exactly what this next chart shows.
+* The x-axis measures how much the vocabulary has actually drifted
+* The y-axis is just F1, how well the model's doing.
+
+
+* Every line here is a different model — Open-AI-Text embeding, Word2Vec, FastText, with LR and MLP versions of each. 
+* And basically all of them tell the same story: move right, drift goes up, and performance goes down. Doesn't matter which model or embedding you picked — more drift just means worse results.
+
+
+* we don't have to wait for the model to fail to know something's off. We can track drift directly, and when it starts to climb, that's our early warning sign to retrain before performance actually craters. 
+
+
+
+
+
+
+
+
+## Slide 17 - Recap
+* Let’s circle back to where we started. The three questions we set out to answer at the beginning of this project:
+* First: Does adding an NLP text model improve classifiers’ performance?
+   * Yes, Text and image combined caught roughly 350 more real juveniles than the image alone, in a 6,000-dataset
+* Second: Does it give law enforcement insight into the language being used? 
+   * Yes, the explainability work showed us consistent, durable sigal persisted across years.
+* Third: Is it worth pursuing? 
+   * Given everything we just walked through - better detection, more true positives, interpretable signal investigators can actually act on - the answer is yes. 
+* And that’s our case for moving this from research into production
+
+
+## Slide 4 — Limitation
+* I don't have access to Spotlight's database and internal system due to the sensitivity of that data
+* And so, I can't test image and text as feature together
+* Spotlight ingests roughly 150,000 new ads a day, but labeled data is far smaller than that tsunami of ads 
+* English Only
+
+
+
+
+## Slide 17 — Next Step
+* Decide which model actually ships as the second signal alongside the image classifier; 
+* try the image classifier's raw probability or its feature instead of the collapsed 0/1 flag, which likely carries more information 
+* finetune the large embedding models rather than using them off-the-shelf; 
+* * and address the current English-only limitation,
+* Since we are using NLP it is susceptible to concept drift. The great thing is concept drift can be detected early
+* Monitor for concept drift, and 
+* retrain automatically once drift is detected.
+
+
+
+
+## Slide 18 — Thank you
+
+
+
+
+That's the work — thank you.
+
+
+## Slide 19 — Questions + Discussion
+Open the floor.
+
+
+
+
+
+
+
+
+
+
+Impact of story and knowledge 
+What point to chose to highlight form particular 
+
+
+Hook: 
+* Bottom line up front
+* Tell them what you gonna tell them
+* Tell them what you told them
+
+
+Change red green color
+Use company color’s palette 
+Chose complementary color 
+
+
+(Blue Orange)
+
+
+Go deep into models if have time
+
+
+
+
+CLEAN UP FIRST 2 text slides SHORTENED THEM
+GO CRAZY ON STYLING for more impactful get it
+
+
+DANA must know the within 2 min
+
+
+
+
+
+
+
+
+Explanability: 
+Make a point of Investigator can learn from this EARLY
+Understand what model in the model resemble real world
+
+
+Stretch presentation: 
+Talk briefly how important Juv detection (BROADLY)
+Language in NLP has been interested determine demographic for decade. Like sentiment
+
+
+
+
+ONLY FAN: 
+Optimization 
+
+
+CONCEPT DRIFT put in explanbility
+Language people change overtime 
+
+
+Give trigger warning 
+
+
+
+
+START WITH WHYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
+
+
+List out the use case of Juv detection
+
+
+EMBEDDING:
+Give a little history of keyword matching and why it’s inefficient 
+Explanation

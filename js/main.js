@@ -17,76 +17,310 @@
  */
 
 // ===========================
+// 0. Boot Screen (wallpaper preload gate)
+// ===========================
+(function () {
+  const bootScreen = document.getElementById('boot-screen');
+  if (!bootScreen) return;
+
+  const contentGroup = document.getElementById('boot-screen-content');
+  const flagImg = bootScreen.querySelector('.boot-screen__flag');
+
+  const VISIBLE_MS = 2000;
+  const MAX_WAIT_MS = 5000;
+  let started = false;
+
+  function hideBootScreen() {
+    bootScreen.classList.add('boot-screen--hidden');
+    bootScreen.addEventListener('transitionend', () => bootScreen.remove(), { once: true });
+  }
+
+  function revealAndSchedule() {
+    if (started) return;
+    started = true;
+    if (contentGroup) contentGroup.classList.add('boot-screen__content--visible');
+    setTimeout(hideBootScreen, VISIBLE_MS);
+  }
+
+  if (flagImg) {
+    if (flagImg.complete && flagImg.naturalWidth > 0) {
+      revealAndSchedule();
+    } else {
+      flagImg.addEventListener('load', revealAndSchedule, { once: true });
+      flagImg.addEventListener('error', revealAndSchedule, { once: true });
+    }
+  } else {
+    revealAndSchedule();
+  }
+  setTimeout(revealAndSchedule, MAX_WAIT_MS);
+})();
+
+// ===========================
 // 1. Navigation
 // ===========================
 
-// --- Smooth Scroll for Nav Links ---
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', (e) => {
-    const href = anchor.getAttribute('href');
-    if (!href || !href.startsWith('#')) return;
+// --- Start Menu Popup ---
+const startBtn = document.getElementById('start-btn');
+const navLinks = document.getElementById('nav-links');
 
-    e.preventDefault();
-    const target = document.querySelector(href);
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
+function closeStartMenu() {
+  navLinks.classList.remove('open');
+  startBtn.setAttribute('aria-expanded', 'false');
+}
+
+function toggleStartMenu() {
+  const isOpen = navLinks.classList.toggle('open');
+  startBtn.setAttribute('aria-expanded', String(isOpen));
+}
+
+startBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  toggleStartMenu();
+});
+
+document.addEventListener('click', (e) => {
+  if (!navLinks.classList.contains('open')) return;
+  if (navLinks.contains(e.target) || startBtn.contains(e.target)) return;
+  closeStartMenu();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeStartMenu();
+});
+
+// --- Window Manager ---
+const WINDOW_IDS = ['hero', 'experience', 'projects', 'contact'];
+const windowEls = {};
+WINDOW_IDS.forEach(id => {
+  windowEls[id] = document.querySelector(`.window[data-window="${id}"]`);
+});
+
+let topZ = 10;
+const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
+
+function revealFadeInsWithin(win) {
+  win.querySelectorAll('.fade-in:not(.visible)').forEach(el => el.classList.add('visible'));
+}
+
+function isTopWindow(id) {
+  let topId = null;
+  let topZVal = -1;
+  WINDOW_IDS.forEach(wid => {
+    const w = windowEls[wid];
+    if (!w || w.hidden) return;
+    const z = parseFloat(getComputedStyle(w).getPropertyValue('--win-z')) || 0;
+    if (z > topZVal) {
+      topZVal = z;
+      topId = wid;
     }
-    // Close mobile menu if open
-    navLinks.classList.remove('open');
-    navToggle.classList.remove('active');
+  });
+  return topId === id;
+}
+
+function focusWindow(id) {
+  const win = windowEls[id];
+  if (!win) return;
+  topZ += 1;
+  win.style.setProperty('--win-z', String(topZ));
+  updateTaskbar();
+}
+
+function openWindow(id) {
+  const win = windowEls[id];
+  if (!win) return;
+  win.hidden = false;
+  focusWindow(id);
+  revealFadeInsWithin(win);
+  if (id === 'projects' && window.__gdRefresh) window.__gdRefresh();
+  closeStartMenu();
+  updateTaskbar();
+}
+
+function closeWindow(id) {
+  const win = windowEls[id];
+  if (!win) return;
+  win.hidden = true;
+  updateTaskbar();
+}
+
+function toggleOrFocusWindow(id) {
+  const win = windowEls[id];
+  if (!win) return;
+  if (win.hidden) openWindow(id);
+  else focusWindow(id);
+}
+
+// --- Taskbar window buttons ---
+const navWindows = document.getElementById('nav-windows');
+const TASKBAR_ICONS = {
+  hero: '/assets/icons/windows-xp.png',
+  experience: '/assets/icons/resume.svg',
+  projects: '/assets/icons/python.svg',
+  contact: '/assets/icons/github.svg',
+};
+const taskbarBtns = {};
+
+if (navWindows) {
+  WINDOW_IDS.forEach(id => {
+    const win = windowEls[id];
+    if (!win) return;
+    const title = win.querySelector('.window__title')?.textContent || id;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'taskbar-btn';
+    btn.dataset.window = id;
+    btn.hidden = true;
+    btn.innerHTML =
+      `<span class="taskbar-btn__icon" style="--icon-url: url('${TASKBAR_ICONS[id] || ''}')" aria-hidden="true"></span>` +
+      `<span class="taskbar-btn__label">${title}</span>`;
+    btn.addEventListener('click', () => {
+      if (win.hidden) {
+        openWindow(id);
+      } else if (isTopWindow(id)) {
+        closeWindow(id);
+      } else {
+        focusWindow(id);
+      }
+    });
+    navWindows.appendChild(btn);
+    taskbarBtns[id] = btn;
+  });
+}
+
+function updateTaskbar() {
+  WINDOW_IDS.forEach(id => {
+    const btn = taskbarBtns[id];
+    const win = windowEls[id];
+    if (!btn || !win) return;
+    btn.hidden = win.hidden;
+    btn.classList.toggle('active', !win.hidden && isTopWindow(id));
+  });
+}
+
+document.querySelectorAll('[data-window]').forEach(el => {
+  if (el.classList.contains('window')) return;
+  el.addEventListener('click', (e) => {
+    e.preventDefault();
+    toggleOrFocusWindow(el.dataset.window);
   });
 });
 
-// --- Mobile Menu Toggle ---
-const navToggle = document.getElementById('nav-toggle');
-const navLinks = document.getElementById('nav-links');
-
-navToggle.addEventListener('click', () => {
-  navToggle.classList.toggle('active');
-  navLinks.classList.toggle('open');
+document.querySelectorAll('[data-open-window]').forEach(el => {
+  el.addEventListener('click', (e) => {
+    e.preventDefault();
+    toggleOrFocusWindow(el.dataset.openWindow);
+  });
 });
 
-// --- Active Nav Link on Scroll ---
-const sections = document.querySelectorAll('section[id]');
-const navItems = document.querySelectorAll('.nav__link');
+document.querySelectorAll('[data-close]').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const win = btn.closest('.window');
+    if (win) closeWindow(win.dataset.window);
+  });
+});
 
-const navObserver = new IntersectionObserver(
-  (entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const id = entry.target.getAttribute('id');
-        navItems.forEach(link => {
-          link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
-        });
-      }
-    });
-  },
-  {
-    rootMargin: '-40% 0px -60% 0px',
+// Any stray `href="#windowId"` link (e.g. the gradient-descent info panel's
+// dynamically-populated cross-links) opens/focuses that window instead of
+// doing a no-op anchor jump to a possibly-hidden section.
+document.addEventListener('click', (e) => {
+  const link = e.target.closest('a[href^="#"]');
+  if (!link) return;
+  const id = link.getAttribute('href').slice(1);
+  if (WINDOW_IDS.includes(id)) {
+    e.preventDefault();
+    toggleOrFocusWindow(id);
   }
-);
+});
 
-sections.forEach(section => navObserver.observe(section));
+Object.values(windowEls).forEach(win => {
+  if (win) win.addEventListener('pointerdown', () => focusWindow(win.dataset.window));
+});
 
-// --- Scroll-Triggered Fade-In ---
-const fadeElements = document.querySelectorAll('.fade-in');
+// --- Window Dragging ---
+let dragState = null;
 
-const fadeObserver = new IntersectionObserver(
-  (entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        fadeObserver.unobserve(entry.target);
-      }
-    });
-  },
-  {
-    threshold: 0.15,
-    rootMargin: '0px 0px -40px 0px',
+function onTitlebarPointerDown(e) {
+  if (isMobile()) return;
+  if (e.target.closest('[data-close]')) return;
+  const titlebar = e.currentTarget;
+  const win = titlebar.closest('.window');
+  if (!win || win.classList.contains('window--fullscreen')) return;
+  focusWindow(win.dataset.window);
+  const rect = win.getBoundingClientRect();
+  dragState = {
+    win,
+    offsetX: e.clientX - rect.left,
+    offsetY: e.clientY - rect.top,
+  };
+  titlebar.setPointerCapture(e.pointerId);
+}
+
+function onTitlebarPointerMove(e) {
+  if (!dragState) return;
+  const { win, offsetX, offsetY } = dragState;
+  const navHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-height')) || 40;
+  const maxLeft = Math.max(0, window.innerWidth - win.offsetWidth);
+  const maxTop = Math.max(0, window.innerHeight - navHeight - win.offsetHeight);
+  const left = Math.min(Math.max(0, e.clientX - offsetX), maxLeft);
+  const top = Math.min(Math.max(0, e.clientY - offsetY), maxTop);
+  win.style.setProperty('--win-left', left + 'px');
+  win.style.setProperty('--win-top', top + 'px');
+}
+
+function onTitlebarPointerUp(e) {
+  if (!dragState) return;
+  dragState.win.querySelector('.window__titlebar')?.releasePointerCapture(e.pointerId);
+  dragState = null;
+}
+
+document.querySelectorAll('.window__titlebar[data-drag-handle]').forEach(titlebar => {
+  titlebar.addEventListener('pointerdown', onTitlebarPointerDown);
+});
+document.addEventListener('pointermove', onTitlebarPointerMove);
+document.addEventListener('pointerup', onTitlebarPointerUp);
+
+// --- Escape closes the topmost open window ---
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const topId = WINDOW_IDS.find(id => !windowEls[id]?.hidden && isTopWindow(id));
+  if (topId) closeWindow(topId);
+});
+
+// --- Default open state ---
+WINDOW_IDS.forEach(id => {
+  const win = windowEls[id];
+  if (!win) return;
+  if (win.dataset.defaultOpen === 'true') {
+    win.hidden = false;
+    focusWindow(id);
+    revealFadeInsWithin(win);
+  } else {
+    win.hidden = true;
   }
-);
+});
 
-fadeElements.forEach(el => fadeObserver.observe(el));
+// --- System Tray Clock (PST/PDT) ---
+const trayClock = document.getElementById('tray-clock');
+
+function updateTrayClock() {
+  const now = new Date();
+  const time = now.toLocaleTimeString('en-US', {
+    timeZone: 'America/Los_Angeles',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+  const zone = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Los_Angeles',
+    timeZoneName: 'short',
+  })
+    .formatToParts(now)
+    .find(part => part.type === 'timeZoneName').value;
+  trayClock.textContent = `${time} ${zone}`;
+}
+
+updateTrayClock();
+setInterval(updateTrayClock, 30000);
 
 // ===========================
 // 2. Gradient Descent Visualization
@@ -107,6 +341,8 @@ fadeElements.forEach(el => fadeObserver.observe(el));
    * @property {string}   [ctaLabel]      - Defaults to "View Project →"
    * @property {string}   [secondaryLink]
    * @property {string}   [secondaryLabel]
+   * @property {string}   [tertiaryLink]
+   * @property {string}   [tertiaryLabel]
    * @property {string}   step            - Label like "Step 1 - High Loss"
    * @property {string}   [mediaType]     - "Video" | "Image"
    * @property {string}   [mediaSrc]      - Local video/image path
@@ -126,6 +362,8 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       ctaLabel: 'Live Demo →',
       secondaryLink: 'https://github.com/ki3n98/shape-sign',
       secondaryLabel: 'Source Code',
+      tertiaryLink: 'https://devpost.com/software/shape-sign',
+      tertiaryLabel: 'Devpost',
       step: 'Step 1 - High Loss',
       mediaType: 'Video',
       mediaSrc: 'assets/videos/shape_sign_demo.mp4',
@@ -138,6 +376,9 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       award: 'Marina Hack 5.0 • Best Overall',
       tags: ['Pytorch', 'WhisperSTT', 'Google Geocoding API', 'Gemini', 'Next.js', 'FastAPI'],
       link: 'https://github.com/Ben2104/911-Operator-Assistant',
+      ctaLabel: 'Source Code →',
+      secondaryLink: 'https://devpost.com/software/911-operator-assistant',
+      secondaryLabel: 'Devpost',
       step: 'Step 2 - Descending',
       mediaType: 'Video',
       mediaEmbed: 'https://www.youtube.com/embed/okCDJyBionU?start=40&autoplay=1&mute=1&playsinline=1&rel=0',
@@ -161,10 +402,10 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       desc: 'AI-powered software project blueprint generator. Describe your idea, get back a full set of production-ready documentation in minutes.',
       award: 'BeachHack 9.0 2026',
       tags: ['LangChain', 'Agents', 'Multi-agent orchestration'],
-      link: 'https://docgenix-frontend-production.up.railway.app/',
-      ctaLabel: 'Live Demo →',
-      secondaryLink: 'https://github.com/zokoxa/DocGenix',
-      secondaryLabel: 'Source Code',
+      link: 'https://github.com/zokoxa/DocGenix',
+      ctaLabel: 'Source Code →',
+      secondaryLink: 'https://devpost.com/software/docsgenix',
+      secondaryLabel: 'Devpost',
       step: 'Step 4 - Local Optimum',
       mediaType: 'Video',
       mediaEmbed: 'https://www.youtube.com/embed/SqQycaZNr4Q?start=115&autoplay=1&mute=1&playsinline=1&rel=0',
@@ -275,6 +516,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const section = document.getElementById('projects');
+  const scrollRoot = document.getElementById('window-projects-body');
   const introPanel = document.querySelector('.gd-intro');
   const infoPanel = document.getElementById('gd-info');
   const infoStep = document.getElementById('gd-info-step');
@@ -284,6 +526,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
   const infoTags = document.getElementById('gd-info-tags');
   const infoLink = document.getElementById('gd-info-link');
   const infoSecondaryLink = document.getElementById('gd-info-secondary-link');
+  const infoTertiaryLink = document.getElementById('gd-info-tertiary-link');
   const infoGradient = document.getElementById('gd-info-gradient');
   const infoMedia = document.getElementById('gd-info-media');
   const infoMediaVideo = document.getElementById('gd-info-media-video');
@@ -369,7 +612,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       ctx.lineTo(padL, cy);
       ctx.stroke();
       // Label
-      ctx.font = '400 ' + fontSize + 'px Inter, sans-serif';
+      ctx.font = '400 ' + fontSize + 'px Tahoma, Verdana, sans-serif';
       ctx.fillStyle = colors.muted;
       ctx.globalAlpha = 0.3;
       ctx.textAlign = 'right';
@@ -391,7 +634,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       ctx.lineTo(cx, padT + plotH + tickLen);
       ctx.stroke();
       // Label
-      ctx.font = '400 ' + fontSize + 'px Inter, sans-serif';
+      ctx.font = '400 ' + fontSize + 'px Tahoma, Verdana, sans-serif';
       ctx.fillStyle = colors.muted;
       ctx.globalAlpha = 0.3;
       ctx.textAlign = 'center';
@@ -403,25 +646,43 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     ctx.restore();
   }
 
+  // Deterministic pseudo-random wobble (seeded by index, not time) so hand-drawn
+  // strokes stay stable across redraws instead of "buzzing" during scroll.
+  function seededJitter(i, seed) {
+    return Math.sin((i + seed) * 12.9898) * 43758.5453 % 1;
+  }
+
   function drawParabola() {
     const steps = 100;
     const drawSteps = Math.floor(state.introProgress * steps);
     if (drawSteps < 2) return;
 
+    // Multiple slightly-offset overlapping strokes fake a hand-sketched line.
+    const passes = [
+      { seed: 0, amp: 1.1, alpha: 0.55, width: 1.6 },
+      { seed: 37, amp: 0.85, alpha: 0.35, width: 1.3 },
+      { seed: 91, amp: 0.65, alpha: 0.25, width: 1.1 },
+    ];
+
     ctx.save();
-    ctx.beginPath();
-    let started = false;
-    for (let i = 0; i <= drawSteps; i++) {
-      const mx = xMin + (i / steps) * (xMax - xMin);
-      const my = f(mx);
-      if (my > yMax) { started = false; continue; }
-      const pt = mathToCanvas(mx, my);
-      if (!started) { ctx.moveTo(pt[0], pt[1]); started = true; }
-      else ctx.lineTo(pt[0], pt[1]);
-    }
-    ctx.strokeStyle = colors.primary;
-    ctx.lineWidth = 2.5;
-    ctx.stroke();
+    passes.forEach(pass => {
+      ctx.beginPath();
+      let started = false;
+      for (let i = 0; i <= drawSteps; i++) {
+        const mx = xMin + (i / steps) * (xMax - xMin);
+        const my = f(mx);
+        if (my > yMax) { started = false; continue; }
+        const pt = mathToCanvas(mx, my);
+        const jy = seededJitter(i, pass.seed) * pass.amp;
+        const jx = seededJitter(i, pass.seed + 500) * pass.amp * 0.5;
+        if (!started) { ctx.moveTo(pt[0] + jx, pt[1] + jy); started = true; }
+        else ctx.lineTo(pt[0] + jx, pt[1] + jy);
+      }
+      ctx.strokeStyle = colors.text;
+      ctx.globalAlpha = pass.alpha;
+      ctx.lineWidth = pass.width;
+      ctx.stroke();
+    });
     ctx.restore();
   }
 
@@ -444,57 +705,47 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     ctx.save();
     ctx.globalAlpha = Math.min(1, dotT * 2);
 
-    // Pulsing glow ring for active
+    // Hand-drawn scribble ring circling the active dot (ink emphasis, no glow)
     if (isActive && scale >= 0.95) {
-      const pulse = Math.sin(performance.now() * 0.003) * 0.5 + 0.5;
-      const pulseRadius = radius + 6 + pulse * 4;
-      const pulseAlpha = 0.12 + pulse * 0.1;
+      const ringR = radius + 8;
+      const ringSteps = 44;
       ctx.beginPath();
-      ctx.arc(cx, cy, pulseRadius, 0, Math.PI * 2);
+      for (let s = 0; s <= ringSteps; s++) {
+        const ang = (s / ringSteps) * Math.PI * 2;
+        const wob = seededJitter(s, i * 13) * 2;
+        const rx = cx + Math.cos(ang) * (ringR + wob);
+        const ry = cy + Math.sin(ang) * (ringR + wob);
+        if (s === 0) ctx.moveTo(rx, ry); else ctx.lineTo(rx, ry);
+      }
       ctx.strokeStyle = colors.primary;
-      ctx.globalAlpha = pulseAlpha;
+      ctx.globalAlpha = 0.6 * Math.min(1, dotT * 2);
       ctx.lineWidth = 1.5;
       ctx.stroke();
-      // Second ring
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius + 4, 0, Math.PI * 2);
-      ctx.globalAlpha = 0.2;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = Math.min(1, dotT * 2);
     }
 
-    // Glow
-    if (isActive || isHovered) {
-      ctx.shadowColor = colors.primary;
-      ctx.shadowBlur = isActive ? 12 : 8;
-    }
-
-    // Main dot
+    // Main dot: flat ink fill (active dot in red-pen, others in ink-black)
     ctx.beginPath();
     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.fillStyle = colors.primary;
+    ctx.fillStyle = isActive ? colors.primary : colors.text;
     ctx.fill();
 
     // Inner dot for active
     if (isActive && scale >= 0.95) {
-      ctx.shadowBlur = 0;
       ctx.beginPath();
       ctx.arc(cx, cy, 4 * scale, 0, Math.PI * 2);
       ctx.fillStyle = colors.bg;
       ctx.fill();
     }
 
-    ctx.shadowBlur = 0;
-
     // Step label (fade in with dot)
     if (scale > 0.6) {
       const labelAlpha = (scale - 0.6) / 0.4;
-      const fontSize = Math.max(11, Math.min(W, H) * 0.016);
-      ctx.font = '500 ' + fontSize + 'px Inter, sans-serif';
+      const fontSize = Math.max(12, Math.min(W, H) * 0.017);
+      ctx.font = '400 ' + fontSize + 'px "Patrick Hand", cursive';
       ctx.fillStyle = isActive ? colors.text : colors.muted;
       ctx.textAlign = 'left';
-      ctx.globalAlpha = (isActive ? 0.9 : 0.5) * labelAlpha;
+      ctx.globalAlpha = (isActive ? 0.95 : 0.6) * labelAlpha;
       ctx.fillText('Step ' + (i + 1), cx + radius + 10, cy + 4);
     }
 
@@ -517,10 +768,10 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     ctx.beginPath();
     ctx.moveTo(ptA[0], ptA[1]);
     ctx.lineTo(ptB[0], ptB[1]);
-    ctx.setLineDash([8, 5]);
-    ctx.strokeStyle = colors.text;
-    ctx.globalAlpha = 0.45;
-    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 4]);
+    ctx.strokeStyle = colors.medium;
+    ctx.globalAlpha = 0.6;
+    ctx.lineWidth = 1.4;
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.restore();
@@ -531,9 +782,9 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     const count = Math.floor(state.dotReveal);
 
     ctx.save();
-    ctx.setLineDash([3, 6]);
+    ctx.setLineDash([3, 4]);
     ctx.strokeStyle = colors.medium;
-    ctx.globalAlpha = 0.25;
+    ctx.globalAlpha = 0.35;
     ctx.lineWidth = 1;
 
     for (let i = 0; i < count - 1; i++) {
@@ -552,7 +803,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     if (state.activeIndex < 0 || state.activeIndex >= N - 1 || state.tangentProgress < 0.3 || state.dotReveal < state.activeIndex + 2) return;
     const fromX = PROJECTS[state.activeIndex].x;
     const toX = PROJECTS[state.activeIndex + 1].x;
-    const trailAlpha = 0.2 * Math.min(1, (state.tangentProgress - 0.3) / 0.4);
+    const trailAlpha = 0.3 * Math.min(1, (state.tangentProgress - 0.3) / 0.4);
 
     ctx.save();
     ctx.beginPath();
@@ -564,9 +815,9 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       if (i === 0) ctx.moveTo(pt[0], pt[1]);
       else ctx.lineTo(pt[0], pt[1]);
     }
-    ctx.strokeStyle = colors.primary;
+    ctx.strokeStyle = colors.medium;
     ctx.globalAlpha = trailAlpha;
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 3;
     ctx.stroke();
     ctx.restore();
   }
@@ -616,7 +867,7 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     const pt = mathToCanvas(1.2, 3.5);
 
     ctx.save();
-    ctx.font = 'italic 400 ' + fontSize + 'px "Playfair Display", Georgia, serif';
+    ctx.font = 'italic 400 ' + fontSize + 'px Tahoma, Verdana, sans-serif';
     ctx.fillStyle = colors.muted;
     ctx.globalAlpha = labelAlpha;
     ctx.textAlign = 'center';
@@ -682,14 +933,16 @@ fadeElements.forEach(el => fadeObserver.observe(el));
 
   function scrollToProjectIndex(idx) {
     if (idx < 0 || idx >= N) return;
-    const sectionTop = window.scrollY + section.getBoundingClientRect().top;
+    const scrollRootRect = scrollRoot.getBoundingClientRect();
+    const rect = section.getBoundingClientRect();
+    const sectionTop = scrollRoot.scrollTop + (rect.top - scrollRootRect.top);
     const scrollable = section.offsetHeight - window.innerHeight;
     if (scrollable <= 0) return;
 
     const phaseNudge = idx === 0 ? 0.08 : 0;
     const targetProgress = (idx + 1 + phaseNudge) / TOTAL_STEPS;
     const targetTop = sectionTop + scrollable * targetProgress;
-    window.scrollTo({ top: targetTop, behavior: 'smooth' });
+    scrollRoot.scrollTo({ top: targetTop, behavior: 'smooth' });
   }
 
   function handleOverviewClick(e) {
@@ -957,6 +1210,18 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       infoSecondaryLink.removeAttribute('href');
       infoSecondaryLink.removeAttribute('download');
     }
+
+    infoTertiaryLink.hidden = !proj.tertiaryLink;
+    infoTertiaryLink.classList.toggle('is-hidden', !proj.tertiaryLink);
+    if (proj.tertiaryLink) {
+      infoTertiaryLink.href = proj.tertiaryLink;
+      infoTertiaryLink.textContent = proj.tertiaryLabel || 'Learn More';
+      const isExternalTertiary = /^https?:\/\//i.test(proj.tertiaryLink);
+      infoTertiaryLink.target = isExternalTertiary ? '_blank' : '';
+      infoTertiaryLink.rel = isExternalTertiary ? 'noopener noreferrer' : '';
+    } else {
+      infoTertiaryLink.removeAttribute('href');
+    }
   }
 
   function updateInfo(idx) {
@@ -1063,9 +1328,10 @@ fadeElements.forEach(el => fadeObserver.observe(el));
       overviewGrid.addEventListener('click', handleOverviewClick);
     }
 
-    // Scroll listener (RAF-throttled)
+    // Scroll listener (RAF-throttled) — the Projects window's own scroll
+    // container is the scroll root now, not the document.
     let ticking = false;
-    window.addEventListener('scroll', () => {
+    scrollRoot.addEventListener('scroll', () => {
       if (!ticking) {
         requestAnimationFrame(() => {
           onScroll();
@@ -1086,6 +1352,13 @@ fadeElements.forEach(el => fadeObserver.observe(el));
     });
 
     onScroll();
+
+    // Exposed so the window manager can re-measure the canvas (it has zero
+    // size while the Projects window is hidden/closed) when it's opened.
+    window.__gdRefresh = () => {
+      resize();
+      onScroll();
+    };
   }
 
   document.fonts ? document.fonts.ready.then(init) : init();
