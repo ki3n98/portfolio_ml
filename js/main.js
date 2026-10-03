@@ -200,11 +200,11 @@ function toggleOrFocusWindow(id) {
 // --- Taskbar window buttons ---
 const navWindows = document.getElementById('nav-windows');
 const TASKBAR_ICONS = {
-  hero: 'assets/icons/my-computer.png',
-  experience: 'assets/icons/briefcase.png',
-  projects: 'assets/icons/slideshow.png',
-  contact: 'assets/icons/email.png',
-  resume: 'assets/icons/resume-pdf.png',
+  hero: '../assets/icons/my-computer.png',
+  experience: '../assets/icons/briefcase.png',
+  projects: '../assets/icons/slideshow.png',
+  contact: '../assets/icons/email.png',
+  resume: '../assets/icons/resume-pdf.png',
 };
 const taskbarBtns = {};
 
