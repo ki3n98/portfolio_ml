@@ -906,6 +906,7 @@ img {
   color: var(--text-muted);
   line-height: 1.6;
   margin-bottom: 1.5rem;
+  text-align: left;
 }
 
 .hero__skills {
@@ -1015,12 +1016,21 @@ img {
   box-shadow: 0 1px 0 var(--xp-bevel-light);
 }
 
-.experience-card__eyebrow {
-  margin: 0 0 0.5rem;
+.experience-card__date {
+  flex-shrink: 0;
   font-family: var(--font-hand);
-  font-size: 0.95rem;
+  font-size: 0.8rem;
+  font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--primary-accent);
+  background: var(--xp-face);
+  border: 1px solid var(--xp-bevel-shadow);
+  border-radius: 2px;
+  padding: 0.3rem 0.65rem;
+  box-shadow:
+    inset 1px 1px 0 var(--xp-bevel-light),
+    inset -1px -1px 0 var(--xp-bevel-dark);
+  white-space: nowrap;
 }
 
 .experience-card__title {
@@ -1064,6 +1074,13 @@ img {
 
 .experience-card__list li:last-child {
   margin-bottom: 0;
+}
+
+.experience-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
 }
 
 /* ===========================
