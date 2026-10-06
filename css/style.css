@@ -2090,17 +2090,109 @@ img {
    Notepad App
    =========================== */
 #window-notepad .window__body {
+  display: flex;
+  flex-direction: column;
   padding: 0;
+}
+
+.notepad__menubar {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.3rem 0.6rem;
+  background: var(--xp-face);
+  border-bottom: 1px solid var(--xp-bevel-shadow);
+}
+
+.notepad__menu {
+  position: relative;
+}
+
+.notepad__menu-item {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--text);
+  background: none;
+  border: 1px solid transparent;
+  padding: 0.15rem 0.5rem;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.notepad__menu-item:hover,
+.notepad__menu-item[aria-expanded="true"] {
+  color: #fff;
+  background: var(--xp-titlebar-mid);
+  border-color: var(--xp-titlebar-dark);
+}
+
+.notepad__menu-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  z-index: 20;
+  min-width: 170px;
+  flex-direction: column;
+  padding: 2px;
+  background: var(--xp-face);
+  border: 1px solid var(--xp-bevel-dark);
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.notepad__menu-dropdown.open {
+  display: flex;
+}
+
+.notepad__menu-option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--text);
+  background: none;
+  border: 1px solid transparent;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+}
+
+.notepad__menu-option:hover {
+  color: #fff;
+  background: var(--xp-titlebar-mid);
+  border-color: var(--xp-titlebar-dark);
+}
+
+.notepad__menu-option--checked::before {
+  content: '\2713';
+  display: inline-block;
+  width: 1.1em;
+  margin-left: -1.1em;
+}
+
+.notepad__menu-option--checked {
+  padding-left: calc(0.6rem + 1.1em);
+}
+
+.notepad__menu-divider {
+  height: 1px;
+  margin: 3px 2px;
+  background: var(--xp-bevel-shadow);
+  box-shadow: 0 1px 0 var(--xp-bevel-light);
 }
 
 .notepad__textarea {
   display: block;
   box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
-  height: 100%;
   margin: 0;
   padding: 0.75rem 0.85rem;
-  border: 1px solid var(--xp-bevel-dark);
+  border: none;
   outline: none;
   resize: none;
   font-family: var(--font-body);
@@ -2108,9 +2200,25 @@ img {
   line-height: 1.5;
   color: var(--text);
   background: var(--xp-face);
-  box-shadow:
-    inset 1px 1px 2px var(--xp-bevel-shadow),
-    inset -1px -1px 0 var(--xp-bevel-light);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.notepad__textarea--nowrap {
+  white-space: pre;
+  word-wrap: normal;
+  overflow-x: auto;
+}
+
+.notepad__statusbar {
+  flex-shrink: 0;
+  padding: 0.25rem 0.6rem;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--text);
+  background: var(--xp-face);
+  border-top: 1px solid var(--xp-bevel-shadow);
+  box-shadow: inset 0 1px 0 var(--xp-bevel-light);
 }
 
 /* ===========================

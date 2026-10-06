@@ -466,7 +466,51 @@
       </div>
     </header>
     <div class="window__body">
+      <div class="notepad__menubar" id="notepad-menubar">
+        <div class="notepad__menu">
+          <button type="button" class="notepad__menu-item" data-notepad-menu="file" aria-haspopup="true" aria-expanded="false">File</button>
+          <div class="notepad__menu-dropdown" data-notepad-dropdown="file">
+            <button type="button" class="notepad__menu-option" data-notepad-action="new">New</button>
+            <button type="button" class="notepad__menu-option" data-notepad-action="save">Save As&hellip;</button>
+            <div class="notepad__menu-divider"></div>
+            <button type="button" class="notepad__menu-option" data-notepad-action="exit">Exit</button>
+          </div>
+        </div>
+        <div class="notepad__menu">
+          <button type="button" class="notepad__menu-item" data-notepad-menu="edit" aria-haspopup="true" aria-expanded="false">Edit</button>
+          <div class="notepad__menu-dropdown" data-notepad-dropdown="edit">
+            <button type="button" class="notepad__menu-option" data-notepad-action="undo">Undo</button>
+            <div class="notepad__menu-divider"></div>
+            <button type="button" class="notepad__menu-option" data-notepad-action="cut">Cut</button>
+            <button type="button" class="notepad__menu-option" data-notepad-action="copy">Copy</button>
+            <div class="notepad__menu-divider"></div>
+            <button type="button" class="notepad__menu-option" data-notepad-action="select-all">Select All</button>
+            <button type="button" class="notepad__menu-option" data-notepad-action="time-date">Time/Date</button>
+          </div>
+        </div>
+        <div class="notepad__menu">
+          <button type="button" class="notepad__menu-item" data-notepad-menu="format" aria-haspopup="true" aria-expanded="false">Format</button>
+          <div class="notepad__menu-dropdown" data-notepad-dropdown="format">
+            <button type="button" class="notepad__menu-option" data-notepad-action="word-wrap" id="notepad-wordwrap-option">Word Wrap</button>
+          </div>
+        </div>
+        <div class="notepad__menu">
+          <button type="button" class="notepad__menu-item" data-notepad-menu="view" aria-haspopup="true" aria-expanded="false">View</button>
+          <div class="notepad__menu-dropdown" data-notepad-dropdown="view">
+            <button type="button" class="notepad__menu-option" data-notepad-action="status-bar" id="notepad-statusbar-option">Status Bar</button>
+          </div>
+        </div>
+        <div class="notepad__menu">
+          <button type="button" class="notepad__menu-item" data-notepad-menu="help" aria-haspopup="true" aria-expanded="false">Help</button>
+          <div class="notepad__menu-dropdown" data-notepad-dropdown="help">
+            <button type="button" class="notepad__menu-option" data-notepad-action="about">About Notepad</button>
+          </div>
+        </div>
+      </div>
       <textarea class="notepad__textarea" id="notepad-textarea" spellcheck="false" aria-label="Notepad text area"></textarea>
+      <div class="notepad__statusbar" id="notepad-statusbar" hidden>
+        <span id="notepad-status-pos">Ln 1, Col 1</span>
+      </div>
     </div>
     <div class="window__resize-handle" data-resize-handle aria-hidden="true"></div>
   </section>
