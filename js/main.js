@@ -89,7 +89,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 // --- Window Manager ---
-const WINDOW_IDS = ['hero', 'experience', 'projects', 'contact', 'resume', 'paint', 'notepad', 'calculator'];
+const WINDOW_IDS = ['hero', 'experience', 'projects', 'contact', 'resume', 'paint', 'notepad', 'calculator', 'my-computer', 'my-documents', 'my-pictures'];
 const windowEls = {};
 WINDOW_IDS.forEach(id => {
   windowEls[id] = document.querySelector(`.window[data-window="${id}"]`);
@@ -208,6 +208,9 @@ const TASKBAR_ICONS = {
   paint: '../assets/icons/paint.png',
   notepad: '../assets/icons/notepad.png',
   calculator: '../assets/icons/calculator.png',
+  'my-computer': '../assets/icons/my-computer.png',
+  'my-documents': '../assets/icons/my-documents.png',
+  'my-pictures': '../assets/icons/my-pictures.png',
 };
 const taskbarBtns = {};
 
@@ -250,7 +253,8 @@ function updateTaskbar() {
 
 document.querySelectorAll('[data-window]').forEach(el => {
   if (el.classList.contains('window')) return;
-  el.addEventListener('click', (e) => {
+  const eventName = el.classList.contains('desktop-icon') ? 'dblclick' : 'click';
+  el.addEventListener(eventName, (e) => {
     e.preventDefault();
     toggleOrFocusWindow(el.dataset.window);
   });
@@ -556,12 +560,23 @@ if (notepadTextarea && notepadMenubar) {
           updateNotepadStatus();
           break;
         case 'save': {
-          const blob = new Blob([notepadTextarea.value], { type: 'text/plain' });
-          const link = document.createElement('a');
-          link.download = 'Untitled.txt';
-          link.href = URL.createObjectURL(blob);
-          link.click();
-          URL.revokeObjectURL(link.href);
+          const content = notepadTextarea.value;
+          openSaveAsDialog({
+            defaultName: 'Untitled.txt',
+            fileType: 'Text Documents (*.txt)',
+            onSave: (name) => {
+              saveFileToFolder('my-documents', {
+                type: 'file',
+                label: name,
+                icon: '../assets/icons/notepad.png',
+                action: () => {
+                  toggleOrFocusWindow('notepad');
+                  notepadTextarea.value = content;
+                  updateNotepadStatus();
+                },
+              });
+            },
+          });
           break;
         }
         case 'exit':
@@ -622,6 +637,399 @@ if (notepadTextarea && notepadMenubar) {
 
   wordWrapOption?.classList.add('notepad__menu-option--checked');
 }
+
+// --- File Explorer (My Computer / My Documents / My Pictures) ---
+function openReadme() {
+  toggleOrFocusWindow('notepad');
+  if (notepadTextarea) {
+    notepadTextarea.value = 'Thanks for poking around!\n\nThis whole desktop - the windows, the taskbar, Paint, Notepad, '
+      + 'the Calculator, this file explorer - is hand-built by Kien Pham to show both software engineering chops and a '
+      + 'bit of nostalgia for Windows XP.\n\nCheck out the Resume.pdf in this folder, or head back to the desktop to see '
+      + 'the rest of the portfolio.';
+  }
+}
+
+const EXPLORER_FOLDERS = {
+  'my-computer': {
+    title: 'My Computer',
+    icon: '../assets/icons/my-computer.png',
+    parent: null,
+    description: 'System Folder',
+    tasks: [
+      { label: 'View system information', icon: '../assets/icons/sys-info.png', action: () => alert('Kien\'s Portfolio Desktop\n\nBuilt with HTML, CSS, and vanilla JavaScript.\n\nNo frameworks were harmed in the making of this XP simulation.') },
+      { label: 'Add or remove programs', icon: '../assets/icons/add-remove-programs.png', disabled: true },
+      { label: 'Change a setting', icon: '../assets/icons/system-properties.png', disabled: true },
+    ],
+    items: [
+      { type: 'folder', key: 'my-documents', label: 'My Documents', icon: '../assets/icons/my-documents.png' },
+      { type: 'folder', key: 'my-pictures', label: 'My Pictures', icon: '../assets/icons/my-pictures.png' },
+      { type: 'folder', key: 'local-disk-c', label: 'Local Disk (C:)', icon: '../assets/icons/local-disk.png' },
+    ],
+  },
+  'my-documents': {
+    title: 'My Documents',
+    icon: '../assets/icons/my-documents.png',
+    parent: 'my-computer',
+    description: 'File Folder',
+    tasks: [
+      { label: 'Make a new folder', icon: '../assets/icons/new-folder.png', disabled: true },
+      { label: 'Publish this folder to the web', icon: '../assets/icons/publish-web.png', disabled: true },
+      { label: 'Share this folder', icon: '../assets/icons/shared-folder.png', disabled: true },
+    ],
+    items: [
+      { type: 'folder', key: 'my-pictures', label: 'My Pictures', icon: '../assets/icons/my-pictures.png' },
+      { type: 'file', label: 'Resume.pdf', icon: '../assets/icons/resume-pdf.png', action: () => toggleOrFocusWindow('resume') },
+      { type: 'file', label: 'readme.txt', icon: '../assets/icons/notepad.png', action: openReadme },
+    ],
+  },
+  'my-pictures': {
+    title: 'My Pictures',
+    icon: '../assets/icons/my-pictures.png',
+    parent: 'my-computer',
+    description: 'File Folder',
+    tasks: [
+      { label: 'View as a slide show', icon: '../assets/icons/slideshow-task.png', action: () => startSlideshow('my-pictures') },
+      { label: 'Order prints online', icon: '../assets/icons/publish-web.png', disabled: true },
+      { label: 'Print pictures', icon: '../assets/icons/print-photos.png', disabled: true },
+    ],
+    items: [
+      { type: 'image', label: 'kien-pham.jpg', icon: '../assets/icons/jpg-file.png', src: 'assets/img/emi.jpg' },
+      { type: 'image', label: 'bliss.jpg', icon: '../assets/icons/jpg-file.png', src: 'assets/img/bliss-bg.jpg' },
+      { type: 'image', label: 'meadow.jpg', icon: '../assets/icons/jpg-file.png', src: 'assets/img/9owhc7wuc65b1.jpg' },
+    ],
+  },
+  'local-disk-c': {
+    title: 'Local Disk (C:)',
+    icon: '../assets/icons/local-disk.png',
+    parent: 'my-computer',
+    description: 'Local Disk',
+    items: [
+      { type: 'folder', key: 'my-documents', label: 'Documents and Settings', icon: '../assets/icons/folder.png' },
+      { type: 'file', label: 'boot.ini', icon: '../assets/icons/notepad.png', disabled: true },
+    ],
+  },
+};
+
+let pictureViewerEl = null;
+let slideshowTimer = null;
+
+function stopSlideshow() {
+  if (slideshowTimer) {
+    clearInterval(slideshowTimer);
+    slideshowTimer = null;
+  }
+}
+
+function startSlideshow(folderKey) {
+  const images = EXPLORER_FOLDERS[folderKey].items.filter(item => item.type === 'image');
+  if (!images.length) return;
+  stopSlideshow();
+  let i = 0;
+  openPictureViewer(images[i].src, images[i].label);
+  slideshowTimer = setInterval(() => {
+    i = (i + 1) % images.length;
+    openPictureViewer(images[i].src, images[i].label);
+  }, 2500);
+}
+
+function closePictureViewer() {
+  stopSlideshow();
+  pictureViewerEl?.classList.remove('open');
+}
+
+function openPictureViewer(src, label) {
+  if (!pictureViewerEl) {
+    pictureViewerEl = document.createElement('div');
+    pictureViewerEl.className = 'picture-viewer';
+    pictureViewerEl.innerHTML = `
+      <div class="picture-viewer__dialog">
+        <div class="picture-viewer__titlebar">
+          <span class="picture-viewer__title"></span>
+          <button type="button" class="picture-viewer__close" aria-label="Close">&times;</button>
+        </div>
+        <div class="picture-viewer__body">
+          <img class="picture-viewer__img" alt="">
+        </div>
+      </div>
+    `;
+    document.body.appendChild(pictureViewerEl);
+    pictureViewerEl.querySelector('.picture-viewer__close').addEventListener('click', closePictureViewer);
+    pictureViewerEl.addEventListener('click', (e) => {
+      if (e.target === pictureViewerEl) closePictureViewer();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closePictureViewer();
+    });
+  }
+  pictureViewerEl.querySelector('.picture-viewer__title').textContent = label;
+  const img = pictureViewerEl.querySelector('.picture-viewer__img');
+  img.src = src;
+  img.alt = label;
+  pictureViewerEl.classList.add('open');
+}
+
+const explorerInstances = [];
+
+function refreshExplorerIfOpen(key) {
+  explorerInstances.forEach(inst => inst.refreshIfShowing(key));
+}
+
+function saveFileToFolder(folderKey, entry) {
+  const folder = EXPLORER_FOLDERS[folderKey];
+  const extMatch = entry.label.match(/(\.[^.]+)$/);
+  const ext = extMatch ? extMatch[0] : '';
+  const base = ext ? entry.label.slice(0, -ext.length) : entry.label;
+  let label = entry.label;
+  let n = 1;
+  while (folder.items.some(it => !it.isSaved && it.label.toLowerCase() === label.toLowerCase())) {
+    label = `${base} (${n})${ext}`;
+    n++;
+  }
+  entry.label = label;
+  entry.isSaved = true;
+
+  const existingIdx = folder.items.findIndex(it => it.isSaved && it.label.toLowerCase() === label.toLowerCase());
+  if (existingIdx >= 0) folder.items[existingIdx] = entry;
+  else folder.items.push(entry);
+
+  refreshExplorerIfOpen(folderKey);
+}
+
+let saveDialogEl = null;
+let saveDialogOnSave = null;
+
+function closeSaveDialog() {
+  saveDialogEl?.classList.remove('open');
+  saveDialogOnSave = null;
+}
+
+function openSaveAsDialog({ title = 'Save As', defaultName, fileType, saveInKey = 'my-documents', onSave }) {
+  if (!saveDialogEl) {
+    saveDialogEl = document.createElement('div');
+    saveDialogEl.className = 'save-dialog';
+    saveDialogEl.innerHTML = `
+      <div class="save-dialog__dialog">
+        <div class="save-dialog__titlebar">
+          <span class="save-dialog__title"></span>
+          <button type="button" class="save-dialog__close" aria-label="Close">&times;</button>
+        </div>
+        <div class="save-dialog__body">
+          <div class="save-dialog__row">
+            <label>Save in:</label>
+            <div class="save-dialog__savein">
+              <span class="save-dialog__savein-icon" aria-hidden="true"></span>
+              <span class="save-dialog__savein-label"></span>
+            </div>
+          </div>
+          <div class="save-dialog__filelist"></div>
+          <div class="save-dialog__row">
+            <label>File name:</label>
+            <input type="text" class="save-dialog__filename-input" autocomplete="off">
+          </div>
+          <div class="save-dialog__row">
+            <label>Save as type:</label>
+            <div class="save-dialog__filetype"></div>
+          </div>
+          <div class="save-dialog__actions">
+            <button type="button" class="save-dialog__btn save-dialog__btn--save">Save</button>
+            <button type="button" class="save-dialog__btn save-dialog__btn--cancel">Cancel</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(saveDialogEl);
+
+    const nameInput = saveDialogEl.querySelector('.save-dialog__filename-input');
+    const doSave = () => {
+      const name = nameInput.value.trim();
+      if (!name) return;
+      const callback = saveDialogOnSave;
+      closeSaveDialog();
+      callback?.(name);
+    };
+
+    saveDialogEl.querySelector('.save-dialog__close').addEventListener('click', closeSaveDialog);
+    saveDialogEl.querySelector('.save-dialog__btn--cancel').addEventListener('click', closeSaveDialog);
+    saveDialogEl.querySelector('.save-dialog__btn--save').addEventListener('click', doSave);
+    nameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') doSave();
+    });
+    saveDialogEl.addEventListener('click', (e) => {
+      if (e.target === saveDialogEl) closeSaveDialog();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && saveDialogEl.classList.contains('open')) closeSaveDialog();
+    });
+  }
+
+  const targetFolder = EXPLORER_FOLDERS[saveInKey];
+
+  saveDialogEl.querySelector('.save-dialog__title').textContent = title;
+  saveDialogEl.querySelector('.save-dialog__filetype').textContent = fileType || '';
+  saveDialogEl.querySelector('.save-dialog__savein-label').textContent = targetFolder.title;
+  saveDialogEl.querySelector('.save-dialog__savein-icon').style.setProperty('--icon-url', `url('${targetFolder.icon}')`);
+
+  const nameInput = saveDialogEl.querySelector('.save-dialog__filename-input');
+  nameInput.value = defaultName;
+
+  const fileListEl = saveDialogEl.querySelector('.save-dialog__filelist');
+  fileListEl.innerHTML = targetFolder.items.filter(item => item.type !== 'folder').map(item => {
+    const iconUrl = item.icon || '../assets/icons/folder.png';
+    return `<button type="button" class="save-dialog__file" data-name="${item.label}">`
+      + `<span class="save-dialog__file-icon" style="--icon-url: url('${iconUrl}')" aria-hidden="true"></span>${item.label}</button>`;
+  }).join('');
+  fileListEl.querySelectorAll('[data-name]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      nameInput.value = btn.dataset.name;
+      nameInput.focus();
+    });
+  });
+
+  saveDialogOnSave = onSave;
+  saveDialogEl.classList.add('open');
+  nameInput.focus();
+  nameInput.select();
+}
+
+function initExplorerWindow(windowId) {
+  const win = windowEls[windowId];
+  const explorerEl = win?.querySelector('[data-explorer]');
+  if (!explorerEl) return;
+
+  const rootKey = explorerEl.dataset.explorerRoot;
+  const titleEl = win.querySelector('[data-explorer-title]');
+  const addrIconEl = explorerEl.querySelector('[data-explorer-address-icon]');
+  const addrTextEl = explorerEl.querySelector('[data-explorer-address-text]');
+  const contentEl = explorerEl.querySelector('[data-explorer-content]');
+  const sidebarEl = explorerEl.querySelector('[data-explorer-sidebar]');
+  const statusEl = explorerEl.querySelector('[data-explorer-status]');
+  const backBtn = explorerEl.querySelector('[data-explorer-back]');
+  const fwdBtn = explorerEl.querySelector('[data-explorer-forward]');
+  const upBtn = explorerEl.querySelector('[data-explorer-up]');
+
+  let history = [rootKey];
+  let historyIndex = 0;
+
+  function sidebarSection(title, listHtml) {
+    return `<div class="explorer__sidebar-section">
+      <button type="button" class="explorer__sidebar-header">
+        <span>${title}</span>
+        <span class="explorer__sidebar-chevron" aria-hidden="true">&#9650;</span>
+      </button>
+      <div class="explorer__sidebar-list">${listHtml}</div>
+    </div>`;
+  }
+
+  function renderSidebar(currentKey) {
+    const folder = EXPLORER_FOLDERS[currentKey];
+    let html = '';
+
+    if (folder.tasks && folder.tasks.length) {
+      const tasksHtml = folder.tasks.map((task, i) => {
+        return `<button type="button" class="explorer__sidebar-link" data-task="${i}" ${task.disabled ? 'disabled' : ''}>`
+          + `<span class="explorer__sidebar-link-icon" style="--icon-url: url('${task.icon}')" aria-hidden="true"></span>${task.label}</button>`;
+      }).join('');
+      html += sidebarSection('System Tasks', tasksHtml);
+    }
+
+    const others = Object.keys(EXPLORER_FOLDERS)
+      .filter(key => key !== currentKey && key !== 'local-disk-c');
+    const placesHtml = others.map(key => {
+      const f = EXPLORER_FOLDERS[key];
+      return `<button type="button" class="explorer__sidebar-link" data-goto="${key}">`
+        + `<span class="explorer__sidebar-link-icon" style="--icon-url: url('${f.icon}')" aria-hidden="true"></span>${f.title}</button>`;
+    }).join('');
+    html += sidebarSection('Other Places', placesHtml);
+
+    const detailsHtml = `<div class="explorer__sidebar-details">
+      <span class="explorer__sidebar-details-icon" style="--icon-url: url('${folder.icon}')" aria-hidden="true"></span>
+      <span class="explorer__sidebar-details-text">
+        <span class="explorer__sidebar-details-title">${folder.title}</span>
+        <span class="explorer__sidebar-details-desc">${folder.description || ''}</span>
+      </span>
+    </div>`;
+    html += sidebarSection('Details', detailsHtml);
+
+    sidebarEl.innerHTML = html;
+
+    sidebarEl.querySelectorAll('[data-goto]').forEach(btn => {
+      btn.addEventListener('click', () => navigate(btn.dataset.goto));
+    });
+    sidebarEl.querySelectorAll('[data-task]').forEach(btn => {
+      btn.addEventListener('click', () => folder.tasks[Number(btn.dataset.task)].action?.());
+    });
+    sidebarEl.querySelectorAll('.explorer__sidebar-header').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.closest('.explorer__sidebar-section').classList.toggle('explorer__sidebar-section--collapsed');
+      });
+    });
+  }
+
+  function render(key) {
+    const folder = EXPLORER_FOLDERS[key];
+    if (!folder) return;
+    if (titleEl) titleEl.textContent = folder.title;
+    if (addrTextEl) addrTextEl.textContent = folder.title;
+    if (addrIconEl) addrIconEl.style.setProperty('--icon-url', `url('${folder.icon}')`);
+
+    contentEl.innerHTML = '';
+    folder.items.forEach(item => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'explorer__item';
+      if (item.disabled) btn.disabled = true;
+      const iconUrl = item.icon || (item.type === 'image' ? '../assets/icons/jpg-file.png' : '../assets/icons/folder.png');
+      btn.innerHTML = `<span class="explorer__item-icon" style="--icon-url: url('${iconUrl}')" aria-hidden="true"></span>`
+        + `<span class="explorer__item-label">${item.label}</span>`;
+      btn.addEventListener('click', () => {
+        contentEl.querySelectorAll('.explorer__item--selected').forEach(b => b.classList.remove('explorer__item--selected'));
+        btn.classList.add('explorer__item--selected');
+        if (item.type === 'folder') navigate(item.key);
+        else if (item.type === 'image') openPictureViewer(item.src, item.label);
+        else if (item.action) item.action();
+      });
+      contentEl.appendChild(btn);
+    });
+
+    if (statusEl) statusEl.textContent = `${folder.items.length} object${folder.items.length === 1 ? '' : 's'}`;
+    if (backBtn) backBtn.disabled = historyIndex <= 0;
+    if (fwdBtn) fwdBtn.disabled = historyIndex >= history.length - 1;
+    if (upBtn) upBtn.disabled = !folder.parent;
+    renderSidebar(key);
+  }
+
+  function navigate(key) {
+    history = history.slice(0, historyIndex + 1);
+    history.push(key);
+    historyIndex = history.length - 1;
+    render(key);
+  }
+
+  backBtn?.addEventListener('click', () => {
+    if (historyIndex <= 0) return;
+    historyIndex--;
+    render(history[historyIndex]);
+  });
+  fwdBtn?.addEventListener('click', () => {
+    if (historyIndex >= history.length - 1) return;
+    historyIndex++;
+    render(history[historyIndex]);
+  });
+  upBtn?.addEventListener('click', () => {
+    const folder = EXPLORER_FOLDERS[history[historyIndex]];
+    if (folder?.parent) navigate(folder.parent);
+  });
+
+  render(rootKey);
+
+  explorerInstances.push({
+    refreshIfShowing(key) {
+      if (history[historyIndex] === key) render(key);
+    },
+  });
+}
+
+['my-computer', 'my-documents', 'my-pictures'].forEach(initExplorerWindow);
 
 // --- Calculator App ---
 const calculator = document.getElementById('calculator');
@@ -1329,10 +1737,19 @@ if (paintCanvas) {
   paintClearBtn?.addEventListener('click', clearCanvas);
 
   function savePaintImage() {
-    const link = document.createElement('a');
-    link.download = 'untitled.png';
-    link.href = paintCanvas.toDataURL('image/png');
-    link.click();
+    openSaveAsDialog({
+      defaultName: 'Untitled.png',
+      fileType: '24-bit Bitmap (*.png)',
+      saveInKey: 'my-pictures',
+      onSave: (name) => {
+        saveFileToFolder('my-pictures', {
+          type: 'image',
+          label: name,
+          icon: '../assets/icons/jpg-file.png',
+          src: paintCanvas.toDataURL('image/png'),
+        });
+      },
+    });
   }
 
   function selectAll() {
