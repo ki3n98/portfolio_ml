@@ -89,7 +89,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 // --- Window Manager ---
-const WINDOW_IDS = ['hero', 'experience', 'projects', 'contact', 'resume'];
+const WINDOW_IDS = ['hero', 'experience', 'projects', 'contact', 'resume', 'paint', 'notepad', 'calculator'];
 const windowEls = {};
 WINDOW_IDS.forEach(id => {
   windowEls[id] = document.querySelector(`.window[data-window="${id}"]`);
@@ -205,6 +205,9 @@ const TASKBAR_ICONS = {
   projects: '../assets/icons/slideshow.png',
   contact: '../assets/icons/email.png',
   resume: '../assets/icons/resume-pdf.png',
+  paint: '../assets/icons/paint.png',
+  notepad: '../assets/icons/notepad.png',
+  calculator: '../assets/icons/calculator.png',
 };
 const taskbarBtns = {};
 
@@ -484,6 +487,889 @@ if (contactForm) {
         contactSubmitBtn.disabled = false;
       });
   });
+}
+
+// --- Calculator App ---
+const calculator = document.getElementById('calculator');
+
+if (calculator) {
+  const calcDisplay = document.getElementById('calculator-display');
+  const MAX_DIGITS = 15;
+
+  let currentOperand = '0';
+  let previousOperand = null;
+  let operator = null;
+  let overwrite = true;
+  let errorState = false;
+
+  function updateCalcDisplay() {
+    calcDisplay.textContent = errorState ? 'Error' : currentOperand;
+  }
+
+  function resetCalculator() {
+    currentOperand = '0';
+    previousOperand = null;
+    operator = null;
+    overwrite = true;
+    errorState = false;
+    updateCalcDisplay();
+  }
+
+  function computeResult(a, b, op) {
+    const x = parseFloat(a);
+    const y = parseFloat(b);
+    let result;
+    switch (op) {
+      case '+': result = x + y; break;
+      case '−': result = x - y; break;
+      case '×': result = x * y; break;
+      case '÷':
+        if (y === 0) return null;
+        result = x / y;
+        break;
+      default: return null;
+    }
+    return parseFloat(result.toPrecision(12));
+  }
+
+  function inputDigit(digit) {
+    if (errorState) return;
+    if (overwrite) {
+      currentOperand = digit;
+      overwrite = false;
+    } else if (currentOperand.replace('-', '').length < MAX_DIGITS) {
+      currentOperand = currentOperand === '0' ? digit : currentOperand + digit;
+    }
+    updateCalcDisplay();
+  }
+
+  function inputDecimal() {
+    if (errorState) return;
+    if (overwrite) {
+      currentOperand = '0.';
+      overwrite = false;
+    } else if (!currentOperand.includes('.')) {
+      currentOperand += '.';
+    }
+    updateCalcDisplay();
+  }
+
+  function inputOperator(nextOperator) {
+    if (errorState) return;
+    if (operator !== null && !overwrite) {
+      const result = computeResult(previousOperand, currentOperand, operator);
+      if (result === null) {
+        errorState = true;
+        updateCalcDisplay();
+        return;
+      }
+      previousOperand = String(result);
+      currentOperand = String(result);
+    } else {
+      previousOperand = currentOperand;
+    }
+    operator = nextOperator;
+    overwrite = true;
+  }
+
+  function inputEquals() {
+    if (errorState || operator === null) return;
+    const result = computeResult(previousOperand, currentOperand, operator);
+    if (result === null) {
+      errorState = true;
+      updateCalcDisplay();
+      return;
+    }
+    currentOperand = String(result);
+    previousOperand = null;
+    operator = null;
+    overwrite = true;
+    updateCalcDisplay();
+  }
+
+  calculator.querySelectorAll('[data-calc-digit]').forEach(btn => {
+    btn.addEventListener('click', () => inputDigit(btn.dataset.calcDigit));
+  });
+  calculator.querySelectorAll('[data-calc-op]').forEach(btn => {
+    btn.addEventListener('click', () => inputOperator(btn.dataset.calcOp));
+  });
+  calculator.querySelector('[data-calc-decimal]')?.addEventListener('click', inputDecimal);
+  calculator.querySelector('[data-calc-equals]')?.addEventListener('click', inputEquals);
+  calculator.querySelector('[data-calc-clear]')?.addEventListener('click', resetCalculator);
+}
+
+// --- Paint App ---
+const paintCanvas = document.getElementById('paint-canvas');
+
+if (paintCanvas) {
+  const paintWrap = paintCanvas.closest('.paint__canvas-wrap');
+  const paintOverlay = document.getElementById('paint-overlay');
+  const paintCtx = paintCanvas.getContext('2d');
+  const overlayCtx = paintOverlay.getContext('2d');
+  const paintClearBtn = document.getElementById('paint-clear');
+  const paintCurrentColor = document.getElementById('paint-current-color');
+  const paintCanvasSize = document.getElementById('paint-canvas-size');
+  const paintToolButtons = document.querySelectorAll('.paint__tool');
+  const paintMenubar = document.getElementById('paint-menubar');
+  const paintColorPicker = document.getElementById('paint-color-picker');
+
+  let paintColor = '#000000';
+  let activeTool = 'pencil';
+  let dropperReturnTool = null;
+  let drawing = false;
+  let shapeStart = null;
+  let zoomIndex = 0;
+  const zoomSteps = [1, 1.5, 2, 3];
+  const undoStack = [];
+
+  let selection = null; // { canvas, x, y, w, h }
+  let selDragMode = 'none'; // 'none' | 'marquee' | 'move'
+  let marqueeStart = null;
+  let marqueePoints = null;
+  let moveGrab = null;
+
+  let polygonPoints = [];
+  let curveStage = 0;
+  let curveStart = null;
+  let curveEnd = null;
+  let curveBend1 = null;
+
+  let textInput = null;
+  let textPos = null;
+
+  function clearOverlay() {
+    overlayCtx.clearRect(0, 0, paintOverlay.width, paintOverlay.height);
+  }
+
+  function pushUndo() {
+    undoStack.push(paintCtx.getImageData(0, 0, paintCanvas.width, paintCanvas.height));
+    if (undoStack.length > 25) undoStack.shift();
+  }
+
+  function undo() {
+    if (!undoStack.length) return;
+    resetInteractionState();
+    paintCtx.putImageData(undoStack.pop(), 0, 0);
+  }
+
+  function applyZoom(scale) {
+    const idx = zoomSteps.indexOf(scale);
+    zoomIndex = idx >= 0 ? idx : 0;
+    paintCanvas.style.transform = scale === 1 ? '' : `scale(${scale})`;
+    paintCanvas.style.transformOrigin = '0 0';
+    paintOverlay.style.transform = paintCanvas.style.transform;
+    paintOverlay.style.transformOrigin = '0 0';
+  }
+
+  function resizeCanvas() {
+    const { width, height } = paintWrap.getBoundingClientRect();
+    if (width === 0 || height === 0) return;
+
+    const snapshot = document.createElement('canvas');
+    snapshot.width = paintCanvas.width;
+    snapshot.height = paintCanvas.height;
+    snapshot.getContext('2d').drawImage(paintCanvas, 0, 0);
+
+    paintCanvas.width = width;
+    paintCanvas.height = height;
+    paintOverlay.width = width;
+    paintOverlay.height = height;
+    paintCtx.fillStyle = '#ffffff';
+    paintCtx.fillRect(0, 0, width, height);
+    if (snapshot.width > 0 && snapshot.height > 0) {
+      paintCtx.drawImage(snapshot, 0, 0);
+    }
+
+    if (paintCanvasSize) {
+      paintCanvasSize.textContent = `${Math.round(width)} x ${Math.round(height)}`;
+    }
+  }
+
+  new ResizeObserver(resizeCanvas).observe(paintWrap);
+
+  function getPos(e) {
+    const rect = paintOverlay.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) / rect.width * paintCanvas.width,
+      y: (e.clientY - rect.top) / rect.height * paintCanvas.height,
+    };
+  }
+
+  function hexToRgb(hex) {
+    const n = parseInt(hex.replace('#', ''), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+
+  function rgbToHex(r, g, b) {
+    return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+  }
+
+  function setPaintColor(hex) {
+    paintColor = hex;
+    if (paintCurrentColor) paintCurrentColor.style.background = paintColor;
+  }
+
+  function commitSelection() {
+    if (!selection) return;
+    paintCtx.drawImage(selection.canvas, selection.x, selection.y);
+    selection = null;
+    clearOverlay();
+  }
+
+  function commitTextInput() {
+    if (!textInput) return;
+    const value = textInput.value;
+    if (value && textPos) {
+      pushUndo();
+      paintCtx.font = '20px sans-serif';
+      paintCtx.fillStyle = paintColor;
+      paintCtx.textBaseline = 'top';
+      paintCtx.fillText(value, textPos.x, textPos.y);
+    }
+    textInput.remove();
+    textInput = null;
+    textPos = null;
+  }
+
+  function resetInteractionState() {
+    commitSelection();
+    commitTextInput();
+    polygonPoints = [];
+    curveStage = 0;
+    curveStart = null;
+    curveEnd = null;
+    curveBend1 = null;
+    selDragMode = 'none';
+    marqueeStart = null;
+    marqueePoints = null;
+    clearOverlay();
+  }
+
+  function selectTool(name) {
+    if (name === activeTool) return;
+    resetInteractionState();
+    activeTool = name;
+    paintToolButtons.forEach(btn => {
+      const isActive = btn.dataset.paintTool === name;
+      btn.classList.toggle('paint__tool--active', isActive);
+      btn.setAttribute('aria-pressed', String(isActive));
+    });
+    paintOverlay.style.cursor = name === 'text' ? 'text' : name === 'zoom' ? 'zoom-in' : 'crosshair';
+  }
+
+  paintToolButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.paintTool;
+      if (!name) return;
+      if (name === 'dropper' && activeTool !== 'dropper') dropperReturnTool = activeTool;
+      selectTool(name);
+    });
+  });
+
+  // --- Freehand tools (pencil, brush, eraser, airbrush) ---
+  function strokeConfig(tool) {
+    if (tool === 'brush') return { width: 6, color: paintColor, cap: 'round' };
+    if (tool === 'eraser') return { width: 14, color: '#ffffff', cap: 'square' };
+    return { width: 2, color: paintColor, cap: 'round' };
+  }
+
+  function airbrushSpray(x, y) {
+    paintCtx.fillStyle = paintColor;
+    for (let i = 0; i < 12; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const radius = Math.random() * 8;
+      paintCtx.fillRect(x + Math.cos(angle) * radius, y + Math.sin(angle) * radius, 1, 1);
+    }
+  }
+
+  // --- Shape preview / commit ---
+  function drawShape(ctx, tool, x0, y0, x1, y1) {
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = paintColor;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    if (tool === 'line') {
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x1, y1);
+    } else if (tool === 'rect') {
+      ctx.rect(Math.min(x0, x1), Math.min(y0, y1), Math.abs(x1 - x0), Math.abs(y1 - y0));
+    } else if (tool === 'rrect') {
+      const x = Math.min(x0, x1), y = Math.min(y0, y1);
+      const w = Math.abs(x1 - x0), h = Math.abs(y1 - y0);
+      const r = Math.min(16, w / 2, h / 2);
+      if (ctx.roundRect) ctx.roundRect(x, y, w, h, r);
+      else ctx.rect(x, y, w, h);
+    } else if (tool === 'ellipse') {
+      ctx.ellipse((x0 + x1) / 2, (y0 + y1) / 2, Math.abs(x1 - x0) / 2, Math.abs(y1 - y0) / 2, 0, 0, Math.PI * 2);
+    }
+    ctx.stroke();
+  }
+
+  // --- Flood fill ---
+  function floodFill(startX, startY, hexColor) {
+    const w = paintCanvas.width, h = paintCanvas.height;
+    startX = Math.floor(startX); startY = Math.floor(startY);
+    if (startX < 0 || startY < 0 || startX >= w || startY >= h) return;
+    const img = paintCtx.getImageData(0, 0, w, h);
+    const data = img.data;
+    const [fr, fg, fb] = hexToRgb(hexColor);
+    const idx0 = (startY * w + startX) * 4;
+    const tr = data[idx0], tg = data[idx0 + 1], tb = data[idx0 + 2], ta = data[idx0 + 3];
+    if (tr === fr && tg === fg && tb === fb && ta === 255) return;
+    const matches = (i) => Math.abs(data[i] - tr) <= 24 && Math.abs(data[i + 1] - tg) <= 24 &&
+      Math.abs(data[i + 2] - tb) <= 24 && Math.abs(data[i + 3] - ta) <= 24;
+    const stack = [[startX, startY]];
+    while (stack.length) {
+      const [x, y] = stack.pop();
+      if (x < 0 || y < 0 || x >= w || y >= h) continue;
+      const i = (y * w + x) * 4;
+      if (!matches(i)) continue;
+      data[i] = fr; data[i + 1] = fg; data[i + 2] = fb; data[i + 3] = 255;
+      stack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+    }
+    paintCtx.putImageData(img, 0, 0);
+  }
+
+  // --- Text tool ---
+  function startTextInput(e) {
+    commitTextInput();
+    const wrapRect = paintWrap.getBoundingClientRect();
+    const screenLeft = e.clientX - wrapRect.left + paintWrap.scrollLeft;
+    const screenTop = e.clientY - wrapRect.top + paintWrap.scrollTop;
+    textPos = getPos(e);
+    textInput = document.createElement('input');
+    textInput.type = 'text';
+    textInput.className = 'paint__text-input';
+    textInput.style.left = `${screenLeft}px`;
+    textInput.style.top = `${screenTop}px`;
+    textInput.style.color = paintColor;
+    paintWrap.appendChild(textInput);
+    textInput.focus();
+    textInput.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter') commitTextInput();
+      if (ev.key === 'Escape') { textInput.value = ''; commitTextInput(); }
+    });
+    textInput.addEventListener('blur', () => commitTextInput());
+  }
+
+  // --- Selection tools (select / freeform) ---
+  function pointInSelection(pos) {
+    return selection && pos.x >= selection.x && pos.x <= selection.x + selection.w &&
+      pos.y >= selection.y && pos.y <= selection.y + selection.h;
+  }
+
+  function finalizeMarquee(pos) {
+    let path, bbox;
+    if (activeTool === 'freeform') {
+      const pts = marqueePoints;
+      if (!pts || pts.length < 3) { marqueePoints = null; clearOverlay(); return; }
+      path = new Path2D();
+      path.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) path.lineTo(pts[i].x, pts[i].y);
+      path.closePath();
+      const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+      bbox = { x: Math.min(...xs), y: Math.min(...ys), w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) };
+    } else {
+      const x = Math.min(marqueeStart.x, pos.x), y = Math.min(marqueeStart.y, pos.y);
+      const w = Math.abs(pos.x - marqueeStart.x), h = Math.abs(pos.y - marqueeStart.y);
+      bbox = { x, y, w, h };
+      path = new Path2D();
+      path.rect(x, y, w, h);
+    }
+    if (bbox.w < 2 || bbox.h < 2) { marqueePoints = null; marqueeStart = null; clearOverlay(); return; }
+
+    const off = document.createElement('canvas');
+    off.width = bbox.w; off.height = bbox.h;
+    const offCtx = off.getContext('2d');
+    offCtx.save();
+    offCtx.translate(-bbox.x, -bbox.y);
+    offCtx.clip(path);
+    offCtx.drawImage(paintCanvas, 0, 0);
+    offCtx.restore();
+
+    pushUndo();
+    paintCtx.save();
+    paintCtx.clip(path);
+    paintCtx.fillStyle = '#ffffff';
+    paintCtx.fillRect(bbox.x, bbox.y, bbox.w, bbox.h);
+    paintCtx.restore();
+
+    selection = { canvas: off, x: bbox.x, y: bbox.y, w: bbox.w, h: bbox.h };
+    drawSelectionOverlay();
+    marqueeStart = null;
+    marqueePoints = null;
+  }
+
+  function drawSelectionOverlay() {
+    clearOverlay();
+    if (!selection) return;
+    overlayCtx.drawImage(selection.canvas, selection.x, selection.y);
+    overlayCtx.save();
+    overlayCtx.setLineDash([4, 3]);
+    overlayCtx.strokeStyle = '#000000';
+    overlayCtx.lineWidth = 1;
+    overlayCtx.strokeRect(selection.x + 0.5, selection.y + 0.5, selection.w, selection.h);
+    overlayCtx.restore();
+  }
+
+  // --- Polygon tool ---
+  function drawPolygonPreview(current) {
+    clearOverlay();
+    overlayCtx.lineWidth = 2;
+    overlayCtx.strokeStyle = paintColor;
+    overlayCtx.lineCap = 'round';
+    overlayCtx.lineJoin = 'round';
+    overlayCtx.beginPath();
+    overlayCtx.moveTo(polygonPoints[0].x, polygonPoints[0].y);
+    for (let i = 1; i < polygonPoints.length; i++) overlayCtx.lineTo(polygonPoints[i].x, polygonPoints[i].y);
+    if (current) overlayCtx.lineTo(current.x, current.y);
+    overlayCtx.stroke();
+  }
+
+  function finalizePolygon() {
+    if (polygonPoints.length < 2) { polygonPoints = []; clearOverlay(); return; }
+    pushUndo();
+    paintCtx.lineWidth = 2;
+    paintCtx.strokeStyle = paintColor;
+    paintCtx.lineCap = 'round';
+    paintCtx.lineJoin = 'round';
+    paintCtx.beginPath();
+    paintCtx.moveTo(polygonPoints[0].x, polygonPoints[0].y);
+    for (let i = 1; i < polygonPoints.length; i++) paintCtx.lineTo(polygonPoints[i].x, polygonPoints[i].y);
+    paintCtx.closePath();
+    paintCtx.stroke();
+    polygonPoints = [];
+    clearOverlay();
+  }
+
+  // --- Curve tool (drag for the line, then two clicks to bend it) ---
+  function resetCurve() {
+    curveStage = 0;
+    curveStart = null;
+    curveEnd = null;
+    curveBend1 = null;
+    clearOverlay();
+  }
+
+  // --- Pointer handlers ---
+  paintOverlay.addEventListener('pointerdown', (e) => {
+    const pos = getPos(e);
+
+    if (activeTool === 'text') { startTextInput(e); return; }
+
+    if (activeTool === 'zoom') {
+      applyZoom(zoomSteps[(zoomIndex + 1) % zoomSteps.length]);
+      return;
+    }
+
+    if (activeTool === 'dropper') {
+      const d = paintCtx.getImageData(Math.floor(pos.x), Math.floor(pos.y), 1, 1).data;
+      setPaintColor(rgbToHex(d[0], d[1], d[2]));
+      if (dropperReturnTool) selectTool(dropperReturnTool);
+      return;
+    }
+
+    if (activeTool === 'fill') {
+      pushUndo();
+      floodFill(pos.x, pos.y, paintColor);
+      return;
+    }
+
+    if (activeTool === 'polygon') {
+      polygonPoints.push(pos);
+      drawPolygonPreview(null);
+      return;
+    }
+
+    if (activeTool === 'curve') {
+      if (curveStage === 0) {
+        curveStart = pos;
+        drawing = true;
+        curveStage = 1;
+        paintOverlay.setPointerCapture(e.pointerId);
+      } else if (curveStage === 2) {
+        curveBend1 = pos;
+        curveStage = 3;
+      } else if (curveStage === 3) {
+        const bend2 = pos;
+        pushUndo();
+        paintCtx.lineWidth = 2;
+        paintCtx.strokeStyle = paintColor;
+        paintCtx.lineCap = 'round';
+        paintCtx.beginPath();
+        paintCtx.moveTo(curveStart.x, curveStart.y);
+        paintCtx.bezierCurveTo(curveBend1.x, curveBend1.y, bend2.x, bend2.y, curveEnd.x, curveEnd.y);
+        paintCtx.stroke();
+        resetCurve();
+      }
+      return;
+    }
+
+    if (activeTool === 'select' || activeTool === 'freeform') {
+      if (selection && pointInSelection(pos)) {
+        selDragMode = 'move';
+        moveGrab = { dx: pos.x - selection.x, dy: pos.y - selection.y };
+      } else {
+        commitSelection();
+        selDragMode = 'marquee';
+        marqueeStart = pos;
+        if (activeTool === 'freeform') marqueePoints = [pos];
+      }
+      paintOverlay.setPointerCapture(e.pointerId);
+      drawing = true;
+      return;
+    }
+
+    if (activeTool === 'line' || activeTool === 'rect' || activeTool === 'rrect' || activeTool === 'ellipse') {
+      pushUndo();
+      shapeStart = pos;
+      drawing = true;
+      paintOverlay.setPointerCapture(e.pointerId);
+      return;
+    }
+
+    // pencil, brush, eraser, airbrush
+    pushUndo();
+    drawing = true;
+    paintOverlay.setPointerCapture(e.pointerId);
+    const cfg = strokeConfig(activeTool);
+    paintCtx.lineWidth = cfg.width;
+    paintCtx.lineCap = cfg.cap;
+    paintCtx.lineJoin = 'round';
+    paintCtx.strokeStyle = cfg.color;
+    paintCtx.beginPath();
+    paintCtx.moveTo(pos.x, pos.y);
+    if (activeTool === 'airbrush') airbrushSpray(pos.x, pos.y);
+  });
+
+  paintOverlay.addEventListener('pointermove', (e) => {
+    const pos = getPos(e);
+
+    if (activeTool === 'curve' && curveStart) {
+      if (curveStage === 1 && drawing) {
+        curveEnd = pos;
+        clearOverlay();
+        overlayCtx.lineWidth = 2;
+        overlayCtx.strokeStyle = paintColor;
+        overlayCtx.lineCap = 'round';
+        overlayCtx.beginPath();
+        overlayCtx.moveTo(curveStart.x, curveStart.y);
+        overlayCtx.lineTo(pos.x, pos.y);
+        overlayCtx.stroke();
+      } else if (curveStage === 2) {
+        clearOverlay();
+        overlayCtx.lineWidth = 2;
+        overlayCtx.strokeStyle = paintColor;
+        overlayCtx.lineCap = 'round';
+        overlayCtx.beginPath();
+        overlayCtx.moveTo(curveStart.x, curveStart.y);
+        overlayCtx.quadraticCurveTo(pos.x, pos.y, curveEnd.x, curveEnd.y);
+        overlayCtx.stroke();
+      } else if (curveStage === 3) {
+        clearOverlay();
+        overlayCtx.lineWidth = 2;
+        overlayCtx.strokeStyle = paintColor;
+        overlayCtx.lineCap = 'round';
+        overlayCtx.beginPath();
+        overlayCtx.moveTo(curveStart.x, curveStart.y);
+        overlayCtx.bezierCurveTo(curveBend1.x, curveBend1.y, pos.x, pos.y, curveEnd.x, curveEnd.y);
+        overlayCtx.stroke();
+      }
+      return;
+    }
+
+    if (activeTool === 'polygon' && polygonPoints.length) {
+      drawPolygonPreview(pos);
+      return;
+    }
+
+    if (!drawing) return;
+
+    if (activeTool === 'select' || activeTool === 'freeform') {
+      if (selDragMode === 'marquee') {
+        clearOverlay();
+        overlayCtx.save();
+        overlayCtx.setLineDash([4, 3]);
+        overlayCtx.strokeStyle = '#000000';
+        overlayCtx.lineWidth = 1;
+        if (activeTool === 'freeform') {
+          marqueePoints.push(pos);
+          overlayCtx.beginPath();
+          overlayCtx.moveTo(marqueePoints[0].x, marqueePoints[0].y);
+          for (let i = 1; i < marqueePoints.length; i++) overlayCtx.lineTo(marqueePoints[i].x, marqueePoints[i].y);
+          overlayCtx.stroke();
+        } else {
+          const x = Math.min(marqueeStart.x, pos.x), y = Math.min(marqueeStart.y, pos.y);
+          overlayCtx.strokeRect(x + 0.5, y + 0.5, Math.abs(pos.x - marqueeStart.x), Math.abs(pos.y - marqueeStart.y));
+        }
+        overlayCtx.restore();
+      } else if (selDragMode === 'move' && selection) {
+        clearOverlay();
+        const nx = pos.x - moveGrab.dx, ny = pos.y - moveGrab.dy;
+        overlayCtx.drawImage(selection.canvas, nx, ny);
+        overlayCtx.save();
+        overlayCtx.setLineDash([4, 3]);
+        overlayCtx.strokeStyle = '#000000';
+        overlayCtx.lineWidth = 1;
+        overlayCtx.strokeRect(nx + 0.5, ny + 0.5, selection.w, selection.h);
+        overlayCtx.restore();
+      }
+      return;
+    }
+
+    if (activeTool === 'line' || activeTool === 'rect' || activeTool === 'rrect' || activeTool === 'ellipse') {
+      clearOverlay();
+      drawShape(overlayCtx, activeTool, shapeStart.x, shapeStart.y, pos.x, pos.y);
+      return;
+    }
+
+    // freehand
+    const cfg = strokeConfig(activeTool);
+    paintCtx.lineWidth = cfg.width;
+    paintCtx.lineCap = cfg.cap;
+    paintCtx.lineJoin = 'round';
+    paintCtx.strokeStyle = cfg.color;
+    if (activeTool === 'airbrush') {
+      airbrushSpray(pos.x, pos.y);
+    } else {
+      paintCtx.lineTo(pos.x, pos.y);
+      paintCtx.stroke();
+    }
+  });
+
+  function stopDrawing(e) {
+    if (!drawing) return;
+    drawing = false;
+    if (paintOverlay.hasPointerCapture(e.pointerId)) paintOverlay.releasePointerCapture(e.pointerId);
+
+    if (activeTool === 'curve') {
+      if (curveStage === 1) curveStage = 2;
+      return;
+    }
+
+    if (activeTool === 'select' || activeTool === 'freeform') {
+      const pos = getPos(e);
+      if (selDragMode === 'marquee') {
+        finalizeMarquee(pos);
+      } else if (selDragMode === 'move' && selection) {
+        selection.x = pos.x - moveGrab.dx;
+        selection.y = pos.y - moveGrab.dy;
+        commitSelection();
+      }
+      selDragMode = 'none';
+      return;
+    }
+
+    if (activeTool === 'line' || activeTool === 'rect' || activeTool === 'rrect' || activeTool === 'ellipse') {
+      const pos = getPos(e);
+      clearOverlay();
+      drawShape(paintCtx, activeTool, shapeStart.x, shapeStart.y, pos.x, pos.y);
+      shapeStart = null;
+    }
+  }
+
+  paintOverlay.addEventListener('pointerup', stopDrawing);
+  paintOverlay.addEventListener('pointercancel', stopDrawing);
+
+  paintOverlay.addEventListener('dblclick', () => {
+    if (activeTool === 'polygon') finalizePolygon();
+  });
+
+  document.querySelectorAll('.paint__swatch').forEach(swatch => {
+    swatch.addEventListener('click', () => {
+      setPaintColor(swatch.dataset.paintColor);
+      document.querySelectorAll('.paint__swatch').forEach(s => s.classList.remove('paint__swatch--active'));
+      swatch.classList.add('paint__swatch--active');
+    });
+  });
+
+  function clearCanvas() {
+    resetInteractionState();
+    pushUndo();
+    applyZoom(1);
+    paintCtx.fillStyle = '#ffffff';
+    paintCtx.fillRect(0, 0, paintCanvas.width, paintCanvas.height);
+  }
+
+  paintClearBtn?.addEventListener('click', clearCanvas);
+
+  function savePaintImage() {
+    const link = document.createElement('a');
+    link.download = 'untitled.png';
+    link.href = paintCanvas.toDataURL('image/png');
+    link.click();
+  }
+
+  function selectAll() {
+    resetInteractionState();
+    pushUndo();
+    if (activeTool !== 'select' && activeTool !== 'freeform') selectTool('select');
+    const w = paintCanvas.width, h = paintCanvas.height;
+    const off = document.createElement('canvas');
+    off.width = w; off.height = h;
+    off.getContext('2d').drawImage(paintCanvas, 0, 0);
+    paintCtx.fillStyle = '#ffffff';
+    paintCtx.fillRect(0, 0, w, h);
+    selection = { canvas: off, x: 0, y: 0, w, h };
+    drawSelectionOverlay();
+  }
+
+  function withSnapshot(mutate) {
+    pushUndo();
+    const snapshot = document.createElement('canvas');
+    snapshot.width = paintCanvas.width;
+    snapshot.height = paintCanvas.height;
+    snapshot.getContext('2d').drawImage(paintCanvas, 0, 0);
+    mutate(snapshot);
+  }
+
+  function flipHorizontal() {
+    withSnapshot((snapshot) => {
+      paintCtx.save();
+      paintCtx.translate(paintCanvas.width, 0);
+      paintCtx.scale(-1, 1);
+      paintCtx.drawImage(snapshot, 0, 0);
+      paintCtx.restore();
+    });
+  }
+
+  function flipVertical() {
+    withSnapshot((snapshot) => {
+      paintCtx.save();
+      paintCtx.translate(0, paintCanvas.height);
+      paintCtx.scale(1, -1);
+      paintCtx.drawImage(snapshot, 0, 0);
+      paintCtx.restore();
+    });
+  }
+
+  function rotate90() {
+    withSnapshot((snapshot) => {
+      const w = paintCanvas.width, h = paintCanvas.height;
+      paintCtx.fillStyle = '#ffffff';
+      paintCtx.fillRect(0, 0, w, h);
+      paintCtx.save();
+      paintCtx.translate(w / 2, h / 2);
+      paintCtx.rotate(Math.PI / 2);
+      paintCtx.drawImage(snapshot, -w / 2, -h / 2);
+      paintCtx.restore();
+    });
+  }
+
+  function invertColors() {
+    pushUndo();
+    const img = paintCtx.getImageData(0, 0, paintCanvas.width, paintCanvas.height);
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) {
+      d[i] = 255 - d[i];
+      d[i + 1] = 255 - d[i + 1];
+      d[i + 2] = 255 - d[i + 2];
+    }
+    paintCtx.putImageData(img, 0, 0);
+  }
+
+  // --- Menu bar ---
+  if (paintMenubar) {
+    const paintMenuItems = paintMenubar.querySelectorAll('[data-paint-menu]');
+    let openPaintMenu = null;
+
+    function closeAllPaintMenus() {
+      paintMenubar.querySelectorAll('.paint__menu-dropdown.open').forEach(d => d.classList.remove('open'));
+      paintMenuItems.forEach(btn => btn.setAttribute('aria-expanded', 'false'));
+      openPaintMenu = null;
+    }
+
+    function openPaintMenuFor(name) {
+      closeAllPaintMenus();
+      const dropdown = paintMenubar.querySelector(`[data-paint-dropdown="${name}"]`);
+      const btn = paintMenubar.querySelector(`[data-paint-menu="${name}"]`);
+      if (!dropdown || !btn) return;
+      dropdown.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+      openPaintMenu = name;
+    }
+
+    paintMenuItems.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const name = btn.dataset.paintMenu;
+        if (openPaintMenu === name) closeAllPaintMenus();
+        else openPaintMenuFor(name);
+      });
+      btn.addEventListener('mouseenter', () => {
+        if (openPaintMenu && openPaintMenu !== btn.dataset.paintMenu) openPaintMenuFor(btn.dataset.paintMenu);
+      });
+    });
+
+    paintMenubar.querySelectorAll('[data-paint-action]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.paintAction;
+        closeAllPaintMenus();
+        switch (action) {
+          case 'new':
+          case 'clear-image':
+            clearCanvas();
+            break;
+          case 'save':
+            savePaintImage();
+            break;
+          case 'exit':
+            closeWindow('paint');
+            break;
+          case 'undo':
+            undo();
+            break;
+          case 'select-all':
+            selectAll();
+            break;
+          case 'zoom-100':
+            applyZoom(1);
+            break;
+          case 'zoom-150':
+            applyZoom(1.5);
+            break;
+          case 'zoom-200':
+            applyZoom(2);
+            break;
+          case 'zoom-300':
+            applyZoom(3);
+            break;
+          case 'flip-h':
+            flipHorizontal();
+            break;
+          case 'flip-v':
+            flipVertical();
+            break;
+          case 'rotate':
+            rotate90();
+            break;
+          case 'invert':
+            invertColors();
+            break;
+          case 'edit-colors':
+            paintColorPicker?.click();
+            break;
+          case 'about':
+            alert('MS Paint — Lightweight Edition\n\nA small real Paint clone built for this desktop.\n\nDraw, fill, select, and save, right from the browser.');
+            break;
+        }
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (openPaintMenu && !paintMenubar.contains(e.target)) closeAllPaintMenus();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && openPaintMenu) closeAllPaintMenus();
+    });
+
+    paintColorPicker?.addEventListener('input', () => {
+      setPaintColor(paintColorPicker.value);
+      document.querySelectorAll('.paint__swatch').forEach(s => s.classList.remove('paint__swatch--active'));
+    });
+  }
 }
 
 // ===========================
