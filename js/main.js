@@ -3153,8 +3153,6 @@ const PORTFOLIO_EXPERIENCE = [
   const HIGHLIGHTS = [
     ['🏆', `${awards} awards`, '2 hackathon Best Overall · 1 datathon · Senior Design'],
     ['📄', '1 published paper', 'CSU CS Conference, 2026'],
-    ['🔎', '+23% victims found', 'text + image model, TRSS'],
-    ['⚡', '86.1 FPS detector', 'YOLOv11, 0.604 mAP'],
   ];
   document.getElementById('hub-highlights').innerHTML = HIGHLIGHTS.map(([icon, big, small]) =>
     `<div class="hub__highlight"><span class="hub__highlight-icon" aria-hidden="true">${icon}</span>`
