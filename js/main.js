@@ -89,7 +89,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 // --- Window Manager ---
-const WINDOW_IDS = ['hero', 'experience', 'projects', 'contact', 'resume', 'paint', 'notepad', 'calculator', 'my-computer', 'my-documents', 'my-pictures'];
+const WINDOW_IDS = ['portfolio', 'hero', 'experience', 'projects', 'contact', 'resume', 'paint', 'notepad', 'calculator', 'my-computer', 'my-documents', 'my-pictures'];
 const windowEls = {};
 WINDOW_IDS.forEach(id => {
   windowEls[id] = document.querySelector(`.window[data-window="${id}"]`);
@@ -200,6 +200,7 @@ function toggleOrFocusWindow(id) {
 // --- Taskbar window buttons ---
 const navWindows = document.getElementById('nav-windows');
 const TASKBAR_ICONS = {
+  portfolio: '../assets/icons/local-disk.png',
   hero: '../assets/icons/my-computer.png',
   experience: '../assets/icons/briefcase.png',
   projects: '../assets/icons/slideshow.png',
@@ -1924,6 +1925,158 @@ if (paintCanvas) {
 }
 
 // ===========================
+// 1b. Shared portfolio data (used by the Explorer hub and the GD viz)
+// ===========================
+// Project schema is documented in section 2a below.
+const PORTFOLIO_PROJECTS = [
+  {
+    x: -1.9,
+    title: 'Shape & Sign',
+    desc: 'Gesture-controlled mini-games that teach kids ASL vocabulary and phrases from a webcam. A two-stage recognizer routes live MediaPipe hand frames into 5 modes, then stacked LSTMs read ASL sequences, sustaining ~93% live accuracy through judging.',
+    role: 'Team of 4 · I built the Random Forest mode router (5-frame debounce) and the Python backend',
+    award: 'BeachHacks 8.0 (2025) • Best Overall',
+    tags: ['MediaPipe', 'Random Forest', 'LSTM', 'TensorFlow.js', 'Next.js'],
+    link: 'https://shape-sign-mu.vercel.app/',
+    ctaLabel: 'Live Demo →',
+    secondaryLink: 'https://github.com/ki3n98/shape-sign',
+    secondaryLabel: 'Source Code',
+    tertiaryLink: 'https://devpost.com/software/shape-sign',
+    tertiaryLabel: 'Devpost',
+    step: 'Step 1 - High Loss',
+    mediaType: 'Video',
+    mediaSrc: 'assets/videos/shape_sign_demo.mp4',
+    mediaText: 'Shape & Sign demo',
+  },
+  {
+    x: -1.4,
+    title: '911 Operator Assistance',
+    desc: 'A 911 dispatcher co-pilot: an incoming call is transcribed with faster-whisper, Gemini extracts the address and incident type under a strict output contract, and a geocoded pin lands on a live dashboard, where a human confirms before anyone is dispatched.',
+    role: 'Team of 3 · I built the transcription → LLM → geocoding pipeline and most of the dispatcher dashboard',
+    award: 'Marina Hacks 5.0 (2025) • Best Overall',
+    tags: ['faster-whisper', 'Gemini 2.5 Flash', 'FastAPI', 'Twilio Voice', 'Google Maps API', 'Next.js'],
+    link: 'https://github.com/Ben2104/911-Operator-Assistant',
+    ctaLabel: 'Source Code →',
+    secondaryLink: 'https://devpost.com/software/911-operator-assistant',
+    secondaryLabel: 'Devpost',
+    step: 'Step 2 - Descending',
+    mediaType: 'Video',
+    mediaEmbed: 'https://www.youtube-nocookie.com/embed/okCDJyBionU?start=40&autoplay=1&mute=1&playsinline=1&rel=0',
+    mediaText: '911 Operator demo video',
+  },
+  {
+    x: -0.9,
+    title: 'VeriFace',
+    desc: 'End-to-end face-recognition attendance for classrooms and events: FaceNet embeddings matched against each event roster, a live WebSocket check-in dashboard, a self-trained EfficientNet-B0 anti-spoofing model, and 5-role access control with audit logging.',
+    role: 'Team of 6 · Repo founder, backend lead, and top contributor (84 of 182 commits)',
+    award: 'CECS Senior Design Award — Outstanding Achievement in Applied AI & ML',
+    tags: ['FaceNet', 'PyTorch', 'EfficientNet-B0', 'FastAPI', 'PostgreSQL', 'WebSockets', 'Docker', 'JWT / RBAC', '160+ pytest tests'],
+    link: 'https://github.com/ki3n98/VeriFace',
+    ctaLabel: 'Source Code →',
+    step: 'Step 3 - Converging',
+    mediaType: 'Video',
+    mediaSrc: 'assets/videos/veriface_demo.mp4',
+    mediaText: 'VeriFace demo',
+  },
+  {
+    x: -0.4,
+    title: 'DocGenix',
+    desc: 'Describe an app idea, get a full software blueprint. 8 specialist LangGraph agents write requirements, architecture, API, and data-model docs in parallel; a Critic agent checks them against each other and triggers up to 2 revision rounds.',
+    role: 'Team of 4 · I wrote the multi-agent orchestration, the Critic agent, and the structured-output extraction',
+    award: 'BeachHacks 9.0 (2026)',
+    tags: ['LangGraph', 'Multi-agent', 'LangChain', 'FastAPI', 'SSE streaming', 'Next.js'],
+    link: 'https://github.com/zokoxa/DocGenix',
+    ctaLabel: 'Source Code →',
+    secondaryLink: 'https://devpost.com/software/docsgenix',
+    secondaryLabel: 'Devpost',
+    step: 'Step 4 - Local Optimum',
+    mediaType: 'Video',
+    mediaEmbed: 'https://www.youtube-nocookie.com/embed/SqQycaZNr4Q?start=115&autoplay=1&mute=1&playsinline=1&rel=0',
+    mediaText: 'DocGenix demo',
+  },
+  {
+    x: 0,
+    title: 'Hire Me',
+    desc: 'I build real-time computer vision and AI systems with a focus on performance, product thinking, and production-ready deployment.',
+    tags: ['Applied ML', 'AI Engineer', 'Computer Vision', 'Full-Stack AI'],
+    includeInOverview: false,
+    hideMedia: false,
+    mediaType: 'Image',
+    mediaSrc: 'assets/img/emi.jpg',
+    mediaText: 'Kien Pham',
+    link: '#contact',
+    ctaLabel: 'Get In Touch →',
+    secondaryLink: 'assets/resume/Kien_Pham_resume.pdf',
+    secondaryLabel: 'Download Resume',
+    step: 'Step 5 - Hire Me',
+  },
+];
+
+/**
+ * Experience entries. `bullets` may contain <b> markup (trusted, authored here).
+ * @type {{org:string, role:string, dates:string, icon:string, context?:string,
+ *         bullets:string[], tags:string[], links?:[string,string][]}[]}
+ */
+const PORTFOLIO_EXPERIENCE = [
+  {
+    org: 'Thomson Reuters Special Services',
+    role: 'Data Science Intern',
+    dates: 'May 2026 — Aug 2026',
+    icon: '../assets/icons/briefcase.png',
+    context: 'Spotlight (Canary × TRSS) surfaces suspected trafficking victims to law enforcement and has helped identify 28,459 children since 2016. Its juvenile flag relied on images alone; I explored and benchmarked text models to add a second signal.',
+    bullets: [
+      'Detected juvenile victims of sex trafficking in escort ads using an embedding → classifier pipeline (OpenAI text-embedding-3-large + Logistic Regression), lifting recall from <b>0.620</b> to <b>0.795</b> and F1 from <b>0.50</b> to <b>0.64</b>.',
+      'Combined the text model\'s output with the existing image classifier, catching <b>23%</b> more true juvenile victims than the image classifier alone — roughly 350 additional confirmed cases per 6,000 ads reviewed.',
+      'Stress-tested models on held-out 2024 ads: the 2025 leaders\' recall collapsed (e.g. <b>0.612 → 0.313</b>) while OpenAI embeddings + Logistic Regression held steady (<b>0.750 → 0.744</b>), so I recommended the model that generalizes, not the leaderboard winner.',
+      'Measured concept drift (words shifting in juvenile signal year over year) and showed it tracks F1 decline across models, proposing drift monitoring as an early-warning retraining trigger.',
+      'Performed explainability using SHAP and TF-IDF + LR coefficients to help explain the model and identify linguistic signals driving predictions.',
+      'Presented project findings and results to stakeholders company-wide, explaining technical modeling work to non-technical audiences and translating it into actionable insights.',
+    ],
+    tags: ['Embedding → Classifier', 'OpenAI Embeddings', 'Logistic Regression', 'SHAP', 'Concept Drift'],
+  },
+  {
+    org: 'Vision-Based Distracted Driving Detection',
+    role: 'Undergraduate Researcher · Co-author with Dr. Amir Ghasemkhani',
+    dates: 'Aug 2025 — Feb 2026',
+    icon: '../assets/icons/sys-info.png',
+    context: 'Paper published and presented at the 6th Annual Computer Science Conference for CSU Undergraduates (Feb 2026).',
+    bullets: [
+      'Benchmarked Faster R-CNN, SSD, and YOLOv11 for in-cabin driver distraction (phone, eating, drinking, smoking) under one fixed protocol; YOLOv11 won on both axes with <b>mAP@.50:.95 = 0.604</b> at <b>86.1 FPS</b> on a consumer RTX 3080, using half the parameters.',
+      'Overturned the "two-stage is more accurate" assumption: Faster R-CNN scored lowest (<b>0.443</b> mAP) and ran <b>16× slower</b> (5.24 FPS), showing architecture choices must be benchmarked on the target data.',
+      'Balanced an imbalanced training set (978–1,817 images per class) with class oversampling, keeping validation and test splits realistic.',
+      'Conducted quantitative performance analysis across model architectures, producing deployment guidance for real-time, latency-sensitive object detection applications.',
+    ],
+    tags: ['YOLOv11', 'Faster R-CNN', 'SSD', 'PyTorch', 'Roboflow'],
+    links: [
+      ['assets/resume/Distracted_Driving_Detection___Kien-2.pdf', 'Read Paper (PDF)'],
+      ['https://github.com/ki3n98/Amir_research', 'Source Code'],
+    ],
+  },
+];
+
+
+// Experience window renders from the same data as the hub.
+(function renderExperienceWindow() {
+  const list = document.getElementById('experience-list');
+  if (!list) return;
+  const escHtml = (str) => String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  list.innerHTML = PORTFOLIO_EXPERIENCE.map(e => `
+    <article class="experience-card fade-in">
+      <div class="experience-card__header">
+        <div>
+          <h3 class="experience-card__title">${escHtml(e.org)}</h3>
+          <p class="experience-card__role">${escHtml(e.role)}</p>
+        </div>
+        <span class="experience-card__date">${escHtml(e.dates)}</span>
+      </div>
+      ${e.context ? `<p class="experience-card__context">${escHtml(e.context)}</p>` : ''}
+      <ul class="experience-card__list">${e.bullets.map(b => `<li>${b}</li>`).join('')}</ul>
+      <div class="experience-card__tags">${e.tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}</div>
+      ${e.links ? `<div class="experience-card__links">${e.links.map(([url, label]) =>
+        `<a href="${escHtml(url)}"${/^https?:/.test(url) ? ' target="_blank" rel="noopener noreferrer"' : ''}>${escHtml(label)}</a>`).join('')}</div>` : ''}
+    </article>`).join('');
+})();
+
+// ===========================
 // 2. Gradient Descent Visualization
 // ===========================
 (function () {
@@ -1952,83 +2105,7 @@ if (paintCanvas) {
    * @property {boolean}  [includeInOverview] - Defaults to true
    * @property {boolean}  [hideMedia]
    */
-  const PROJECTS = [
-    {
-      x: -1.9,
-      title: 'Shape & Sign',
-      desc: 'Shape-Sign is an interactive application that utilizes hand gesture recognition models to help users learn and engage with sign language.',
-      award: 'BeachHacks 8.0 2025 • Best Overall',
-      tags: ['Next.js', 'Computer Vision', 'LSTM', 'TensorFlow.js', 'MediaPipe'],
-      link: 'https://shape-sign-mu.vercel.app/',
-      ctaLabel: 'Live Demo →',
-      secondaryLink: 'https://github.com/ki3n98/shape-sign',
-      secondaryLabel: 'Source Code',
-      tertiaryLink: 'https://devpost.com/software/shape-sign',
-      tertiaryLabel: 'Devpost',
-      step: 'Step 1 - High Loss',
-      mediaType: 'Video',
-      mediaSrc: 'assets/videos/shape_sign_demo.mp4',
-      mediaText: 'Shape & Sign demo',
-    },
-    {
-      x: -1.4,
-      title: '911 Operator Assistance',
-      desc: 'A 911 operator co-pilot. The system pairs a Next.js dashboard with a FastAPI inference service that transcribes audio, classifies incidents, geocodes caller locations, and lets dispatchers confirm markers or request field units.',
-      award: 'Marina Hack 5.0 • Best Overall',
-      tags: ['Pytorch', 'WhisperSTT', 'Google Geocoding API', 'Gemini', 'Next.js', 'FastAPI'],
-      link: 'https://github.com/Ben2104/911-Operator-Assistant',
-      ctaLabel: 'Source Code →',
-      secondaryLink: 'https://devpost.com/software/911-operator-assistant',
-      secondaryLabel: 'Devpost',
-      step: 'Step 2 - Descending',
-      mediaType: 'Video',
-      mediaEmbed: 'https://www.youtube-nocookie.com/embed/okCDJyBionU?start=40&autoplay=1&mute=1&playsinline=1&rel=0',
-      mediaText: '911 Operator demo video',
-    },
-    {
-      x: -0.9,
-      title: 'VeriFace',
-      desc: 'An AI-assisted check-in system using facial recognition for classrooms and social events.',
-      award: 'Senior Project',
-      tags: ['FaceNet', 'FastAPI', 'SQLAlchemy', 'PostgreSQL', 'Docker', 'JWT', 'bcrypt', 'ngrok', 'websockets'],
-      link: 'https://github.com/ki3n98/VeriFace',
-      step: 'Step 3 - Converging',
-      mediaType: 'Video',
-      mediaSrc: 'assets/videos/veriface_demo.mp4',
-      mediaText: 'VeriFace demo',
-    },
-    {
-      x: -0.4,
-      title: 'DocGenix',
-      desc: 'AI-powered software project blueprint generator. Describe your idea, get back a full set of production-ready documentation in minutes.',
-      award: 'BeachHack 9.0 2026',
-      tags: ['LangChain', 'Agents', 'Multi-agent orchestration'],
-      link: 'https://github.com/zokoxa/DocGenix',
-      ctaLabel: 'Source Code →',
-      secondaryLink: 'https://devpost.com/software/docsgenix',
-      secondaryLabel: 'Devpost',
-      step: 'Step 4 - Local Optimum',
-      mediaType: 'Video',
-      mediaEmbed: 'https://www.youtube-nocookie.com/embed/SqQycaZNr4Q?start=115&autoplay=1&mute=1&playsinline=1&rel=0',
-      mediaText: 'DocGenix demo',
-    },
-    {
-      x: 0,
-      title: 'Hire Me',
-      desc: 'I build real-time computer vision and AI systems with a focus on performance, product thinking, and production-ready deployment.',
-      tags: ['Applied ML', 'AI Engineer', 'Computer Vision', 'Full-Stack AI'],
-      includeInOverview: false,
-      hideMedia: false,
-      mediaType: 'Image',
-      mediaSrc: 'assets/img/emi.jpg',
-      mediaText: 'Kien Pham',
-      link: '#contact',
-      ctaLabel: 'Get In Touch →',
-      secondaryLink: 'assets/resume/Kien_Pham_resume.pdf',
-      secondaryLabel: 'Download Resume',
-      step: 'Step 5 - Hire Me',
-    },
-  ];
+  const PROJECTS = PORTFOLIO_PROJECTS;
 
   const N = PROJECTS.length;
 
@@ -2968,4 +3045,245 @@ if (paintCanvas) {
   }
 
   document.fonts ? document.fonts.ready.then(init) : init();
+})();
+
+// ===========================
+// 3. Portfolio Hub ("C:\Kien Pham" Explorer window)
+// ===========================
+// The recruiter-facing landing view: bio, experience, projects and skills
+// all visible at once, with every external link reachable in one click.
+(function () {
+  const hubWin = document.getElementById('window-portfolio');
+  if (!hubWin) return;
+
+  const RESUME_PDF = 'assets/resume/Kien_Pham_resume.pdf';
+  const GITHUB = 'https://github.com/ki3n98';
+  const LINKEDIN = 'https://www.linkedin.com/in/kien-t-pham/';
+
+  const EXPERIENCE = PORTFOLIO_EXPERIENCE;
+
+  // [label, icon] — icon is an assets/icons/*.svg basename, or null for text-only chips.
+  const SKILL_GROUPS = [
+    { name: 'Machine Learning', skills: [['PyTorch', 'pytorch'], ['TensorFlow', 'tensorflow'], ['scikit-learn', null], ['Deep Learning', 'deep-learning'], ['SHAP', null]] },
+    { name: 'NLP & LLMs', skills: [['NLP', 'nlp'], ['Embeddings', null], ['LangChain', 'langchain'], ['LangGraph Agents', null], ['Gemini / OpenAI APIs', null], ['Whisper (STT)', null]] },
+    { name: 'Computer Vision', skills: [['Computer Vision', 'computer-vision'], ['YOLOv11', null], ['Faster R-CNN / SSD', null], ['FaceNet', null], ['MediaPipe', null], ['OpenCV', null]] },
+    { name: 'Backend & Data', skills: [['Python', 'python'], ['FastAPI', 'fastapi'], ['REST API', 'rest-api'], ['WebSockets', null], ['PostgreSQL', 'postgresql'], ['SQLAlchemy', null]] },
+    { name: 'Web & DevOps', skills: [['Next.js', 'nextjs'], ['JavaScript', 'javascript'], ['HTML', 'html'], ['CSS', 'css'], ['Docker', 'docker'], ['AWS', 'aws']] },
+  ];
+
+  const projects = PORTFOLIO_PROJECTS.filter(p => p.includeInOverview !== false);
+  const isWin = (p) => /best|award/i.test(p.award || '');
+  const awardHtml = (p, tag) => p.award
+    ? `<${tag} class="hub__award${isWin(p) ? ' hub__award--win' : ''}">${isWin(p) ? '🏆 ' : ''}${esc(p.award)}</${tag}>`
+    : '';
+
+  const esc = (str) => String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const isExternal = (url) => /^https?:/.test(url);
+  const youtubeId = (url) => (url && url.match(/embed\/([\w-]+)/) || [])[1];
+
+  function projectLinks(p) {
+    return [
+      [p.link, (p.ctaLabel || 'View Project →').replace(/\s*→$/, '')],
+      [p.secondaryLink, p.secondaryLabel],
+      [p.tertiaryLink, p.tertiaryLabel],
+    ].filter(([url]) => url);
+  }
+
+  function linkHtml([url, label], cls) {
+    const ext = isExternal(url) ? ' target="_blank" rel="noopener noreferrer"' : '';
+    return `<a class="${cls}" href="${esc(url)}"${ext}>${esc(label)}</a>`;
+  }
+
+  function thumbHtml(p) {
+    if (p.mediaSrc && p.mediaType === 'Video') {
+      return `<video class="hub__thumb-media" src="${esc(p.mediaSrc)}#t=1" muted loop playsinline preload="metadata" data-hover-play></video>`;
+    }
+    const yt = youtubeId(p.mediaEmbed);
+    if (yt) return `<img class="hub__thumb-media" src="https://img.youtube.com/vi/${yt}/hqdefault.jpg" alt="" loading="lazy" />`;
+    if (p.mediaSrc) return `<img class="hub__thumb-media" src="${esc(p.mediaSrc)}" alt="" loading="lazy" />`;
+    return '';
+  }
+
+  // ----- Sidebar (reuses the file explorer's task-pane styles) -----
+  function sidebarSection(title, body) {
+    return `<div class="explorer__sidebar-section">
+      <button type="button" class="explorer__sidebar-header"><span>${title}</span>
+        <span class="explorer__sidebar-chevron" aria-hidden="true">&#9650;</span></button>
+      <div class="explorer__sidebar-list">${body}</div>
+    </div>`;
+  }
+  const sideLink = (label, icon, attrs) =>
+    `<a class="explorer__sidebar-link" ${attrs}><span class="explorer__sidebar-link-icon" style="--icon-url: url('${icon}')" aria-hidden="true"></span>${label}</a>`;
+  const sideBtn = (label, icon, windowId) =>
+    `<button type="button" class="explorer__sidebar-link" data-hub-open="${windowId}"><span class="explorer__sidebar-link-icon" style="--icon-url: url('${icon}')" aria-hidden="true"></span>${label}</button>`;
+
+  // Awards not tied to a project tile (1 datathon award)
+  const OTHER_AWARDS = 1;
+  const awards = projects.filter(isWin).length + OTHER_AWARDS;
+  const sidebar = document.getElementById('hub-sidebar');
+  sidebar.innerHTML =
+    sidebarSection('Quick Links',
+      sideBtn('View Resume.pdf', '../assets/icons/resume-pdf.png', 'resume') +
+      sideLink('Download Resume', '../assets/icons/my-documents.png', `href="${RESUME_PDF}" download`) +
+      sideLink('GitHub', '../assets/icons/publish-web.png', `href="${GITHUB}" target="_blank" rel="noopener noreferrer"`) +
+      sideLink('LinkedIn', '../assets/icons/address-book.png', `href="${LINKEDIN}" target="_blank" rel="noopener noreferrer"`) +
+      sideBtn('Contact Me', '../assets/icons/email.png', 'contact')) +
+    sidebarSection('Other Places',
+      sideBtn('Gradient Descent.exe', '../assets/icons/slideshow.png', 'projects') +
+      sideBtn('About Me', '../assets/icons/my-computer.png', 'hero') +
+      sideBtn('My Documents', '../assets/icons/my-documents.png', 'my-documents') +
+      sideBtn('Paint', '../assets/icons/paint.png', 'paint')) +
+    sidebarSection('Details',
+      `<div class="explorer__sidebar-details">
+        <span class="explorer__sidebar-details-icon" style="--icon-url: url('../assets/icons/local-disk.png')" aria-hidden="true"></span>
+        <span class="explorer__sidebar-details-text">
+          <span class="explorer__sidebar-details-title">Kien Pham</span>
+          <span class="explorer__sidebar-details-desc">Data Scientist<br>${EXPERIENCE.length} positions &middot; ${projects.length} projects<br>${awards} awards won</span>
+        </span>
+      </div>`);
+
+  // Mobile-only quick link row (sidebar is hidden on small screens)
+  document.getElementById('hub-quick').innerHTML =
+    `<button type="button" class="hub__quick-btn" data-hub-open="resume">Resume</button>` +
+    `<a class="hub__quick-btn" href="${GITHUB}" target="_blank" rel="noopener noreferrer">GitHub</a>` +
+    `<a class="hub__quick-btn" href="${LINKEDIN}" target="_blank" rel="noopener noreferrer">LinkedIn</a>` +
+    `<button type="button" class="hub__quick-btn" data-hub-open="contact">Contact</button>`;
+
+  // ----- Highlights strip (at-a-glance proof points) -----
+  const HIGHLIGHTS = [
+    ['🏆', `${awards} awards`, '2 hackathon Best Overall · 1 datathon · Senior Design'],
+    ['📄', '1 published paper', 'CSU CS Conference, 2026'],
+    ['🔎', '+23% victims found', 'text + image model, TRSS'],
+    ['⚡', '86.1 FPS detector', 'YOLOv11, 0.604 mAP'],
+  ];
+  document.getElementById('hub-highlights').innerHTML = HIGHLIGHTS.map(([icon, big, small]) =>
+    `<div class="hub__highlight"><span class="hub__highlight-icon" aria-hidden="true">${icon}</span>`
+    + `<span><span class="hub__highlight-big">${esc(big)}</span><span class="hub__highlight-small">${esc(small)}</span></span></div>`).join('');
+
+  // ----- Experience -----
+  document.getElementById('hub-exp-heading').textContent = `Experience (${EXPERIENCE.length})`;
+  document.getElementById('hub-exp').innerHTML = EXPERIENCE.map(e => {
+    return `<article class="hub__exp-tile">
+      <span class="hub__exp-icon" style="--icon-url: url('${e.icon}')" aria-hidden="true"></span>
+      <div class="hub__exp-main">
+        <div class="hub__exp-head">
+          <h3 class="hub__exp-org">${esc(e.org)}</h3>
+          <span class="hub__exp-dates">${esc(e.dates)}</span>
+        </div>
+        <p class="hub__exp-role">${esc(e.role)}</p>
+        ${e.context ? `<p class="hub__exp-context">${esc(e.context)}</p>` : ''}
+        <ul class="hub__exp-list-items">${e.bullets.map(b => `<li>${b}</li>`).join('')}</ul>
+        <div class="hub__tags">${e.tags.map(t => `<span class="hub__tag">${esc(t)}</span>`).join('')}</div>
+        ${e.links ? `<div class="hub__proj-links">${e.links.map(l => linkHtml(l, 'hub__link')).join('')}</div>` : ''}
+      </div>
+    </article>`;
+  }).join('');
+
+  // ----- Projects -----
+  document.getElementById('hub-proj-heading').textContent = `Projects (${projects.length})`;
+  const projGrid = document.getElementById('hub-proj');
+  projGrid.innerHTML = projects.map((p, i) => `
+    <article class="hub__proj-tile" data-proj="${i}">
+      <button type="button" class="hub__proj-open" data-proj-open="${i}" aria-label="Open details for ${esc(p.title)}">
+        <span class="hub__thumb">${thumbHtml(p)}<span class="hub__thumb-play" aria-hidden="true">&#9654;</span></span>
+        <span class="hub__proj-title">${esc(p.title)}</span>
+      </button>
+      ${awardHtml(p, 'span')}
+      ${p.role ? `<p class="hub__proj-role">${esc(p.role)}</p>` : ''}
+      <p class="hub__proj-desc">${esc(p.desc)}</p>
+      <div class="hub__tags">${p.tags.map(t => `<span class="hub__tag">${esc(t)}</span>`).join('')}</div>
+      <div class="hub__proj-links">${projectLinks(p).map(l => linkHtml(l, 'hub__link')).join('')}</div>
+    </article>`).join('');
+
+  // Hover-to-play local demo videos
+  projGrid.querySelectorAll('.hub__proj-tile').forEach(tile => {
+    const vid = tile.querySelector('video[data-hover-play]');
+    if (!vid) return;
+    tile.addEventListener('mouseenter', () => { vid.play().catch(() => {}); });
+    tile.addEventListener('mouseleave', () => { vid.pause(); });
+  });
+
+  // ----- Skills -----
+  document.getElementById('hub-skills').innerHTML = SKILL_GROUPS.map(g => `
+    <div class="hub__skill-group">
+      <span class="hub__skill-group-name">${g.name}</span>
+      <div class="hub__skill-list">${g.skills.map(([label, icon]) => {
+        const iconHtml = icon
+          ? `<span class="skill__icon${icon === 'postgresql' ? ' skill__icon--postgres' : ''}" style="--icon-url: url('../assets/icons/${icon}.svg')"></span>`
+          : '';
+        return `<span class="skill">${iconHtml}${esc(label)}</span>`;
+      }).join('')}</div>
+    </div>`).join('');
+
+  document.getElementById('hub-status').textContent =
+    `${EXPERIENCE.length} positions, ${projects.length} projects · Click a project for details and demo video`;
+
+  // ----- Project detail ("Properties") panel -----
+  const detail = document.getElementById('hub-detail');
+  let lastOpener = null;
+
+  function openDetail(i) {
+    const p = projects[i];
+    if (!p) return;
+    const yt = p.mediaEmbed;
+    const media = yt
+      ? `<iframe class="hub__detail-media" src="${esc(yt)}" title="${esc(p.mediaText || p.title)}" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`
+      : p.mediaSrc && p.mediaType === 'Video'
+        ? `<video class="hub__detail-media" src="${esc(p.mediaSrc)}" controls autoplay muted loop playsinline></video>`
+        : p.mediaSrc ? `<img class="hub__detail-media" src="${esc(p.mediaSrc)}" alt="${esc(p.mediaText || '')}" />` : '';
+    detail.innerHTML = `
+      <div class="hub__detail-titlebar">
+        <span id="hub-detail-title">${esc(p.title)} Properties</span>
+        <button type="button" class="window__btn window__btn--close hub__detail-close" aria-label="Close details"></button>
+      </div>
+      <div class="hub__detail-body">
+        ${media}
+        <h3 class="hub__detail-name">${esc(p.title)}</h3>
+        ${awardHtml(p, 'p')}
+        ${p.role ? `<p class="hub__proj-role">${esc(p.role)}</p>` : ''}
+        <p class="hub__detail-desc">${esc(p.desc)}</p>
+        <div class="hub__tags">${p.tags.map(t => `<span class="hub__tag">${esc(t)}</span>`).join('')}</div>
+        <div class="hub__detail-actions">${projectLinks(p).map((l, j) => linkHtml(l, j === 0 ? 'hub__btn hub__btn--primary' : 'hub__btn')).join('')}</div>
+      </div>`;
+    detail.hidden = false;
+    projGrid.querySelectorAll('.hub__proj-tile').forEach(t => t.classList.toggle('hub__proj-tile--selected', t.dataset.proj === String(i)));
+    detail.querySelector('.hub__detail-close').focus();
+  }
+
+  function closeDetail() {
+    if (detail.hidden) return;
+    detail.hidden = true;
+    detail.innerHTML = ''; // stops any playing video/iframe
+    projGrid.querySelectorAll('.hub__proj-tile--selected').forEach(t => t.classList.remove('hub__proj-tile--selected'));
+    lastOpener?.focus();
+  }
+
+  hubWin.addEventListener('click', (e) => {
+    const opener = e.target.closest('[data-proj-open]');
+    if (opener) { lastOpener = opener; openDetail(Number(opener.dataset.projOpen)); return; }
+    if (e.target.closest('.hub__detail-close')) { closeDetail(); return; }
+    const winLink = e.target.closest('[data-hub-open]');
+    if (winLink) { e.preventDefault(); toggleOrFocusWindow(winLink.dataset.hubOpen); return; }
+    const header = e.target.closest('.explorer__sidebar-header');
+    if (header) header.closest('.explorer__sidebar-section').classList.toggle('explorer__sidebar-section--collapsed');
+  });
+
+  // Esc closes the detail panel first instead of the whole window.
+  window.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || detail.hidden || hubWin.hidden || !isTopWindow('portfolio')) return;
+    e.stopImmediatePropagation();
+    closeDetail();
+  }, true);
+
+  // Stop all media when the window is minimized or closed.
+  new MutationObserver(() => {
+    if (!hubWin.hidden) return;
+    hubWin.querySelectorAll('video').forEach(v => v.pause());
+    closeDetail();
+  }).observe(hubWin, { attributes: true, attributeFilter: ['hidden'] });
+
+  // Land maximized on desktop so everything is visible immediately.
+  if (!isMobile() && !hubWin.hidden && !hubWin.classList.contains('window--maximized')) {
+    toggleMaximize('portfolio');
+  }
 })();
