@@ -3797,8 +3797,8 @@ img {
 
 /* ----- Highlights strip ----- */
 .hub__highlights {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
 }
@@ -3811,6 +3811,8 @@ img {
   background: linear-gradient(to bottom, #F3F7FE 0%, #DCE7FA 100%);
   border: 1px solid #B6CDF4;
   border-radius: 4px;
+  flex: 1 1 240px;
+  max-width: 360px;
 }
 
 .hub__highlight-icon {
