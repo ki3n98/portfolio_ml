@@ -1966,10 +1966,10 @@ const PORTFOLIO_PROJECTS = [
   {
     x: -0.9,
     title: 'VeriFace',
-    desc: 'End-to-end face-recognition attendance for classrooms and events: FaceNet embeddings matched against each event roster, a live WebSocket check-in dashboard, a self-trained EfficientNet-B0 anti-spoofing model, and 5-role access control with audit logging.',
+    desc: 'End-to-end face-recognition attendance for classrooms and events: MTCNN detection → FaceNet (InceptionResNetV1) 512-dim embeddings, cosine-matched against each event roster and served through FastAPI + PostgreSQL. Also a live WebSocket check-in dashboard, a self-trained EfficientNet-B0 anti-spoofing model, JWT/bcrypt auth with a 5-role RBAC engine and audit logging (I wrote the permission module), 160+ pytest tests, and a reproducible Docker/CUDA stack.',
     role: 'Team of 6 · Repo founder, backend lead, and top contributor (84 of 182 commits)',
     award: 'CECS Senior Design Award — Outstanding Achievement in Applied AI & ML',
-    tags: ['FaceNet', 'PyTorch', 'EfficientNet-B0', 'FastAPI', 'PostgreSQL', 'WebSockets', 'Docker', 'JWT / RBAC', '160+ pytest tests'],
+    tags: ['MTCNN', 'FaceNet', 'PyTorch', 'EfficientNet-B0', 'FastAPI', 'PostgreSQL', 'WebSockets', 'Docker', 'JWT / RBAC', '160+ pytest tests'],
     link: 'https://github.com/ki3n98/VeriFace',
     ctaLabel: 'Source Code →',
     step: 'Step 3 - Converging',
@@ -2022,16 +2022,17 @@ const PORTFOLIO_EXPERIENCE = [
     role: 'Data Science Intern',
     dates: 'May 2026 — Aug 2026',
     icon: '../assets/icons/briefcase.png',
-    context: 'Spotlight (Canary × TRSS) surfaces suspected trafficking victims to law enforcement and has helped identify 28,459 children since 2016. Its juvenile flag relied on images alone; I explored and benchmarked text models to add a second signal.',
+    context: 'Spotlight (Canary × TRSS) surfaces suspected trafficking victims to law enforcement from ~150K ads/day and has helped identify 28,459 children since 2016. Its juvenile flag relied on images alone; I explored and benchmarked text models to add a second signal.',
     bullets: [
-      'Detected juvenile victims of sex trafficking in escort ads using an embedding → classifier pipeline (OpenAI text-embedding-3-large + Logistic Regression), lifting recall from <b>0.620</b> to <b>0.795</b> and F1 from <b>0.50</b> to <b>0.64</b>.',
+      'Built and benchmarked <b>86 text-classification models</b> (11 embedding methods × up to 10 classifiers, plus a zero-shot LLM baseline) to flag suspected juvenile victims in escort ads.',
+      'Detected juvenile victims of sex trafficking in escort ads using an embedding → classifier pipeline (OpenAI text-embedding-3-large + Logistic Regression), lifting recall from <b>0.620</b> to <b>0.795</b> and F1 from <b>0.50</b> to <b>0.64</b> at unchanged precision.',
       'Combined the text model\'s output with the existing image classifier, catching <b>23%</b> more true juvenile victims than the image classifier alone — roughly 350 additional confirmed cases per 6,000 ads reviewed.',
       'Stress-tested models on held-out 2024 ads: the 2025 leaders\' recall collapsed (e.g. <b>0.612 → 0.313</b>) while OpenAI embeddings + Logistic Regression held steady (<b>0.750 → 0.744</b>), so I recommended the model that generalizes, not the leaderboard winner.',
       'Measured concept drift (words shifting in juvenile signal year over year) and showed it tracks F1 decline across models, proposing drift monitoring as an early-warning retraining trigger.',
-      'Performed explainability using SHAP and TF-IDF + LR coefficients to help explain the model and identify linguistic signals driving predictions.',
-      'Presented project findings and results to stakeholders company-wide, explaining technical modeling work to non-technical audiences and translating it into actionable insights.',
+      'Made predictions auditable for law enforcement using SHAP and TF-IDF + LR coefficients trained on 2024-only, 2025-only, and pooled data, surfacing durable linguistic signals that held across years.',
+      'Presented project findings and results to stakeholders company-wide, explaining technical modeling work to non-technical audiences and translating it into a shipping recommendation for text as a second detection signal.',
     ],
-    tags: ['Embedding → Classifier', 'OpenAI Embeddings', 'Logistic Regression', 'SHAP', 'Concept Drift'],
+    tags: ['Embedding → Classifier', 'OpenAI Embeddings', 'Logistic Regression', 'Zero-shot LLM', 'TF-IDF', 'SHAP', 'Concept Drift'],
   },
   {
     org: 'Vision-Based Distracted Driving Detection',
@@ -2040,7 +2041,7 @@ const PORTFOLIO_EXPERIENCE = [
     icon: '../assets/icons/sys-info.png',
     context: 'Paper published and presented at the 6th Annual Computer Science Conference for CSU Undergraduates (Feb 2026).',
     bullets: [
-      'Benchmarked Faster R-CNN, SSD, and YOLOv11 for in-cabin driver distraction (phone, eating, drinking, smoking) under one fixed protocol; YOLOv11 won on both axes with <b>mAP@.50:.95 = 0.604</b> at <b>86.1 FPS</b> on a consumer RTX 3080, using half the parameters.',
+      'Benchmarked Faster R-CNN, SSD, and YOLOv11 for real-time in-cabin driver distraction (phone, eating, drinking, smoking) on the Roboflow Mobile Detection dataset under one fixed protocol; YOLOv11 won on both axes with <b>mAP@.50:.95 = 0.604</b> at <b>86.1 FPS</b> on a consumer RTX 3080, using half the parameters.',
       'Overturned the "two-stage is more accurate" assumption: Faster R-CNN scored lowest (<b>0.443</b> mAP) and ran <b>16× slower</b> (5.24 FPS), showing architecture choices must be benchmarked on the target data.',
       'Balanced an imbalanced training set (978–1,817 images per class) with class oversampling, keeping validation and test splits realistic.',
       'Conducted quantitative performance analysis across model architectures, producing deployment guidance for real-time, latency-sensitive object detection applications.',
@@ -3064,11 +3065,11 @@ const PORTFOLIO_EXPERIENCE = [
 
   // [label, icon] — icon is an assets/icons/*.svg basename, or null for text-only chips.
   const SKILL_GROUPS = [
-    { name: 'Machine Learning', skills: [['PyTorch', 'pytorch'], ['TensorFlow', 'tensorflow'], ['scikit-learn', null], ['Deep Learning', 'deep-learning'], ['SHAP', null]] },
-    { name: 'NLP & LLMs', skills: [['NLP', 'nlp'], ['Embeddings', null], ['LangChain', 'langchain'], ['LangGraph Agents', null], ['Gemini / OpenAI APIs', null], ['Whisper (STT)', null]] },
+    { name: 'Machine Learning', skills: [['PyTorch', 'pytorch'], ['TensorFlow', 'tensorflow'], ['scikit-learn', null], ['Deep Learning', 'deep-learning'], ['SHAP', null], ['Model Fine-tuning', null], ['Concept Drift', null], ['Matplotlib', null]] },
+    { name: 'NLP & LLMs', skills: [['NLP', 'nlp'], ['Embeddings', null], ['LangChain', 'langchain'], ['LangGraph Agents', null], ['Gemini / OpenAI APIs', null], ['Whisper (STT)', null], ['Prompt Engineering', null], ['Multi-agent Orchestration', null]] },
     { name: 'Computer Vision', skills: [['Computer Vision', 'computer-vision'], ['YOLOv11', null], ['Faster R-CNN / SSD', null], ['FaceNet', null], ['MediaPipe', null], ['OpenCV', null]] },
-    { name: 'Backend & Data', skills: [['Python', 'python'], ['FastAPI', 'fastapi'], ['REST API', 'rest-api'], ['WebSockets', null], ['PostgreSQL', 'postgresql'], ['SQLAlchemy', null]] },
-    { name: 'Web & DevOps', skills: [['Next.js', 'nextjs'], ['JavaScript', 'javascript'], ['HTML', 'html'], ['CSS', 'css'], ['Docker', 'docker'], ['AWS', 'aws']] },
+    { name: 'Backend & Data', skills: [['Python', 'python'], ['FastAPI', 'fastapi'], ['REST API', 'rest-api'], ['WebSockets', null], ['PostgreSQL', 'postgresql'], ['SQLAlchemy', null], ['Django', null], ['Data Labeling & Evaluation', null]] },
+    { name: 'Web & DevOps', skills: [['Next.js', 'nextjs'], ['JavaScript', 'javascript'], ['HTML', 'html'], ['CSS', 'css'], ['Docker', 'docker'], ['AWS', 'aws'], ['Git / GitHub', null]] },
   ];
 
   const projects = PORTFOLIO_PROJECTS.filter(p => p.includeInOverview !== false);
@@ -3117,7 +3118,7 @@ const PORTFOLIO_EXPERIENCE = [
   const sideBtn = (label, icon, windowId) =>
     `<button type="button" class="explorer__sidebar-link" data-hub-open="${windowId}"><span class="explorer__sidebar-link-icon" style="--icon-url: url('${icon}')" aria-hidden="true"></span>${label}</button>`;
 
-  // Awards not tied to a project tile (1 datathon award)
+  // Awards not tied to a project tile (AIS Datathon 2026 — Best Project)
   const OTHER_AWARDS = 1;
   const awards = projects.filter(isWin).length + OTHER_AWARDS;
   const sidebar = document.getElementById('hub-sidebar');
@@ -3151,7 +3152,7 @@ const PORTFOLIO_EXPERIENCE = [
 
   // ----- Highlights strip (at-a-glance proof points) -----
   const HIGHLIGHTS = [
-    ['🏆', `${awards} awards`, '2 hackathon Best Overall · 1 datathon · Senior Design'],
+    ['🏆', `${awards} awards`, '2 hackathon Best Overall · AIS Datathon 2026 Best Project · Senior Design'],
     ['📄', '1 published paper', 'CSU CS Conference, 2026'],
   ];
   document.getElementById('hub-highlights').innerHTML = HIGHLIGHTS.map(([icon, big, small]) =>
