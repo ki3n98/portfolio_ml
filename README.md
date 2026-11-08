@@ -1,39 +1,189 @@
-# Portfolio
+# Kien Pham - Portfolio Website
 
-A static portfolio site built with plain HTML, CSS and JavaScript. There is no build step and no framework.
+A **static portfolio website** built with plain HTML, CSS, and JavaScript (no frameworks). It simulates a Windows XP desktop environment featuring functional "apps" and an interactive Gradient Descent visualization.
 
-## Project structure
+Built by **Kien Pham** - Computer Science student at CSU Long Beach, Data Science Intern at TRSS, showcasing ML/software engineering experience.
 
-```
-index.html      Page markup
-css/style.css   Styles
-js/main.js      Behavior
-assets/         Images, icons, resume PDFs
-```
+## Preview
 
-## Running in development (auto-reload)
+![Portfolio Preview](assets/screenshots/portfolio-preview.png)
 
-Requires Node.js.
+## Features
+
+### Desktop Environment Simulation
+- Windows XP-inspired interface with taskbar, start menu, and desktop icons
+- Functional window management: drag, resize, maximize, minimize, close, focus
+
+### Desktop Applications
+- **Notepad** - Text editor with save/load functionality to virtual filesystem
+- **Paint** - Drawing application with pencil, brush, eraser, colors, filters, undo/redo
+- **Calculator** - Full-featured calculator with arithmetic operations
+- **File Explorer** - Navigate My Computer, Documents, and Pictures folders
+
+### Portfolio Sections
+- **About Me** - Personal introduction, education, and skills showcase
+- **Experience** - Work history and internships (TRSS, CSULB Research)
+- **Gradient Descent Visualization** - Interactive scroll-based project showcase
+- **Contact** - Email contact form and social media links
+
+### Gradient Descent Project Showcase
+- Scroll-driven visualization showing projects as optimization steps
+- Animated loss curve with project milestones
+- Video/image embeds for each project
+- Responsive project cards with tags and links
+
+## Quick Start
 
 ```bash
-cd portfolio_ml
-npm install    # first time only
-npm run dev
+cd /home/kieen/portfolio_ml
+npm install    # Install Node dependencies (first time only)
+npm run dev    # Start static server on http://localhost:8000
 ```
 
-This starts [live-server](https://github.com/tapio/live-server) at http://localhost:8000 and opens the browser. The page reloads whenever you save changes to `index.html`, `css/`, `js/` or `assets/`. CSS changes are injected without a full reload.
+The server auto-reloads when you save changes to `index.html`, `css/`, `js/`, or `assets/`.
 
-If port 8000 is busy, live-server picks another port and prints it in the terminal.
-
-### Without Node
-
-Any static file server works, but it won't auto-reload:
-
+**No Node.js?** Use Python's built-in server:
 ```bash
 python3 -m http.server 8000
 ```
 
-## Notes
+Then open `http://localhost:8000` in your browser.
 
-- `playwright` (in `devDependencies`) is used for screenshots or testing. It isn't needed to run the site.
-- If you're using WSL, `localhost` is normally forwarded to Windows, so you can use your Windows browser.
+## File Structure
+
+```
+portfolio_ml/
+├── index.html          # Main page with desktop window markup and navigation
+├── css/
+│   └── style.css       # Styling (currently empty - styles embedded in HTML)
+├── js/
+│   └── main.js         # All client-side behavior: window management, desktop apps
+├── assets/
+│   ├── icons/          # Windows-style icons (Windows XP theme)
+│   ├── images/         # Project images and videos
+│   └── resume/         # Resume PDF files
+├── text.md             # Project content and research summary
+├── package.json        # Script config and dependencies
+└── README.md           # This file
+```
+
+## Desktop Apps Details
+
+### Notepad
+- **File Menu**: New, Save As, Exit
+- **Edit Menu**: Undo, Cut, Copy, Select All, Time/Date
+- **Format Menu**: Word Wrap
+- **View Menu**: Status Bar toggle
+- Save files to virtual filesystem (localStorage)
+
+### Paint
+- **Tools**: Pencil, Brush, Eraser, Fill, Dropper, Line, Curve, Rectangle, Polygon, Ellipse
+- **Image Menu**: Flip Horizontal/Vertical, Rotate 90°, Invert Colors
+- **Colors**: 20 predefined colors with custom color picker
+- **Actions**: Undo/Redo, Clear Image, Save as PNG
+- **Zoom**: 100%, 150%, 200%, 300%
+
+### Calculator
+- Basic arithmetic: addition, subtraction, multiplication, division
+- Clear functionality
+- Decimal support
+- Keyboard-friendly
+
+### File Explorer
+- Navigate My Computer, Documents, Pictures
+- Browser-style navigation (Back, Forward, Up)
+- File listing with icons
+
+## Gradient Descent Visualization
+
+The portfolio uses an innovative scroll-based visualization where each project represents a step down the gradient descent curve:
+
+1. **Scroll to follow the optimization path** - Projects appear in order of "optimization progress"
+2. **Interactive timeline** - Hover/click to see detailed project information
+3. **Rich media** - Videos, images, and project thumbnails
+4. **Responsive design** - Works on desktop and mobile
+
+## Technologies Used
+
+- **HTML5** - Semantic markup
+- **CSS3** - Custom properties, flexbox, grid, animations
+- **Vanilla JavaScript** - No frameworks, pure DOM manipulation
+- **Canvas API** - Paint app and gradient descent visualization
+- **Web3Forms** - Contact form backend
+
+## Browser Support
+
+- Chrome/Edge (latest)
+- Firefox (latest)
+- Safari (latest)
+
+## Development
+
+### Running Tests
+
+```bash
+npm test
+```
+
+### Project Structure
+
+#### JavaScript Modules (`js/main.js`)
+- Window management system
+- Desktop apps (Notepad, Paint, Calculator, Explorer)
+- Gradient descent visualization
+- Contact form handling
+- Clock and system utilities
+
+#### Events
+- Window open/close/minimize/maximize
+- Mouse drag for window movement
+- Canvas drawing events
+- Scroll events for visualization
+- Form submission
+
+## Configuration
+
+### Contact Form
+Replace the Web3Forms access key in `index.html`:
+```html
+<input type="hidden" name="access_key" value="YOUR_ACCESS_KEY">
+```
+
+Get your free access key at [Web3Forms](https://web3forms.com)
+
+### Customization
+Edit the following sections in `index.html`:
+- Personal information (lines 43-71, 202-226)
+- Experience entries (lines 284-306)
+- Project data (lines 309-390)
+- Contact information (lines 392-460)
+
+## Environment Notes
+
+- Pure static site — no backend or database required
+- Designed for WSL development (localhost forwards to Windows)
+- Uses `live-server` for auto-reloading during development
+- All icons are SVG with fallbacks
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---------|-----|
+| Server won't start | Run `npm install` first |
+| Port 8000 busy | Server picks a free port (check terminal output) |
+| Page doesn't reload | Ensure `live-server` is running in terminal |
+| Browser can't connect | Verify server is running (`npm run dev`) |
+
+## License
+
+This project is open source and available for personal use.
+
+## Contact
+
+- **Email**: ki3n98@gmail.com
+- **GitHub**: [@ki3n98](https://github.com/ki3n98)
+- **LinkedIn**: [Kien Pham](https://www.linkedin.com/in/kien-t-pham/)
+
+---
+
+*Built with Windows XP nostalgia and modern web technologies*

@@ -52,3 +52,13 @@ The server auto-reloads when you save changes to `index.html`, `css/`, `js/`, or
 
 ## Context
 The user (Kien Pham) is a Computer Science student at CSULB building this portfolio to showcase ML/software engineering experience including data science internships (TRSS), facial recognition projects, and desktop app development.
+
+---
+
+## Agents
+This project uses the global opencode workflow (`~/.config/opencode/AGENTS.md`): the default `lead` agent runs Explore → Plan → Implement → Verify → Review through subagents. No project-specific agents yet (add them to `.opencode/agents/`).
+
+## Commands
+- **Run:** `npm run dev` (http://localhost:8000)
+- **Test:** none (no test suite)
+- **Verify:** load the page in a browser and exercise the changed app/window; check the browser console for errors
