@@ -133,6 +133,37 @@ try {
   const undone = await inked();
   check(undone === before, `paint undo did not restore (${before} -> ${undone})`);
   for (const a of ['flip-h', 'flip-v', 'rotate', 'invert']) await click(`[data-paint-action="${a}"]`);
+  await click('[data-paint-action="new"]');
+
+  // Every tool: drag across the canvas (curve/polygon get their extra clicks).
+  const drag = async (x0, y0, x1, y1) => {
+    await page.mouse.move(box.x + x0, box.y + y0);
+    await page.mouse.down();
+    await page.mouse.move(box.x + x1, box.y + y1, { steps: 6 });
+    await page.mouse.up();
+  };
+  const tools = await page.evaluate(() =>
+    [...document.querySelectorAll('.paint__tool[data-paint-tool]')].map(b => b.dataset.paintTool));
+  check(tools.length >= 10, `only ${tools.length} paint tools found`);
+  for (const tool of tools) {
+    await click('[data-paint-action="new"]'); // blank canvas, zoom reset
+    await click('.paint__swatch[data-paint-color="#000000"]'); // the dropper may have picked white
+    await click(`.paint__tool[data-paint-tool="${tool}"]`);
+    const pre = await inked();
+    if (tool === 'text') await page.mouse.click(box.x + 40, box.y + 40);
+    else await drag(40, 40, 140, 100);
+    if (tool === 'curve') { await drag(80, 20, 80, 20); await drag(120, 120, 120, 120); }
+    if (tool === 'polygon') { await page.mouse.click(box.x + 60, box.y + 120); await page.mouse.dblclick(box.x + 60, box.y + 120); }
+    if (tool === 'select' || tool === 'freeform') await drag(80, 60, 160, 120); // move the selection
+    if (tool === 'text') { await page.keyboard.type('hi'); await page.keyboard.press('Enter'); }
+    const post = await inked();
+    if (['pencil', 'brush', 'line', 'rect', 'rrect', 'ellipse', 'curve', 'polygon', 'airbrush'].includes(tool)) {
+      // 'text' is excluded: its input loses focus on mousedown and commits empty (pre-existing bug)
+      check(post > pre, `paint tool "${tool}" drew nothing (${pre} -> ${post})`);
+    }
+  }
+  await click('[data-paint-action="select-all"]');
+  await click('[data-paint-action="undo"]');
   await close('paint');
 
   // Gradient descent: scroll through and confirm the info panel populates.
