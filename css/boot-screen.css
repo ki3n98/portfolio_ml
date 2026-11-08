@@ -1,0 +1,98 @@
+/* --- Boot Screen --- */
+.boot-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5rem;
+  background: #000;
+  transition: opacity 0.5s ease;
+}
+.boot-screen--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.boot-screen__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.boot-screen__content--visible {
+  opacity: 1;
+}
+
+.boot-screen__logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+.boot-screen__flag {
+  width: 128px;
+  height: auto;
+  aspect-ratio: 518 / 457;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55));
+}
+.boot-screen__wordmark-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.3rem;
+}
+.boot-screen__wordmark {
+  font-family: var(--font-heading);
+  font-size: 2.75rem;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  background: linear-gradient(to bottom, #ffffff 0%, #d7e0f8 55%, #90a9e8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+.boot-screen__wordmark-xp {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-style: italic;
+  color: #ff9a2e;
+  margin-top: 0.15rem;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.boot-screen__bar-track {
+  position: relative;
+  width: 160px;
+  height: 16px;
+  background: #000;
+  border: 1px solid #6b6b6b;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.15);
+}
+.boot-screen__bar-fill {
+  position: absolute;
+  top: 3px;
+  left: -34px;
+  display: flex;
+  gap: 4px;
+  animation: boot-bar-slide 1.3s linear infinite;
+}
+.boot-screen__bar-fill span {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: linear-gradient(to bottom, #6ea8fe, #1e3a8a);
+  box-shadow: inset 0 0 1px rgba(255, 255, 255, 0.6);
+}
+@keyframes boot-bar-slide {
+  0% { left: -34px; }
+  100% { left: 160px; }
+}

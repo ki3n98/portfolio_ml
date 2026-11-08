@@ -1,0 +1,94 @@
+/* ===========================
+   Hero Section
+   =========================== */
+.hero {
+  padding: 1.5rem 0;
+}
+
+.hero__container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1.25rem 2rem 1.75rem;
+  text-align: center;
+}
+
+.hero__title {
+  font-family: var(--font-heading);
+  font-size: clamp(2.4rem, 6vw, 3.2rem);
+  font-weight: 700;
+  line-height: 1.05;
+  margin-bottom: 0.5rem;
+  color: var(--text);
+}
+
+.hero__role {
+  font-family: var(--font-hand);
+  font-size: 1.2rem;
+  color: var(--primary-accent);
+  letter-spacing: 0.02em;
+  margin-bottom: 1rem;
+}
+
+.hero__subtitle {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.hero__skills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero__education {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.hero__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-hand);
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  padding: 0.75rem 1.75rem;
+  border-radius: 4px;
+  background: var(--xp-face);
+  border: 1px solid var(--xp-bevel-shadow);
+  box-shadow:
+    inset 1px 1px 0 var(--xp-bevel-light),
+    inset -1px -1px 0 var(--xp-bevel-dark),
+    0 2px 4px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.hero__cta:hover {
+  background: #fff;
+}
+
+.hero__cta:active {
+  box-shadow:
+    inset -1px -1px 0 var(--xp-bevel-light),
+    inset 1px 1px 0 var(--xp-bevel-dark);
+  transform: translateY(1px);
+}
+
+.hero__cta .arrow {
+  transition: transform 0.3s ease;
+}
+
+.hero__cta:hover .arrow {
+  transform: translateX(4px);
+}

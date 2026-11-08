@@ -1,0 +1,83 @@
+/* ===========================
+   Calculator App
+   =========================== */
+#window-calculator .window__body {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.calculator {
+  width: 100%;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.calculator__display {
+  font-family: var(--font-body);
+  font-size: 1.6rem;
+  text-align: right;
+  padding: 0.6rem 0.75rem;
+  min-height: 2.4rem;
+  border: 1px solid var(--xp-bevel-dark);
+  border-radius: 2px;
+  background: var(--xp-face);
+  box-shadow:
+    inset 1px 1px 2px var(--xp-bevel-shadow),
+    inset -1px -1px 0 var(--xp-bevel-light);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.calculator__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.45rem;
+}
+
+.calculator__btn {
+  font-family: var(--font-hand);
+  font-size: 1.05rem;
+  padding: 0.65rem 0;
+  border-radius: 3px;
+  color: var(--text);
+  background: var(--xp-face);
+  border: 1px solid var(--xp-bevel-shadow);
+  box-shadow:
+    inset 1px 1px 0 var(--xp-bevel-light),
+    inset -1px -1px 0 var(--xp-bevel-dark);
+  cursor: pointer;
+}
+
+.calculator__btn:hover {
+  background: #fff;
+}
+
+.calculator__btn:active {
+  box-shadow:
+    inset -1px -1px 0 var(--xp-bevel-light),
+    inset 1px 1px 0 var(--xp-bevel-dark);
+  transform: translateY(1px);
+}
+
+.calculator__btn--wide {
+  grid-column: span 2;
+}
+
+.calculator__btn--equals {
+  grid-row: span 2;
+  background: var(--primary-accent);
+  color: #fff;
+}
+
+.calculator__btn--op {
+  color: var(--primary-accent);
+  font-weight: 700;
+}
+
+.calculator__btn--clear {
+  color: #B00020;
+  font-weight: 700;
+}

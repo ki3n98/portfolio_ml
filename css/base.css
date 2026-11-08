@@ -1,0 +1,107 @@
+/* ===========================
+   CSS Custom Properties
+   =========================== */
+:root {
+  /* Luna Blue chrome tokens */
+  --xp-titlebar-dark:   #0A246A;
+  --xp-titlebar-mid:    #245EDC;
+  --xp-titlebar-light:  #3D95FF;
+  --xp-titlebar-pale:   #A6CAF0;
+  --xp-taskbar-dark:    #1941A5;
+  --xp-taskbar-light:   #2873E0;
+  --xp-start-dark:      #2E8A2E;
+  --xp-start-light:     #6FD66F;
+  --xp-face:            #FFFFFF;
+  --xp-face-alt:        #FFFFFF;
+  --xp-bevel-light:     #FFFFFF;
+  --xp-bevel-shadow:    #ACA899;
+  --xp-bevel-dark:      #716F64;
+  --xp-desktop:         #3A6EA5;
+
+  --bg: #FFFFFF;
+  --bg-elevated: #FFFFFF;
+  --dark-accent: #0A246A;
+  --medium-accent: #716F64;
+  --primary-accent: #245EDC;
+  --text: #000000;
+  --text-muted: #44464B;
+  --border: #ACA899;
+
+  --font-heading: Tahoma, 'Segoe UI', Verdana, Geneva, sans-serif;
+  --font-hand: Tahoma, 'Segoe UI', Verdana, Geneva, sans-serif;
+  --font-body: Tahoma, 'Segoe UI', Verdana, Geneva, sans-serif;
+
+  --max-width: 1100px;
+  --nav-height: 40px;
+  --icon-bar-height: 0px;
+}
+
+/* ===========================
+   Icon (mask-image base)
+   =========================== */
+.icon {
+  display: inline-block;
+  width: 1.05rem;
+  height: 1.05rem;
+  background-color: currentColor;
+  -webkit-mask: var(--icon-url) no-repeat center / contain;
+  mask: var(--icon-url) no-repeat center / contain;
+}
+
+.icon--social {
+  width: 20px;
+  height: 20px;
+}
+
+/* ===========================
+   Reset & Base
+   =========================== */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  position: relative;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text);
+  background-color: var(--xp-desktop);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--text);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--primary-accent);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ===========================
+   Utility: Fade-in Animation
+   =========================== */
+.fade-in {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}

@@ -1,0 +1,86 @@
+/* ===========================
+   Picture Viewer (opened from My Pictures)
+   =========================== */
+.picture-viewer {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.picture-viewer.open {
+  display: flex;
+}
+
+.picture-viewer__dialog {
+  display: flex;
+  flex-direction: column;
+  max-width: min(90vw, 900px);
+  max-height: 85vh;
+  background: var(--xp-face);
+  border: 1px solid var(--xp-titlebar-dark);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.picture-viewer__titlebar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem 0.4rem 0.7rem;
+  min-height: 30px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(
+    to right,
+    var(--xp-titlebar-dark) 0%,
+    var(--xp-titlebar-mid) 10%,
+    var(--xp-titlebar-light) 46%,
+    var(--xp-titlebar-mid) 82%,
+    var(--xp-titlebar-pale) 100%
+  );
+}
+
+.picture-viewer__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.picture-viewer__close {
+  width: 24px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  border: 1px solid #7A1C10;
+  background: linear-gradient(to bottom, #F3A99C 0%, #E8604C 45%, #C53B28 50%, #EF7A63 100%);
+  color: #fff;
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.picture-viewer__body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  overflow: auto;
+  background: #333;
+}
+
+.picture-viewer__img {
+  display: block;
+  max-width: 100%;
+  max-height: 75vh;
+  object-fit: contain;
+}

@@ -1,0 +1,208 @@
+/* ===========================
+   Save As Dialog (Paint / Notepad)
+   =========================== */
+.save-dialog {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.save-dialog.open {
+  display: flex;
+}
+
+.save-dialog__dialog {
+  display: flex;
+  flex-direction: column;
+  width: 420px;
+  max-width: calc(100vw - 2rem);
+  background: var(--xp-face);
+  border: 1px solid var(--xp-titlebar-dark);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.save-dialog__titlebar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem 0.4rem 0.7rem;
+  min-height: 30px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(
+    to right,
+    var(--xp-titlebar-dark) 0%,
+    var(--xp-titlebar-mid) 10%,
+    var(--xp-titlebar-light) 46%,
+    var(--xp-titlebar-mid) 82%,
+    var(--xp-titlebar-pale) 100%
+  );
+}
+
+.save-dialog__title {
+  flex: 1 1 auto;
+}
+
+.save-dialog__close {
+  width: 24px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  border: 1px solid #7A1C10;
+  background: linear-gradient(to bottom, #F3A99C 0%, #E8604C 45%, #C53B28 50%, #EF7A63 100%);
+  color: #fff;
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.save-dialog__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.8rem;
+}
+
+.save-dialog__row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.save-dialog__row label {
+  flex: 0 0 82px;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text);
+}
+
+.save-dialog__savein {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text);
+  background: var(--xp-face);
+  border: 1px solid var(--xp-bevel-dark);
+  box-shadow: inset 1px 1px 2px var(--xp-bevel-shadow);
+}
+
+.save-dialog__savein-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  background-image: var(--icon-url);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.save-dialog__filelist {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 2px;
+  height: 130px;
+  padding: 0.4rem;
+  background: #fff;
+  border: 1px solid var(--xp-bevel-dark);
+  box-shadow: inset 1px 1px 2px var(--xp-bevel-shadow);
+  overflow-y: auto;
+}
+
+.save-dialog__file {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  background: none;
+  border: 1px solid transparent;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--text);
+  padding: 0.15rem 0.3rem;
+  cursor: pointer;
+}
+
+.save-dialog__file:hover {
+  background: #E5F3FF;
+  border-color: #99CCFF;
+}
+
+.save-dialog__file-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  background-image: var(--icon-url);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.save-dialog__filename-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.3rem 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--text);
+  background: var(--xp-face);
+  border: 1px solid var(--xp-bevel-dark);
+  box-shadow: inset 1px 1px 2px var(--xp-bevel-shadow);
+  outline: none;
+}
+
+.save-dialog__filetype {
+  flex: 1 1 auto;
+  padding: 0.3rem 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text);
+  background: var(--xp-face);
+  border: 1px solid var(--xp-bevel-dark);
+  box-shadow: inset 1px 1px 2px var(--xp-bevel-shadow);
+}
+
+.save-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+.save-dialog__btn {
+  padding: 0.35rem 1.1rem;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--text);
+  background: var(--xp-face);
+  border: 1px solid var(--xp-bevel-shadow);
+  box-shadow:
+    inset 1px 1px 0 var(--xp-bevel-light),
+    inset -1px -1px 0 var(--xp-bevel-dark);
+  cursor: pointer;
+}
+
+.save-dialog__btn:active {
+  box-shadow:
+    inset -1px -1px 0 var(--xp-bevel-light),
+    inset 1px 1px 0 var(--xp-bevel-dark);
+  transform: translateY(1px);
+}
+
+.save-dialog__btn--save {
+  font-weight: 700;
+}

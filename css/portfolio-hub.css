@@ -1,0 +1,367 @@
+/* ===========================
+   Portfolio Hub ("C:\Kien Pham" Explorer window)
+   =========================== */
+#window-portfolio .window__body {
+  padding: 0;
+  overflow: hidden;
+}
+
+.hub__body {
+  position: relative;
+}
+
+.hub__sidebar {
+  width: 200px;
+}
+
+.hub__sidebar a.explorer__sidebar-link {
+  box-sizing: border-box;
+}
+
+.hub__content {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem 2rem;
+  background: #fff;
+  font-family: var(--font-body);
+  color: var(--text);
+}
+
+/* ----- Header ----- */
+.hub__header {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.hub__avatar {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border: 2px solid #fff;
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px #7DA2CE, 1px 2px 4px rgba(0, 0, 0, 0.3);
+  background: #D6DFF7;
+}
+
+.hub__name {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #0A246A;
+}
+
+.hub__role {
+  margin: 0.1rem 0 0.4rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #316AC5;
+}
+
+.hub__bio,
+.hub__edu {
+  margin: 0 0 0.3rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  max-width: 75ch;
+}
+
+.hub__edu {
+  color: var(--text-muted);
+}
+
+.hub__quick {
+  display: none;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.hub__quick-btn,
+.hub__btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.8rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text);
+  text-decoration: none;
+  background: linear-gradient(to bottom, #fff 0%, #ECEBE6 85%, #D6D0C5 100%);
+  border: 1px solid #003C74;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.hub__quick-btn:hover,
+.hub__btn:hover {
+  box-shadow: inset 0 0 0 2px #F8B33A;
+}
+
+.hub__btn--primary {
+  font-weight: 700;
+}
+
+/* ----- Group headers (XP "Show in Groups" style) ----- */
+.hub__group {
+  margin-bottom: 1.5rem;
+}
+
+.hub__group-header {
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.2rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0A246A;
+  border-bottom: 2px solid transparent;
+  border-image: linear-gradient(to right, #316AC5 0%, rgba(49, 106, 197, 0) 80%) 1;
+}
+
+/* ----- Tags ----- */
+.hub__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+}
+
+.hub__tag {
+  font-size: 0.72rem;
+  padding: 0.1rem 0.45rem;
+  color: #0A246A;
+  background: #EEF3FC;
+  border: 1px solid #B6CDF4;
+  border-radius: 2px;
+}
+
+/* ----- Experience tiles ----- */
+.hub__exp-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
+  gap: 0.75rem;
+}
+
+.hub__exp-tile {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid transparent;
+  border-radius: 3px;
+}
+
+.hub__exp-tile:hover {
+  background: #F3F8FF;
+  border-color: #CBE4FB;
+}
+
+.hub__exp-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  background-image: var(--icon-url);
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.hub__exp-main {
+  min-width: 0;
+}
+
+.hub__exp-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 0.75rem;
+  align-items: baseline;
+}
+
+.hub__exp-org {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.hub__exp-dates {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.hub__exp-role {
+  margin: 0.1rem 0 0.35rem;
+  font-size: 0.82rem;
+  color: #316AC5;
+  font-weight: 700;
+}
+
+.hub__exp-list-items {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.hub__exp-list-items li {
+  margin-bottom: 0.25rem;
+}
+
+/* ----- Project tiles ----- */
+.hub__proj-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr));
+  gap: 1rem;
+}
+
+.hub__proj-tile {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 3px;
+}
+
+.hub__proj-tile:hover {
+  background: #E5F3FF;
+  border-color: #99CCFF;
+}
+
+.hub__proj-tile--selected {
+  background: #CBE4FB;
+  border-color: #7DA2CE;
+}
+
+.hub__proj-open {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0;
+  background: none;
+  border: none;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.hub__proj-open:focus-visible {
+  outline: 1px dotted #000;
+  outline-offset: 2px;
+}
+
+.hub__thumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border: 1px solid #7DA2CE;
+  box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.hub__thumb-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hub__thumb-play {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: #fff;
+  background: rgba(10, 36, 106, 0.8);
+  border-radius: 50%;
+  transition: opacity 0.15s ease;
+}
+
+.hub__proj-tile:hover .hub__thumb-play {
+  opacity: 0;
+}
+
+.hub__proj-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0A246A;
+}
+
+.hub__proj-open:hover .hub__proj-title {
+  text-decoration: underline;
+}
+
+.hub__award {
+  align-self: flex-start;
+  margin: 0.25rem 0 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.1rem 0.45rem;
+  color: #44464B;
+  background: #F1EFE2;
+  border: 1px solid var(--xp-bevel-shadow);
+  border-radius: 2px;
+}
+
+.hub__award--win {
+  color: #6B4A00;
+  background: #FFF4C2;
+  border-color: #E0B84A;
+}
+
+.hub__proj-desc {
+  margin: 0.4rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.hub__proj-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+.hub__link {
+  font-size: 0.78rem;
+  color: #00178F;
+}
+
+.hub__link:hover {
+  color: #B00020;
+}
+
+/* ----- Skills ----- */
+.hub__skills {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.hub__skill-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+}
+
+.hub__skill-group-name {
+  flex: 0 0 130px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.hub__skill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.hub__skills .skill {
+  font-size: 0.78rem;
+  padding: 0.25rem 0.6rem;
+}

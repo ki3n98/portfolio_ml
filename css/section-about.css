@@ -1,0 +1,41 @@
+/* ===========================
+   About / Skills
+   =========================== */
+
+.skill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-hand);
+  font-size: 0.9rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 2px;
+  color: var(--text);
+  background: var(--xp-face);
+  border: 1px solid var(--xp-bevel-shadow);
+  box-shadow:
+    inset 1px 1px 0 var(--xp-bevel-light),
+    inset -1px -1px 0 var(--xp-bevel-dark);
+  transition: all 0.2s ease;
+}
+
+.skill__icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask: var(--icon-url) no-repeat center / contain;
+  mask: var(--icon-url) no-repeat center / contain;
+}
+
+.skill__icon--postgres {
+  width: 16px;
+  height: 16px;
+}
+
+.skill:hover {
+  transform: translateY(-2px);
+  background: var(--primary-accent);
+  color: #fff;
+}
