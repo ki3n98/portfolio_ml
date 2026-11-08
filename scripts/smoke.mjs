@@ -193,7 +193,19 @@ try {
     await click('[data-proj-open]');
     await page.waitForTimeout(300);
     await page.screenshot({ path: join(OUT, '21-hub-detail.png'), animations: 'disabled' });
+    await page.keyboard.press('Escape');
+    check(await page.evaluate(() => document.getElementById('hub-detail').hidden), 'Escape did not close the hub detail panel');
+    check(await isOpen('portfolio'), 'Escape on hub detail also closed the window');
   }
+  // Hub menu bar: open a menu, Escape closes the menu but not the window.
+  await click('[data-hub-menu="View"]');
+  check(await page.evaluate(() => document.querySelector('[data-hub-dropdown="View"]').classList.contains('open')), 'hub View menu did not open');
+  await page.keyboard.press('Escape');
+  check(await page.evaluate(() => !document.querySelector('[data-hub-dropdown="View"]').classList.contains('open')), 'Escape did not close the hub menu');
+  check(await isOpen('portfolio'), 'Escape on hub menu also closed the window');
+  await click('[data-hub-action="toggle-sidebar"]');
+  check(await page.evaluate(() => document.querySelector('#window-portfolio .hub').classList.contains('hub--no-sidebar')), 'hub Task Pane toggle failed');
+  await click('[data-hub-action="toggle-sidebar"]');
 
   // Mobile width renders without errors.
   await page.setViewportSize({ width: 375, height: 800 });
