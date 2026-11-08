@@ -53,11 +53,15 @@ Then open `http://localhost:8000` in your browser.
 
 ```
 portfolio_ml/
-├── index.html          # Main page with desktop window markup and navigation
-├── css/
-│   └── style.css       # Styling (currently empty - styles embedded in HTML)
+├── index.html          # Window markup; links stylesheets, loads js/main.js as an ES module
+├── css/                # One stylesheet per feature (base, taskbar, window, app-paint, …)
 ├── js/
-│   └── main.js         # All client-side behavior: window management, desktop apps
+│   ├── main.js         # Entry point: imports each feature and calls its init()
+│   ├── utils.js        # Shared helpers (escapeHtml, isMobile)
+│   ├── data/           # Projects, experience and skills content
+│   ├── desktop/        # Start menu, window manager, drag/resize, tray clock
+│   └── apps/           # Notepad, Calculator, Explorer/, Paint/, Gradient Descent/, Portfolio Hub/
+├── scripts/            # Playwright smoke test + screenshot diff
 ├── assets/
 │   ├── icons/          # Windows-style icons (Windows XP theme)
 │   ├── images/         # Project images and videos
@@ -122,17 +126,18 @@ The portfolio uses an innovative scroll-based visualization where each project r
 ### Running Tests
 
 ```bash
-npm test
+npm run smoke   # headless Chromium smoke test of every window and app
 ```
 
 ### Project Structure
 
-#### JavaScript Modules (`js/main.js`)
-- Window management system
-- Desktop apps (Notepad, Paint, Calculator, Explorer)
-- Gradient descent visualization
-- Contact form handling
-- Clock and system utilities
+#### JavaScript Modules (`js/`)
+Plain ES modules, one feature per file; see the feature → file map in `AGENTS.md`.
+- `desktop/` — window management system, start menu, tray clock
+- `apps/` — Notepad, Paint, Calculator, Explorer, contact form, Experience window
+- `apps/gradient-descent/` — gradient descent visualization
+- `apps/portfolio-hub/` — the `C:\Kien Pham` landing window
+- `data/` — portfolio content (projects, experience, skills)
 
 #### Events
 - Window open/close/minimize/maximize
