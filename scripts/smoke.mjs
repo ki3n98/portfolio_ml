@@ -9,9 +9,9 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const ROOT = process.env.SMOKE_ROOT || join(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 8123;
-const OUT = join(ROOT, 'scripts', '.smoke-out', process.env.SMOKE_OUT || 'latest');
+const OUT = join(dirname(fileURLToPath(import.meta.url)), '.smoke-out', process.env.SMOKE_OUT || 'latest');
 mkdirSync(OUT, { recursive: true });
 
 const WINDOW_IDS = ['portfolio', 'hero', 'experience', 'projects', 'contact', 'resume',
@@ -54,6 +54,33 @@ try {
     await close(id);
     check(!(await isOpen(id)), `window ${id} did not close`);
   }
+
+  // Window chrome: drag, resize, maximize/restore, Escape closes the top window.
+  await open('notepad');
+  const winVar = (name) => page.evaluate(n =>
+    document.getElementById('window-notepad').style.getPropertyValue(n), name);
+  const bar = await page.locator('#window-notepad .window__titlebar').boundingBox();
+  await page.mouse.move(bar.x + 60, bar.y + bar.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(bar.x + 160, bar.y + bar.height / 2 + 50, { steps: 5 });
+  await page.mouse.up();
+  check((await winVar('--win-left')).endsWith('px'), 'dragging the title bar did not move the window');
+  const handle = await page.locator('#window-notepad .window__resize-handle').boundingBox();
+  if (handle) {
+    const wBefore = (await page.locator('#window-notepad').boundingBox()).width;
+    await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(handle.x + 80, handle.y + 40, { steps: 5 });
+    await page.mouse.up();
+    const wAfter = (await page.locator('#window-notepad').boundingBox()).width;
+    check(wAfter > wBefore, `resize handle did not grow the window (${wBefore} -> ${wAfter})`);
+  }
+  await click('#window-notepad [data-maximize]');
+  check(await page.evaluate(() => document.getElementById('window-notepad').classList.contains('window--maximized')), 'maximize failed');
+  await click('#window-notepad [data-maximize]');
+  check(await page.evaluate(() => !document.getElementById('window-notepad').classList.contains('window--maximized')), 'restore failed');
+  await page.keyboard.press('Escape');
+  check(!(await isOpen('notepad')), 'Escape did not close the top window');
 
   // Calculator: 2 + 3 = 5
   await open('calculator');

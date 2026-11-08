@@ -1,4 +1,5 @@
 text.md
 .claude
 node_modules/
-assets/Windows XP High Resolution Icon Pack/scripts/.smoke-out/
+assets/Windows XP High Resolution Icon Pack/
+scripts/.smoke-out/
