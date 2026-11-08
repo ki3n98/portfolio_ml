@@ -14,8 +14,11 @@ import { initNotepad } from './apps/notepad.js';
 import { initExplorer } from './apps/explorer/index.js';
 import { initCalculator } from './apps/calculator.js';
 import { initPaint } from './apps/paint/index.js';
+import { initExperienceWindow } from './apps/experience-window.js';
 import { isMobile } from './utils.js';
 import { isTopWindow, closeWindow, toggleMaximize, toggleOrFocusWindow } from './desktop/window-manager.js';
+import { PORTFOLIO_PROJECTS } from './data/projects.js';
+import { PORTFOLIO_EXPERIENCE } from './data/experience.js';
 
 initBootScreen();
 initStartMenu();
@@ -28,158 +31,7 @@ initNotepad();
 initExplorer();
 initCalculator();
 initPaint();
-// ===========================
-// 1b. Shared portfolio data (used by the Explorer hub and the GD viz)
-// ===========================
-// Project schema is documented in section 2a below.
-const PORTFOLIO_PROJECTS = [
-  {
-    x: -1.9,
-    title: 'Shape & Sign',
-    desc: 'Gesture-controlled mini-games that teach kids ASL vocabulary and phrases from a webcam. A two-stage recognizer routes live MediaPipe hand frames into 5 modes, then stacked LSTMs read ASL sequences, sustaining ~93% live accuracy through judging.',
-    role: 'Team of 4 · I built the Random Forest mode router (5-frame debounce) and the Python backend',
-    award: 'BeachHacks 8.0 (2025) • Best Overall',
-    tags: ['MediaPipe', 'Random Forest', 'LSTM', 'TensorFlow.js', 'Next.js'],
-    link: 'https://shape-sign-mu.vercel.app/',
-    ctaLabel: 'Live Demo →',
-    secondaryLink: 'https://github.com/ki3n98/shape-sign',
-    secondaryLabel: 'Source Code',
-    tertiaryLink: 'https://devpost.com/software/shape-sign',
-    tertiaryLabel: 'Devpost',
-    step: 'Step 1 - High Loss',
-    mediaType: 'Video',
-    mediaSrc: 'assets/videos/shape_sign_demo.mp4',
-    mediaText: 'Shape & Sign demo',
-  },
-  {
-    x: -1.4,
-    title: '911 Operator Assistance',
-    desc: 'A 911 dispatcher co-pilot: an incoming call is transcribed with faster-whisper, Gemini extracts the address and incident type under a strict output contract, and a geocoded pin lands on a live dashboard, where a human confirms before anyone is dispatched.',
-    role: 'Team of 3 · I built the transcription → LLM → geocoding pipeline and most of the dispatcher dashboard',
-    award: 'Marina Hacks 5.0 (2025) • Best Overall',
-    tags: ['faster-whisper', 'Gemini 2.5 Flash', 'FastAPI', 'Twilio Voice', 'Google Maps API', 'Next.js'],
-    link: 'https://github.com/Ben2104/911-Operator-Assistant',
-    ctaLabel: 'Source Code →',
-    secondaryLink: 'https://devpost.com/software/911-operator-assistant',
-    secondaryLabel: 'Devpost',
-    step: 'Step 2 - Descending',
-    mediaType: 'Video',
-    mediaEmbed: 'https://www.youtube-nocookie.com/embed/okCDJyBionU?start=40&autoplay=1&mute=1&playsinline=1&rel=0',
-    mediaText: '911 Operator demo video',
-  },
-  {
-    x: -0.9,
-    title: 'VeriFace',
-    desc: 'End-to-end face-recognition attendance for classrooms and events: MTCNN detection → FaceNet (InceptionResNetV1) 512-dim embeddings, cosine-matched against each event roster and served through FastAPI + PostgreSQL. Also a live WebSocket check-in dashboard, a self-trained EfficientNet-B0 anti-spoofing model, JWT/bcrypt auth with a 5-role RBAC engine and audit logging (I wrote the permission module), 160+ pytest tests, and a reproducible Docker/CUDA stack.',
-    role: 'Team of 6 · Repo founder, backend lead, and top contributor (84 of 182 commits)',
-    award: 'CECS Senior Design Award — Outstanding Achievement in Applied AI & ML',
-    tags: ['MTCNN', 'FaceNet', 'PyTorch', 'EfficientNet-B0', 'FastAPI', 'PostgreSQL', 'WebSockets', 'Docker', 'JWT / RBAC', '160+ pytest tests'],
-    link: 'https://github.com/ki3n98/VeriFace',
-    ctaLabel: 'Source Code →',
-    step: 'Step 3 - Converging',
-    mediaType: 'Video',
-    mediaSrc: 'assets/videos/veriface_demo.mp4',
-    mediaText: 'VeriFace demo',
-  },
-  {
-    x: -0.4,
-    title: 'DocGenix',
-    desc: 'Describe an app idea, get a full software blueprint. 8 specialist LangGraph agents write requirements, architecture, API, and data-model docs in parallel; a Critic agent checks them against each other and triggers up to 2 revision rounds.',
-    role: 'Team of 4 · I wrote the multi-agent orchestration, the Critic agent, and the structured-output extraction',
-    award: 'BeachHacks 9.0 (2026)',
-    tags: ['LangGraph', 'Multi-agent', 'LangChain', 'FastAPI', 'SSE streaming', 'Next.js'],
-    link: 'https://github.com/zokoxa/DocGenix',
-    ctaLabel: 'Source Code →',
-    secondaryLink: 'https://devpost.com/software/docsgenix',
-    secondaryLabel: 'Devpost',
-    step: 'Step 4 - Local Optimum',
-    mediaType: 'Video',
-    mediaEmbed: 'https://www.youtube-nocookie.com/embed/SqQycaZNr4Q?start=115&autoplay=1&mute=1&playsinline=1&rel=0',
-    mediaText: 'DocGenix demo',
-  },
-  {
-    x: 0,
-    title: 'Hire Me',
-    desc: 'I build real-time computer vision and AI systems with a focus on performance, product thinking, and production-ready deployment.',
-    tags: ['Applied ML', 'AI Engineer', 'Computer Vision', 'Full-Stack AI'],
-    includeInOverview: false,
-    hideMedia: false,
-    mediaType: 'Image',
-    mediaSrc: 'assets/img/emi.jpg',
-    mediaText: 'Kien Pham',
-    link: '#contact',
-    ctaLabel: 'Get In Touch →',
-    secondaryLink: 'assets/resume/Kien_Pham_resume.pdf',
-    secondaryLabel: 'Download Resume',
-    step: 'Step 5 - Hire Me',
-  },
-];
-
-/**
- * Experience entries. `bullets` may contain <b> markup (trusted, authored here).
- * @type {{org:string, role:string, dates:string, icon:string, context?:string,
- *         bullets:string[], tags:string[], links?:[string,string][]}[]}
- */
-const PORTFOLIO_EXPERIENCE = [
-  {
-    org: 'Thomson Reuters Special Services',
-    role: 'Data Science Intern',
-    dates: 'May 2026 — Aug 2026',
-    icon: '../assets/icons/briefcase.png',
-    context: 'Spotlight (Canary × TRSS) surfaces suspected trafficking victims to law enforcement from ~150K ads/day and has helped identify 28,459 children since 2016. Its juvenile flag relied on images alone; I explored and benchmarked text models to add a second signal.',
-    bullets: [
-      'Built and benchmarked <b>86 text-classification models</b> (11 embedding methods × up to 10 classifiers, plus a zero-shot LLM baseline) to flag suspected juvenile victims in escort ads.',
-      'Detected juvenile victims of sex trafficking in escort ads using an embedding → classifier pipeline (OpenAI text-embedding-3-large + Logistic Regression), lifting recall from <b>0.620</b> to <b>0.795</b> and F1 from <b>0.50</b> to <b>0.64</b> at unchanged precision.',
-      'Combined the text model\'s output with the existing image classifier, catching <b>23%</b> more true juvenile victims than the image classifier alone — roughly 350 additional confirmed cases per 6,000 ads reviewed.',
-      'Stress-tested models on held-out 2024 ads: the 2025 leaders\' recall collapsed (e.g. <b>0.612 → 0.313</b>) while OpenAI embeddings + Logistic Regression held steady (<b>0.750 → 0.744</b>), so I recommended the model that generalizes, not the leaderboard winner.',
-      'Measured concept drift (words shifting in juvenile signal year over year) and showed it tracks F1 decline across models, proposing drift monitoring as an early-warning retraining trigger.',
-      'Made predictions auditable for law enforcement using SHAP and TF-IDF + LR coefficients trained on 2024-only, 2025-only, and pooled data, surfacing durable linguistic signals that held across years.',
-      'Presented project findings and results to stakeholders company-wide, explaining technical modeling work to non-technical audiences and translating it into a shipping recommendation for text as a second detection signal.',
-    ],
-    tags: ['Embedding → Classifier', 'OpenAI Embeddings', 'Logistic Regression', 'Zero-shot LLM', 'TF-IDF', 'SHAP', 'Concept Drift'],
-  },
-  {
-    org: 'Vision-Based Distracted Driving Detection',
-    role: 'Undergraduate Researcher · Co-author with Dr. Amir Ghasemkhani',
-    dates: 'Aug 2025 — Feb 2026',
-    icon: '../assets/icons/sys-info.png',
-    context: 'Paper published and presented at the 6th Annual Computer Science Conference for CSU Undergraduates (Feb 2026).',
-    bullets: [
-      'Benchmarked Faster R-CNN, SSD, and YOLOv11 for real-time in-cabin driver distraction (phone, eating, drinking, smoking) on the Roboflow Mobile Detection dataset under one fixed protocol; YOLOv11 won on both axes with <b>mAP@.50:.95 = 0.604</b> at <b>86.1 FPS</b> on a consumer RTX 3080, using half the parameters.',
-      'Overturned the "two-stage is more accurate" assumption: Faster R-CNN scored lowest (<b>0.443</b> mAP) and ran <b>16× slower</b> (5.24 FPS), showing architecture choices must be benchmarked on the target data.',
-      'Balanced an imbalanced training set (978–1,817 images per class) with class oversampling, keeping validation and test splits realistic.',
-      'Conducted quantitative performance analysis across model architectures, producing deployment guidance for real-time, latency-sensitive object detection applications.',
-    ],
-    tags: ['YOLOv11', 'Faster R-CNN', 'SSD', 'PyTorch', 'Roboflow'],
-    links: [
-      ['assets/resume/Distracted_Driving_Detection___Kien-2.pdf', 'Read Paper (PDF)'],
-      ['https://github.com/ki3n98/Amir_research', 'Source Code'],
-    ],
-  },
-];
-
-// Experience window renders from the same data as the hub.
-(function renderExperienceWindow() {
-  const list = document.getElementById('experience-list');
-  if (!list) return;
-  const escHtml = (str) => String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  list.innerHTML = PORTFOLIO_EXPERIENCE.map(e => `
-    <article class="experience-card fade-in">
-      <div class="experience-card__header">
-        <div>
-          <h3 class="experience-card__title">${escHtml(e.org)}</h3>
-          <p class="experience-card__role">${escHtml(e.role)}</p>
-        </div>
-        <span class="experience-card__date">${escHtml(e.dates)}</span>
-      </div>
-      ${e.context ? `<p class="experience-card__context">${escHtml(e.context)}</p>` : ''}
-      <ul class="experience-card__list">${e.bullets.map(b => `<li>${b}</li>`).join('')}</ul>
-      <div class="experience-card__tags">${e.tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}</div>
-      ${e.links ? `<div class="experience-card__links">${e.links.map(([url, label]) =>
-        `<a href="${escHtml(url)}"${/^https?:/.test(url) ? ' target="_blank" rel="noopener noreferrer"' : ''}>${escHtml(label)}</a>`).join('')}</div>` : ''}
-    </article>`).join('');
-})();
-
+initExperienceWindow();
 // ===========================
 // 2. Gradient Descent Visualization
 // ===========================

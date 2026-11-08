@@ -25,16 +25,20 @@ const server = spawn('python3', ['-m', 'http.server', String(PORT), '--bind', '1
 await new Promise(r => setTimeout(r, 800));
 
 const browser = await chromium.launch();
+const errors = [];
 try {
   const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
-  const errors = [];
-  page.on('console', m => { if (m.type() === 'error') errors.push(`console: ${m.text()}`); });
+  // Only count console errors from this site (embedded YouTube iframes log their own noise).
+  page.on('console', m => {
+    const src = m.location()?.url || '';
+    if (m.type() === 'error' && (!src || src.startsWith(`http://127.0.0.1:${PORT}`))) errors.push(`console: ${m.text()} (${src})`);
+  });
   page.on('pageerror', e => errors.push(`pageerror: ${e.message}`));
 
   await page.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'load' });
   await page.waitForSelector('#boot-screen', { state: 'detached', timeout: 10000 });
   await page.waitForTimeout(300);
-  await page.screenshot({ path: join(OUT, '00-desktop.png') });
+  await page.screenshot({ path: join(OUT, '00-desktop.png'), animations: 'disabled' });
 
   const isOpen = id => page.evaluate(id => !document.getElementById(`window-${id}`).hidden, id);
   const open = async id => {
@@ -177,7 +181,7 @@ try {
     await page.waitForTimeout(700);
     titles.add((await page.textContent('#gd-info-title')).trim());
   }
-  await page.screenshot({ path: join(OUT, '20-gd-scrolled.png') });
+  await page.screenshot({ path: join(OUT, '20-gd-scrolled.png'), animations: 'disabled' });
   check([...titles].filter(Boolean).length >= 2, `GD info panel barely changed: ${[...titles].join(' | ')}`);
   await close('projects');
 
@@ -188,16 +192,18 @@ try {
   if (hasProj) {
     await click('[data-proj-open]');
     await page.waitForTimeout(300);
-    await page.screenshot({ path: join(OUT, '21-hub-detail.png') });
+    await page.screenshot({ path: join(OUT, '21-hub-detail.png'), animations: 'disabled' });
   }
 
   // Mobile width renders without errors.
   await page.setViewportSize({ width: 375, height: 800 });
   await page.waitForTimeout(300);
-  await page.screenshot({ path: join(OUT, '22-mobile.png') });
+  await page.screenshot({ path: join(OUT, '22-mobile.png'), animations: 'disabled' });
 
-  for (const e of errors) failures.push(e);
+} catch (err) {
+  failures.push(`crashed: ${err.message.split('\n')[0]}`);
 } finally {
+  for (const e of errors) failures.push(e);
   await browser.close();
   server.kill();
 }
