@@ -102,6 +102,16 @@ try {
   check(docs.includes('smoke-test.txt'), 'saved notepad file missing from My Documents');
   await close('my-documents');
 
+  // My Pictures: slideshow task opens the picture viewer; Escape closes it.
+  await open('my-pictures');
+  await click('#window-my-pictures [data-task="0"]');
+  await page.waitForTimeout(200);
+  check(await page.evaluate(() => document.querySelector('.picture-viewer')?.classList.contains('open')),
+    'slideshow did not open the picture viewer');
+  await page.keyboard.press('Escape');
+  check(await page.evaluate(() => !document.querySelector('.picture-viewer.open')), 'Escape did not close the picture viewer');
+  if (await isOpen('my-pictures')) await close('my-pictures');
+
   // Paint: draw a stroke, then undo it.
   await open('paint');
   const inked = () => page.evaluate(() => {
