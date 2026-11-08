@@ -3915,3 +3915,17 @@ img {
 .experience-card__links a {
   color: #00178F;
 }
+
+/* ----- Hub menu bar ----- */
+.hub__menubar {
+  z-index: 5;
+}
+
+.hub__menubar .notepad__menu-option {
+  white-space: nowrap;
+}
+
+.hub--no-sidebar .hub__sidebar,
+.hub--no-status .explorer__statusbar {
+  display: none;
+}
