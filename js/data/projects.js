@@ -26,7 +26,7 @@ export const PORTFOLIO_PROJECTS = [
   {
     x: -1.9,
     title: 'Shape & Sign',
-    desc: 'Gesture-controlled mini-games that teach kids ASL vocabulary and phrases from a webcam. A two-stage recognizer routes live MediaPipe hand frames into 5 modes, then stacked LSTMs (run in-browser via TensorFlow.js) read ASL sequences, sustaining ~93% live accuracy through judging.',
+    desc: 'Mini-games that teach kids ASL vocabulary and phrases using only a webcam and hand gestures. MediaPipe tracks the hand, a Random Forest decides which of five modes the player is in, and stacked LSTMs (running in the browser with TensorFlow.js) read the ASL signs. It held about 93% accuracy live during judging.',
     role: 'Team of 4 · I built the Random Forest mode router (5-frame debounce) and the Python backend',
     award: 'BeachHacks 8.0 (2025) • Best Overall',
     tags: ['MediaPipe', 'Random Forest', 'LSTM', 'TensorFlow.js', 'Next.js'],
@@ -44,7 +44,7 @@ export const PORTFOLIO_PROJECTS = [
   {
     x: -1.4,
     title: '911 Operator Assistance',
-    desc: 'A 911 dispatcher co-pilot: an incoming call is transcribed with faster-whisper, Gemini extracts the address and incident type under a strict output contract, and a geocoded pin lands on a live dashboard, where a human confirms before anyone is dispatched.',
+    desc: 'A co-pilot for 911 dispatchers. An incoming call is transcribed with faster-whisper, Gemini pulls out the address and incident type in a fixed format, and the address is geocoded onto a live dashboard map. A human operator confirms the location before anyone is dispatched.',
     role: 'Team of 3 · I built the transcription → LLM → geocoding pipeline and most of the dispatcher dashboard',
     award: 'Marina Hacks 5.0 (2025) • Best Overall',
     tags: ['faster-whisper', 'Gemini 2.5 Flash', 'FastAPI', 'Twilio Voice', 'Google Maps API', 'Next.js'],
@@ -60,7 +60,7 @@ export const PORTFOLIO_PROJECTS = [
   {
     x: -0.9,
     title: 'VeriFace',
-    desc: 'Face-recognition attendance for classrooms and events. MTCNN detection and FaceNet embeddings are cosine-matched against each event roster, served via FastAPI + PostgreSQL, with a live WebSocket check-in dashboard and a self-trained EfficientNet-B0 anti-spoofing model.',
+    desc: 'Face-recognition attendance for classrooms and events. MTCNN finds faces, FaceNet turns them into embeddings, and each one is matched by cosine similarity against that event\'s roster. The backend uses FastAPI and PostgreSQL, a WebSocket dashboard shows check-ins live, and an EfficientNet-B0 model we trained ourselves guards against spoofing.',
     role: 'Team of 6 · Repo founder, backend lead, and top contributor (84 of 182 commits)',
     award: 'CECS Senior Design Award — Outstanding Achievement in Applied AI & ML',
     tags: ['MTCNN', 'FaceNet', 'PyTorch', 'EfficientNet-B0', 'FastAPI', 'PostgreSQL', 'WebSockets', 'Docker', 'JWT / 5-role RBAC', '160+ pytest tests'],
@@ -74,7 +74,7 @@ export const PORTFOLIO_PROJECTS = [
   {
     x: -0.4,
     title: 'DocGenix',
-    desc: 'Describe an app idea, get a full software blueprint. 8 specialist LangGraph agents write requirements, architecture, API, and data-model docs in parallel; a Critic agent checks them against each other and triggers up to 2 revision rounds.',
+    desc: 'Describe an app idea and get a full software blueprint. Eight LangGraph agents write documents like the requirements, architecture, API spec, and data model in parallel. A Critic agent then checks the documents against each other and can ask for up to two rounds of revisions.',
     role: 'Team of 4 · I wrote the multi-agent orchestration, the Critic agent, and the structured-output extraction',
     award: 'BeachHacks 9.0 (2026)',
     tags: ['LangGraph', 'Multi-agent', 'LangChain', 'FastAPI', 'SSE streaming', 'Next.js'],
@@ -90,7 +90,7 @@ export const PORTFOLIO_PROJECTS = [
   {
     x: 0,
     title: 'Hire Me',
-    desc: 'I build real-time computer vision and AI systems with a focus on performance, product thinking, and production-ready deployment.',
+    desc: 'I build computer vision and NLP systems, and I care about making them work outside a notebook. I\'m available for full-time work starting January 2027.',
     tags: ['Applied ML', 'AI Engineer', 'Computer Vision', 'Full-Stack AI'],
     includeInOverview: false,
     hideMedia: false,

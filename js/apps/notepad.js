@@ -132,7 +132,7 @@ export function initNotepad() {
           if (statusBarVisible) updateNotepadStatus();
           break;
         case 'about':
-          alert('Notepad — Lightweight Edition\n\nA small real text editor built for this desktop.\n\nText does not persist across page reloads.');
+          alert('Notepad — Lightweight Edition\n\nA small text editor I built for this desktop.\n\nText does not persist across page reloads.');
           break;
       }
     });

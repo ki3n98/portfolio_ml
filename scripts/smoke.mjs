@@ -284,6 +284,34 @@ try {
   check(await page.evaluate(() => document.querySelector('#window-portfolio .hub').classList.contains('hub--no-sidebar')), 'hub Task Pane toggle failed');
   await click('[data-hub-action="toggle-sidebar"]');
 
+  // New detail sections: every project's detail page must render all four (stats removed).
+  const SECTION_IDS = ['architecture', 'built', 'why', 'lessons'];
+  for (let i = 0; i < 4; i++) {
+    await click(`[data-proj-open="${i}"]`);
+    await page.waitForTimeout(300);
+    check(await page.evaluate(() => !document.getElementById('hub-project-page').hidden),
+      `project ${i}: detail page did not open`);
+    for (const sec of SECTION_IDS) {
+      check(await page.evaluate(s => !!document.querySelector(`#hub-project-page [data-proj-section="${s}"]`), sec),
+        `project ${i}: detail page missing section "${sec}"`);
+    }
+    const flowSteps = await page.evaluate(() =>
+      document.querySelectorAll('#hub-project-page [data-proj-section="architecture"] .hub__project-flow li').length);
+    check(flowSteps >= 3, `project ${i}: architecture flow has only ${flowSteps} steps`);
+    if (i === 0) {
+      // Capture the new sections for the visual baseline (they sit below the fold).
+      await page.evaluate(() => { document.getElementById('hub-project-page').scrollTop = 700; });
+      await page.waitForTimeout(200);
+      await page.screenshot({ path: join(OUT, '21-hub-detail-scrolled.png'), animations: 'disabled' });
+      await page.evaluate(() => { document.getElementById('hub-project-page').scrollTop = 0; });
+    }
+    await click('#window-portfolio [data-hub-back]');
+    await page.waitForTimeout(300);
+  }
+  check(await page.evaluate(() => document.getElementById('hub-project-page').hidden),
+    'section checks left the hub project page open');
+  check((await hubAddr()) === HUB_PATH, `section checks left hub address at "${await hubAddr()}"`);
+
   // Minimize then restore from the taskbar: the hub must re-open at its history
   // position (project page visible), not reset to the landing page.
   await click('[data-proj-open]');

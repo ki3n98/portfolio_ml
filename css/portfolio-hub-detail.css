@@ -298,3 +298,36 @@
 .experience-card__links a {
   color: #00178F;
 }
+
+/* ----- Project detail sections (Step 2) ----- */
+.hub__project-section {
+  margin: 0 0 1.25rem;
+}
+
+.hub__project-section-title {
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.3rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0A246A;
+  border-bottom: 1px solid #B6CDF4;
+}
+
+.hub__project-flow,
+.hub__project-list {
+  margin: 0;
+  padding-left: 1.4rem;
+  max-width: 80ch;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.hub__project-flow li + li,
+.hub__project-list li + li {
+  margin-top: 0.4rem;
+}
+
+.hub__project-flow-lead {
+  color: #0A246A;
+}

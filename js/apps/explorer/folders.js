@@ -9,9 +9,9 @@ function openReadme() {
   const notepadTextarea = document.getElementById('notepad-textarea');
   toggleOrFocusWindow('notepad');
   if (notepadTextarea) {
-    notepadTextarea.value = 'Thanks for poking around!\n\nThis whole desktop - the windows, the taskbar, Paint, Notepad, '
-      + 'the Calculator, this file explorer - is hand-built by Kien Pham to show both software engineering chops and a '
-      + 'bit of nostalgia for Windows XP.\n\nCheck out the Resume.pdf in this folder, or head back to the desktop to see '
+    notepadTextarea.value = 'Thanks for looking around!\n\nI built this whole desktop myself: the windows, the taskbar, Paint, Notepad, '
+      + 'the Calculator, and this file explorer. I wanted to show what I can do as a software engineer, and I also '
+      + 'like Windows XP.\n\nYou can open Resume.pdf in this folder, or go back to the desktop to see '
       + 'the rest of the portfolio.';
   }
 }

@@ -114,7 +114,7 @@ export function initPaint() {
             paintColorPicker?.click();
             break;
           case 'about':
-            alert('MS Paint — Lightweight Edition\n\nA small real Paint clone built for this desktop.\n\nDraw, fill, select, and save, right from the browser.');
+            alert('MS Paint — Lightweight Edition\n\nA small Paint clone I built for this desktop.\n\nYou can draw, fill, select, and save without leaving the browser.');
             break;
         }
       });

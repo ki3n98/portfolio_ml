@@ -7,6 +7,7 @@ import { PORTFOLIO_EXPERIENCE } from '../../data/experience.js';
 import { SKILL_GROUPS } from '../../data/skills.js';
 import { projectLinks, linkHtml, thumbHtml, RESUME_PDF, GITHUB, LINKEDIN, projects, isWin, awardHtml, isExternal } from './shared.js';
 import { initHubMenubar } from './menubar.js';
+import { PROJECT_DETAILS } from '../../data/project-details.js';
 
 export function initPortfolioHub() {
   const hubWin = document.getElementById('window-portfolio');
@@ -121,6 +122,57 @@ export function initPortfolioHub() {
   document.getElementById('hub-status').textContent =
     `${EXPERIENCE.length} positions, ${projects.length} projects · Click a project for details and demo video`;
 
+  // ----- Project detail helper: renders all 5 sections in order, skipping empty ones -----
+  function projectDetailHtml(details) {
+    let html = '';
+
+    // 1. Architecture
+    if (details.architecture && details.architecture.length > 0) {
+      html += '<section class="hub__project-section" data-proj-section="architecture">';
+      html += '<h2 class="hub__project-section-title">Architecture</h2>';
+      html += '<ol class="hub__project-flow">';
+      details.architecture.forEach(([lead, body]) => {
+        html += `<li><b class="hub__project-flow-lead">${escapeHtml(lead)}</b> — ${escapeHtml(body)}</li>`;
+      });
+      html += '</ol></section>';
+    }
+
+    // 2. What I Built
+    if (details.built && details.built.length > 0) {
+      html += '<section class="hub__project-section" data-proj-section="built">';
+      html += '<h2 class="hub__project-section-title">What I Built</h2>';
+      html += '<ul class="hub__project-list">';
+      details.built.forEach(item => {
+        html += `<li>${escapeHtml(item)}</li>`;
+      });
+      html += '</ul></section>';
+    }
+
+    // 3. Design Decisions
+    if (details.why && details.why.length > 0) {
+      html += '<section class="hub__project-section" data-proj-section="why">';
+      html += '<h2 class="hub__project-section-title">Design Decisions</h2>';
+      html += '<ul class="hub__project-list">';
+      details.why.forEach(item => {
+        html += `<li>${escapeHtml(item)}</li>`;
+      });
+      html += '</ul></section>';
+    }
+
+    // 4. Lessons Learned
+    if (details.lessons && details.lessons.length > 0) {
+      html += '<section class="hub__project-section" data-proj-section="lessons">';
+      html += '<h2 class="hub__project-section-title">Lessons Learned</h2>';
+      html += '<ul class="hub__project-list">';
+      details.lessons.forEach(item => {
+        html += `<li>${escapeHtml(item)}</li>`;
+      });
+      html += '</ul></section>';
+    }
+
+    return html;
+  }
+
   // ----- Project detail page + Back/Forward history -----
   const projectPage = document.getElementById('hub-project-page');
   const addrTextEl = hubWin.querySelector('[data-hub-address-text]');
@@ -160,6 +212,9 @@ export function initPortfolioHub() {
 
     const descEl = projectPage.querySelector('#hub-project-page-desc');
     descEl.textContent = p.desc;
+
+    const detailsEl = projectPage.querySelector('#hub-project-page-details');
+    detailsEl.innerHTML = PROJECT_DETAILS[p.title] ? projectDetailHtml(PROJECT_DETAILS[p.title]) : '';
 
     const tagsEl = projectPage.querySelector('#hub-project-page-tags');
     tagsEl.innerHTML = p.tags.map(t => `<span class="hub__project-tag">${escapeHtml(t)}</span>`).join('');
