@@ -53,14 +53,14 @@ Then open `http://localhost:8000` in your browser.
 
 ```
 portfolio_ml/
-├── index.html          # Window markup; links stylesheets, loads js/main.js as an ES module
-├── css/                # One stylesheet per feature (base, taskbar, window, app-paint, …)
+├── index.html          # All window markup; links every stylesheet, loads js/main.js as an ES module
+├── css/                # One stylesheet per feature (flat structure)
 ├── js/
-│   ├── main.js         # Entry point: imports each feature and calls its init()
+│   ├── main.js         # Entry point: imports each feature module and calls init()
 │   ├── utils.js        # Shared helpers (escapeHtml, isMobile)
 │   ├── data/           # Projects, experience and skills content
 │   ├── desktop/        # Start menu, window manager, drag/resize, tray clock
-│   └── apps/           # Notepad, Calculator, Explorer/, Paint/, Gradient Descent/, Portfolio Hub/
+│   └── apps/           # Notepad, Paint, Calculator, Explorer/, Gradient Descent/, Portfolio Hub/
 ├── scripts/            # Playwright smoke test + screenshot diff
 ├── assets/
 │   ├── icons/          # Windows-style icons (Windows XP theme)
@@ -70,6 +70,30 @@ portfolio_ml/
 ├── package.json        # Script config and dependencies
 └── README.md           # This file
 ```
+
+### Feature → File Map
+
+| Feature | JS | CSS |
+|---|---|---|
+| Entry / init order | `js/main.js` | — |
+| Shared helpers (`escapeHtml`, `isMobile`) | `js/utils.js` | `css/base.css` |
+| Boot screen | `js/boot-screen.js` | `css/boot-screen.css` |
+| Start menu | `js/desktop/start-menu.js` | `css/taskbar.css` |
+| Window manager, taskbar buttons | `js/desktop/window-manager.js` | `css/window.css`, `css/taskbar.css` |
+| Window drag / resize | `js/desktop/window-drag.js`, `js/desktop/window-resize.js` | `css/window.css` |
+| Tray clock | `js/desktop/tray-clock.js` | `css/taskbar.css` |
+| Desktop icons / wallpaper | (window-manager wires `data-window` icons) | `css/desktop.css` |
+| About Me (hero) window | (static HTML) | `css/section-hero.css`, `css/section-about.css` |
+| Experience window | `js/apps/experience-window.js` | `css/section-experience.css` |
+| Contact form | `js/apps/contact-form.js` | `css/section-contact.css` |
+| Notepad | `js/apps/notepad.js` | `css/app-notepad.css` |
+| File Explorer | `js/apps/explorer/` (`index.js`, `folders.js`, `picture-viewer.js`, `save-dialog.js`) | `css/app-explorer.css`, `css/app-picture-viewer.css`, `css/app-save-dialog.css` |
+| Calculator | `js/apps/calculator.js` | `css/app-calculator.css` |
+| Paint | `js/apps/paint/` (see its `README.md`) | `css/app-paint.css` |
+| Gradient Descent viz | `js/apps/gradient-descent/` (see its `README.md`) | `css/gradient-descent.css`, `css/gradient-descent-overview.css` |
+| Portfolio Hub (`C:\Kien Pham`) | `js/apps/portfolio-hub/` (`index.js`, `menubar.js`, `shared.js`) | `css/portfolio-hub.css`, `css/portfolio-hub-detail.css` |
+| Content: projects / experience / skills | `js/data/projects.js`, `js/data/experience.js`, `js/data/skills.js` | — |
+| Mobile/tablet breakpoints | — | `css/responsive.css` |
 
 ## Desktop Apps Details
 
@@ -129,13 +153,27 @@ The portfolio uses an innovative scroll-based visualization where each project r
 npm run smoke   # headless Chromium smoke test of every window and app
 ```
 
+**Smoke tests** open every window and drive apps (Paint, Notepad, Calculator, Explorer, Gradient Descent, Portfolio Hub), failing on any console error.
+
+**Visual regression testing** compares screenshots against a baseline:
+1. Before making changes: `SMOKE_OUT=baseline npm run smoke`
+2. After making changes: `npm run smoke`
+3. Compare results: `node scripts/compare-shots.mjs`
+
+The tray clock, gradient descent canvas animation, and autoplay videos differ between runs—anything else is a real visual change. Screenshots go to `scripts/.smoke-out/latest`.
+
+**Note:** If Chromium fails with `libnspr4.so` / `libnss3.so` missing, run `sudo npx playwright install-deps chromium` once.
+
 ### Project Structure
 
 #### JavaScript Modules (`js/`)
-Plain ES modules, one feature per file; see the feature → file map in `AGENTS.md`.
-- `desktop/` — window management system, start menu, tray clock
+One ES module per feature, each exporting an `initX()` function. See the feature → file map above.
+
+**Code conventions:** See `AGENTS.md` for project-specific guidelines (one feature per file ≤400 lines, flat CSS, no circular imports, etc.)
+
+- `desktop/` — window management system, start menu, drag/resize, tray clock
 - `apps/` — Notepad, Paint, Calculator, Explorer, contact form, Experience window
-- `apps/gradient-descent/` — gradient descent visualization
+- `apps/gradient-descent/` — gradient descent visualization with scroll-driven project showcase
 - `apps/portfolio-hub/` — the `C:\Kien Pham` landing window
 - `data/` — portfolio content (projects, experience, skills)
 
