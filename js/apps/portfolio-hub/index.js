@@ -100,7 +100,7 @@ export function initPortfolioHub() {
       ${p.role ? `<p class="hub__proj-role">${escapeHtml(p.role)}</p>` : ''}
       <p class="hub__proj-desc">${escapeHtml(p.desc)}</p>
       <div class="hub__tags">${p.tags.map(t => `<span class="hub__tag">${escapeHtml(t)}</span>`).join('')}</div>
-      <div class="hub__proj-links">${projectLinks(p).map(l => linkHtml(l, 'hub__link')).join('')}</div>
+      <div class="hub__proj-links">${projectLinks(p).map(l => linkHtml(l, 'hub__link hub__proj-link')).join('')}</div>
     </article>`).join('');
 
   // Hover-to-play local demo videos
@@ -239,8 +239,17 @@ export function initPortfolioHub() {
   }
 
   hubWin.addEventListener('click', (e) => {
-    const opener = e.target.closest('[data-proj-open]');
-    if (opener) { lastOpener = opener; pushEntry({ view: 'detail', projectId: Number(opener.dataset.projOpen) }); return; }
+    // Click on a project tile to open details, unless it's a link inside the tile
+    const tile = e.target.closest('.hub__proj-tile');
+    if (tile) {
+      // Check if click originated from a link inside the tile
+      const link = e.target.closest('.hub__proj-link');
+      if (!link) {
+        const opener = tile.querySelector('[data-proj-open]');
+        if (opener) { lastOpener = opener; pushEntry({ view: 'detail', projectId: Number(tile.dataset.proj) }); return; }
+      }
+      return;
+    }
     if (e.target.closest('.hub__detail-close')) { pushEntry(LANDING); return; }
     if (e.target.closest('[data-hub-back-to-grid]')) { pushEntry(LANDING); return; }
     const winLink = e.target.closest('[data-hub-open]');
