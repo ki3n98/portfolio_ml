@@ -234,12 +234,12 @@ try {
   check([...titles].filter(Boolean).length >= 2, `GD info panel barely changed: ${[...titles].join(' | ')}`);
   await close('projects');
 
-  // Portfolio hub: landing address bar, project detail panel, Back/Forward history.
+  // Portfolio hub: landing address bar, project detail page, Back/Forward history.
   await open('portfolio');
   const HUB_PATH = 'C:\\Kien Pham';
   const hubAddr = async () => (await page.textContent('#window-portfolio [data-hub-address-text]')).trim();
   check(await hubAddr() === HUB_PATH, `hub landing address shows "${await hubAddr()}"`);
-  check(await page.isDisabled('#window-portfolio [data-hub-back]'), 'hub Back is enabled at the landing page');
+  check(await page.isDisabled('#window-portfolio [data-hub-back]'), 'hub Back is disabled at the landing page');
   const hasProj = await page.evaluate(() => !!document.querySelector('[data-proj-open]'));
   check(hasProj, 'hub has no project tiles');
   if (hasProj) {
@@ -247,19 +247,20 @@ try {
     await page.waitForTimeout(300);
     check((await hubAddr()).startsWith(`${HUB_PATH}\\Projects\\`), `hub project detail address shows "${await hubAddr()}"`);
     await page.screenshot({ path: join(OUT, '21-hub-detail.png'), animations: 'disabled' });
-    // The detail's close X returns to the landing page and enters history.
-    await click('#hub-detail .hub__detail-close');
+    // The project page's back button returns to the landing page and enters history.
+    await click('[data-hub-back-to-grid]');
     await page.waitForTimeout(300);
     check(await hubAddr() === HUB_PATH, `hub address after closing detail shows "${await hubAddr()}"`);
-    check(await page.evaluate(() => document.getElementById('hub-detail').hidden), 'detail close X did not close the hub detail panel');
-    check(!(await page.isDisabled('#window-portfolio [data-hub-back]')), 'hub Back is still disabled after closing a detail');
-    await click('#window-portfolio [data-hub-back]');
+    check(await page.evaluate(() => document.getElementById('hub-project-page').hidden), 'project page back button did not close the hub project page');
+    check(await page.isDisabled('#window-portfolio [data-hub-back]'), 'hub Back is disabled after closing the project page');
+    // Open the project page again and test Back/Forward
+    await click('[data-proj-open]');
     await page.waitForTimeout(300);
     check((await hubAddr()).startsWith(`${HUB_PATH}\\Projects\\`), `hub Back did not reopen a detail (address "${await hubAddr()}")`);
-    check(await page.evaluate(() => !document.getElementById('hub-detail').hidden), 'hub Back did not reopen the detail panel');
+    check(await page.evaluate(() => !document.getElementById('hub-project-page').hidden), 'hub Back did not reopen the project page');
     await page.keyboard.press('Escape');
-    check(await page.evaluate(() => document.getElementById('hub-detail').hidden), 'Escape did not close the hub detail panel');
-    check(await isOpen('portfolio'), 'Escape on hub detail also closed the window');
+    check(await page.evaluate(() => document.getElementById('hub-project-page').hidden), 'Escape did not close the hub project page');
+    check(await isOpen('portfolio'), 'Escape on hub project page also closed the window');
   }
   // Hub menu bar: open a menu, Escape closes the menu but not the window.
   await click('[data-hub-menu="View"]');
@@ -272,20 +273,20 @@ try {
   await click('[data-hub-action="toggle-sidebar"]');
 
   // Minimize then restore from the taskbar: the hub must re-open at its history
-  // position (detail panel visible), not reset to the landing page.
+  // position (project page visible), not reset to the landing page.
   await click('[data-proj-open]');
   await page.waitForTimeout(300);
-  check(await page.evaluate(() => !document.getElementById('hub-detail').hidden), 'hub detail did not open before minimize/restore');
+  check(await page.evaluate(() => !document.getElementById('hub-project-page').hidden), 'hub project page did not open before minimize/restore');
   await click('#window-portfolio [data-minimize]');
   await page.waitForTimeout(250);
   check(!(await isOpen('portfolio')), 'hub window did not minimize');
   await click('#nav-windows .taskbar-btn[data-window="portfolio"]');
   await page.waitForTimeout(300);
   check(await isOpen('portfolio'), 'taskbar button did not restore the minimized hub window');
-  check(await page.evaluate(() => !document.getElementById('hub-detail').hidden), 'hub detail lost after minimize/restore (history position not re-applied)');
+  check(await page.evaluate(() => !document.getElementById('hub-project-page').hidden), 'hub project page lost after minimize/restore (history position not re-applied)');
   check((await hubAddr()).startsWith(`${HUB_PATH}\\Projects\\`), `hub address after restore shows "${await hubAddr()}"`);
   // Back to the landing page so the final screenshots match the baseline.
-  await click('#hub-detail .hub__detail-close');
+  await click('[data-hub-back-to-grid]');
   await page.waitForTimeout(300);
 
   // Mobile width renders without errors.

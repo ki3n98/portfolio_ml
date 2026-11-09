@@ -5,7 +5,7 @@ import { escapeHtml, isMobile } from '../../utils.js';
 import { isTopWindow, toggleMaximize, toggleOrFocusWindow } from '../../desktop/window-manager.js';
 import { PORTFOLIO_EXPERIENCE } from '../../data/experience.js';
 import { SKILL_GROUPS } from '../../data/skills.js';
-import { projectLinks, linkHtml, thumbHtml, RESUME_PDF, GITHUB, LINKEDIN, projects, isWin, awardHtml } from './shared.js';
+import { projectLinks, linkHtml, thumbHtml, RESUME_PDF, GITHUB, LINKEDIN, projects, isWin, awardHtml, isExternal } from './shared.js';
 import { initHubMenubar } from './menubar.js';
 
 export function initPortfolioHub() {
@@ -126,8 +126,9 @@ export function initPortfolioHub() {
   document.getElementById('hub-status').textContent =
     `${EXPERIENCE.length} positions, ${projects.length} projects · Click a project for details and demo video`;
 
-  // ----- Project detail ("Properties") panel + Back/Forward history -----
+  // ----- Project detail page + Back/Forward history -----
   const detail = document.getElementById('hub-detail');
+  const projectPage = document.getElementById('hub-project-page');
   const addrTextEl = hubWin.querySelector('[data-hub-address-text]');
   const backBtn = hubWin.querySelector('[data-hub-back]');
   const fwdBtn = hubWin.querySelector('[data-hub-forward]');
@@ -144,34 +145,63 @@ export function initPortfolioHub() {
     const p = projects[i];
     const yt = p.mediaEmbed;
     const media = yt
-      ? `<iframe class="hub__detail-media" src="${escapeHtml(yt)}" title="${escapeHtml(p.mediaText || p.title)}" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`
+      ? `<iframe class="hub__project-media" src="${escapeHtml(yt)}" title="${escapeHtml(p.mediaText || p.title)}" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`
       : p.mediaSrc && p.mediaType === 'Video'
-        ? `<video class="hub__detail-media" src="${escapeHtml(p.mediaSrc)}" controls autoplay muted loop playsinline></video>`
-        : p.mediaSrc ? `<img class="hub__detail-media" src="${escapeHtml(p.mediaSrc)}" alt="${escapeHtml(p.mediaText || '')}" />` : '';
-    detail.innerHTML = `
-      <div class="hub__detail-titlebar">
-        <span id="hub-detail-title">${escapeHtml(p.title)} Properties</span>
-        <button type="button" class="window__btn window__btn--close hub__detail-close" aria-label="Close details"></button>
-      </div>
-      <div class="hub__detail-body">
-        ${media}
-        <h3 class="hub__detail-name">${escapeHtml(p.title)}</h3>
-        ${awardHtml(p, 'p')}
-        ${p.role ? `<p class="hub__proj-role">${escapeHtml(p.role)}</p>` : ''}
-        <p class="hub__detail-desc">${escapeHtml(p.desc)}</p>
-        <div class="hub__tags">${p.tags.map(t => `<span class="hub__tag">${escapeHtml(t)}</span>`).join('')}</div>
-        <div class="hub__detail-actions">${projectLinks(p).map((l, j) => linkHtml(l, j === 0 ? 'hub__btn hub__btn--primary' : 'hub__btn')).join('')}</div>
-      </div>`;
-    detail.hidden = false;
+        ? `<video class="hub__project-media" src="${escapeHtml(p.mediaSrc)}" controls autoplay muted loop playsinline></video>`
+        : p.mediaSrc ? `<img class="hub__project-media" src="${escapeHtml(p.mediaSrc)}" alt="${escapeHtml(p.mediaText || '')}" />` : '';
+
+    // Render project detail page (full screen replacement)
+    const titleEl = projectPage.querySelector('#hub-project-page-title');
+    titleEl.textContent = escapeHtml(p.title);
+
+    const roleEl = projectPage.querySelector('#hub-project-page-role');
+    roleEl.textContent = p.role ? escapeHtml(p.role) : '';
+
+    const awardEl = projectPage.querySelector('#hub-project-page-award');
+    awardEl.textContent = awardHtml(p, 'span');
+    awardEl.hidden = !p.award;
+
+    const mediaEl = projectPage.querySelector('#hub-project-page-media');
+    mediaEl.innerHTML = media;
+
+    const descEl = projectPage.querySelector('#hub-project-page-desc');
+    descEl.textContent = escapeHtml(p.desc);
+
+    const tagsEl = projectPage.querySelector('#hub-project-page-tags');
+    tagsEl.innerHTML = p.tags.map(t => `<span class="hub__project-tag">${escapeHtml(t)}</span>`).join('');
+
+    const actionsEl = projectPage.querySelector('#hub-project-page-actions');
+    const links = projectLinks(p);
+    actionsEl.innerHTML = links.map((l, j) => {
+      const ext = isExternal(l[0]) ? ' target="_blank" rel="noopener noreferrer"' : '';
+      const btnClass = j === 0 ? 'hub__project-btn hub__project-btn--primary' : 'hub__project-btn hub__project-btn--secondary';
+      return `<a class="${btnClass}" href="${escapeHtml(l[0])}"${ext}>${escapeHtml(l[1])}</a>`;
+    }).join('');
+
+    detail.hidden = true;
+    projectPage.hidden = false;
+
     projGrid.querySelectorAll('.hub__proj-tile').forEach(t => t.classList.toggle('hub__proj-tile--selected', t.dataset.proj === String(i)));
-    detail.querySelector('.hub__detail-close').focus();
+    titleEl.focus();
   }
 
   function hideDetail() {
-    if (detail.hidden) return;
+    if (projectPage.hidden && detail.hidden) return;
+    
+    // Stop all media in both detail views
+    hubWin.querySelectorAll('video').forEach(v => v.pause());
+    hubWin.querySelectorAll('iframe').forEach(i => i.src = '');
+    
+    projectPage.hidden = true;
     detail.hidden = true;
     detail.innerHTML = ''; // stops any playing video/iframe
+    
     projGrid.querySelectorAll('.hub__proj-tile--selected').forEach(t => t.classList.remove('hub__proj-tile--selected'));
+    
+    addrTextEl.textContent = HUB_PATH;
+    backBtn.disabled = true;
+    fwdBtn.disabled = true;
+    
     lastOpener?.focus();
   }
 
@@ -183,12 +213,15 @@ export function initPortfolioHub() {
       renderDetail(projectId);
       // textContent (not innerHTML) so project titles can't inject markup.
       addrTextEl.textContent = `${HUB_PATH}\\Projects\\${projects[projectId].title}`;
+      // Update nav buttons for project page
+      backBtn.disabled = historyIndex <= 0;
+      fwdBtn.disabled = historyIndex >= history.length - 1;
     } else {
       hideDetail();
       addrTextEl.textContent = HUB_PATH;
+      backBtn.disabled = true;
+      fwdBtn.disabled = true;
     }
-    backBtn.disabled = historyIndex <= 0;
-    fwdBtn.disabled = historyIndex >= history.length - 1;
   }
 
   // Records a new location (like explorer's navigate()): drop any forward branch,
@@ -209,6 +242,7 @@ export function initPortfolioHub() {
     const opener = e.target.closest('[data-proj-open]');
     if (opener) { lastOpener = opener; pushEntry({ view: 'detail', projectId: Number(opener.dataset.projOpen) }); return; }
     if (e.target.closest('.hub__detail-close')) { pushEntry(LANDING); return; }
+    if (e.target.closest('[data-hub-back-to-grid]')) { pushEntry(LANDING); return; }
     const winLink = e.target.closest('[data-hub-open]');
     if (winLink) { e.preventDefault(); toggleOrFocusWindow(winLink.dataset.hubOpen); return; }
     const header = e.target.closest('.explorer__sidebar-header');
@@ -228,9 +262,9 @@ export function initPortfolioHub() {
 
   initHubMenubar(hubWin);
 
-  // Esc closes the detail panel first instead of the whole window.
+  // Esc closes the detail panel / project page first instead of the whole window.
   window.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape' || detail.hidden || hubWin.hidden || !isTopWindow('portfolio')) return;
+    if (e.key !== 'Escape' || (detail.hidden && projectPage.hidden) || hubWin.hidden || !isTopWindow('portfolio')) return;
     e.stopImmediatePropagation();
     pushEntry(LANDING);
   }, true);
