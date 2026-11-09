@@ -22,6 +22,7 @@ const slideshowOf = (folderKey) =>
 export const EXPLORER_FOLDERS = {
   'my-computer': {
     title: 'My Computer',
+    path: 'My Computer',
     icon: '../assets/icons/my-computer.png',
     parent: null,
     description: 'System Folder',
@@ -38,6 +39,7 @@ export const EXPLORER_FOLDERS = {
   },
   'my-documents': {
     title: 'My Documents',
+    path: 'C:\\Documents and Settings\\Kien\\My Documents',
     icon: '../assets/icons/my-documents.png',
     parent: 'my-computer',
     description: 'File Folder',
@@ -54,6 +56,7 @@ export const EXPLORER_FOLDERS = {
   },
   'my-pictures': {
     title: 'My Pictures',
+    path: 'C:\\Documents and Settings\\Kien\\My Documents\\My Pictures',
     icon: '../assets/icons/my-pictures.png',
     parent: 'my-computer',
     description: 'File Folder',
@@ -70,6 +73,7 @@ export const EXPLORER_FOLDERS = {
   },
   'local-disk-c': {
     title: 'Local Disk (C:)',
+    path: 'C:\\',
     icon: '../assets/icons/local-disk.png',
     parent: 'my-computer',
     description: 'Local Disk',

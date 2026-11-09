@@ -1,6 +1,7 @@
 // File Explorer windows (My Computer / My Documents / My Pictures): navigation,
 // sidebar task pane, history, plus saveFileToFolder() used by Notepad/Paint.
 
+import { escapeHtml } from '../../utils.js';
 import { windowEls } from '../../desktop/window-manager.js';
 import { EXPLORER_FOLDERS } from './folders.js';
 import { openPictureViewer } from './picture-viewer.js';
@@ -110,7 +111,7 @@ function initExplorerWindow(windowId) {
     const folder = EXPLORER_FOLDERS[key];
     if (!folder) return;
     if (titleEl) titleEl.textContent = folder.title;
-    if (addrTextEl) addrTextEl.textContent = folder.title;
+    if (addrTextEl) addrTextEl.textContent = folder.path || folder.title;
     if (addrIconEl) addrIconEl.style.setProperty('--icon-url', `url('${folder.icon}')`);
 
     contentEl.innerHTML = '';
@@ -121,10 +122,14 @@ function initExplorerWindow(windowId) {
       if (item.disabled) btn.disabled = true;
       const iconUrl = item.icon || (item.type === 'image' ? '../assets/icons/jpg-file.png' : '../assets/icons/folder.png');
       btn.innerHTML = `<span class="explorer__item-icon" style="--icon-url: url('${iconUrl}')" aria-hidden="true"></span>`
-        + `<span class="explorer__item-label">${item.label}</span>`;
+        + `<span class="explorer__item-label">${escapeHtml(item.label)}</span>`;
+      // XP semantics: single click only selects; double click opens (folders,
+      // images, files with an action). Disabled items never fire either event.
       btn.addEventListener('click', () => {
         contentEl.querySelectorAll('.explorer__item--selected').forEach(b => b.classList.remove('explorer__item--selected'));
         btn.classList.add('explorer__item--selected');
+      });
+      btn.addEventListener('dblclick', () => {
         if (item.type === 'folder') navigate(item.key);
         else if (item.type === 'image') openPictureViewer(item.src, item.label);
         else if (item.action) item.action();
@@ -159,6 +164,21 @@ function initExplorerWindow(windowId) {
   upBtn?.addEventListener('click', () => {
     const folder = EXPLORER_FOLDERS[history[historyIndex]];
     if (folder?.parent) navigate(folder.parent);
+  });
+
+  // Clicking blank space in the content area clears the selection, like XP.
+  // Attached once to contentEl (which survives re-renders), not per item.
+  contentEl.addEventListener('click', (e) => {
+    if (!e.target.closest('.explorer__item')) {
+      contentEl.querySelectorAll('.explorer__item--selected').forEach(b => b.classList.remove('explorer__item--selected'));
+    }
+  });
+
+  // Closing (X button) resets navigation history; minimizing does not.
+  win.addEventListener('windowclosed', () => {
+    history = [rootKey];
+    historyIndex = 0;
+    render(rootKey);
   });
 
   render(rootKey);

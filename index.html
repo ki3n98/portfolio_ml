@@ -209,10 +209,17 @@
     <div class="window__body">
       <div class="explorer hub" id="hub">
         <div class="notepad__menubar hub__menubar" id="hub-menubar" role="menubar"></div>
+        <div class="explorer__toolbar">
+          <button type="button" class="explorer__nav-btn explorer__nav-btn--back" data-hub-back aria-label="Back" disabled style="--icon-url: url('../assets/icons/explorer-back.png')">
+            <span class="explorer__nav-btn-label">Back</span>
+          </button>
+          <button type="button" class="explorer__nav-btn" data-hub-forward aria-label="Forward" disabled style="--icon-url: url('../assets/icons/explorer-forward.png')"></button>
+          <button type="button" class="explorer__nav-btn" data-hub-up aria-label="Up" disabled style="--icon-url: url('../assets/icons/explorer-up.png')"></button>
+        </div>
         <div class="explorer__address">
           <span class="explorer__address-label">Address</span>
-          <span class="explorer__address-icon" style="--icon-url: url('../assets/icons/local-disk.png')" aria-hidden="true"></span>
-          <span class="explorer__address-text">C:\Kien Pham</span>
+          <span class="explorer__address-icon" data-hub-address-icon style="--icon-url: url('../assets/icons/local-disk.png')" aria-hidden="true"></span>
+          <span class="explorer__address-text" data-hub-address-text>C:\Kien Pham</span>
         </div>
         <div class="explorer__body hub__body">
           <aside class="explorer__sidebar hub__sidebar" id="hub-sidebar"></aside>

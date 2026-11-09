@@ -77,6 +77,9 @@ export function closeWindow(id) {
   win.hidden = true;
   closedWindows.add(id);
   updateTaskbar();
+  // Lets per-window state (e.g. Explorer history) reset on close only.
+  // Fired last: a throwing listener must not leave the taskbar out of sync.
+  win.dispatchEvent(new CustomEvent('windowclosed'));
 }
 
 export function toggleMaximize(id) {

@@ -1,5 +1,6 @@
 // XP-style "Save As" dialog shared by Notepad and Paint.
 
+import { escapeHtml } from '../../utils.js';
 import { EXPLORER_FOLDERS } from './folders.js';
 
 let saveDialogEl = null;
@@ -82,8 +83,8 @@ export function openSaveAsDialog({ title = 'Save As', defaultName, fileType, sav
   const fileListEl = saveDialogEl.querySelector('.save-dialog__filelist');
   fileListEl.innerHTML = targetFolder.items.filter(item => item.type !== 'folder').map(item => {
     const iconUrl = item.icon || '../assets/icons/folder.png';
-    return `<button type="button" class="save-dialog__file" data-name="${item.label}">`
-      + `<span class="save-dialog__file-icon" style="--icon-url: url('${iconUrl}')" aria-hidden="true"></span>${item.label}</button>`;
+    return `<button type="button" class="save-dialog__file" data-name="${escapeHtml(item.label)}">`
+      + `<span class="save-dialog__file-icon" style="--icon-url: url('${iconUrl}')" aria-hidden="true"></span>${escapeHtml(item.label)}</button>`;
   }).join('');
   fileListEl.querySelectorAll('[data-name]').forEach(btn => {
     btn.addEventListener('click', () => {

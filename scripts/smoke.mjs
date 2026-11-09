@@ -100,11 +100,63 @@ try {
   await page.waitForSelector('.save-dialog.open');
   await page.fill('.save-dialog__filename-input', 'smoke-test.txt');
   await click('.save-dialog__btn--save');
+  // XSS regression: a file name containing markup must render as literal text.
+  const XSS_NAME = '<img src=x onerror=window.__xss=1>.txt';
+  await click('[data-notepad-action="save"]');
+  await page.waitForSelector('.save-dialog.open');
+  await page.fill('.save-dialog__filename-input', XSS_NAME);
+  await click('.save-dialog__btn--save');
   await close('notepad');
   await open('my-documents');
   const docs = await page.textContent('#window-my-documents');
   check(docs.includes('smoke-test.txt'), 'saved notepad file missing from My Documents');
+  await page.waitForTimeout(250); // give an injected <img> a chance to fire onerror if unescaped
+  const xssState = await page.evaluate(() => {
+    const item = [...document.querySelectorAll('#window-my-documents .explorer__item')]
+      .find(el => el.textContent.includes('onerror'));
+    return { text: item ? item.textContent : null, xss: window.__xss };
+  });
+  check(xssState.text !== null && xssState.text.includes('<img'),
+    `XSS file name not rendered as literal text in My Documents (item text: ${JSON.stringify(xssState.text)})`);
+  check(xssState.xss === undefined, 'XSS payload in explorer item label executed (window.__xss is set)');
+
+  // Explorer history + address bar: a fresh window sits at its root (full path shown,
+  // Back disabled); a single click only selects, a double click opens the folder.
+  const explorerAddr = async id => (await page.textContent(`#window-${id} [data-explorer-address-text]`)).trim();
+  const DOCS_PATH = 'C:\\Documents and Settings\\Kien\\My Documents';
+  const PICS_PATH = `${DOCS_PATH}\\My Pictures`;
+  check(await explorerAddr('my-documents') === DOCS_PATH, `My Documents address bar shows "${await explorerAddr('my-documents')}"`);
+  check(await page.isDisabled('#window-my-documents [data-explorer-back]'), 'Explorer Back is enabled in a freshly opened window');
+  const picsItem = '#window-my-documents .explorer__item:has-text("My Pictures")';
+  await page.click(picsItem);
+  check(await page.evaluate(() => !!document.querySelector('#window-my-documents .explorer__item--selected')),
+    'single click did not select an explorer item');
+  check(await explorerAddr('my-documents') === DOCS_PATH, 'single click opened the folder instead of just selecting');
+  await page.dblclick(picsItem);
+  await page.waitForTimeout(250);
+  check(await explorerAddr('my-documents') === PICS_PATH, `double-clicking "My Pictures" did not navigate (address "${await explorerAddr('my-documents')}")`);
+  check(!(await page.isDisabled('#window-my-documents [data-explorer-back]')), 'Explorer Back is disabled after navigating');
+  await click('#window-my-documents [data-explorer-back]');
+  await page.waitForTimeout(250);
+  check(await explorerAddr('my-documents') === DOCS_PATH, `Explorer Back did not return to My Documents (address "${await explorerAddr('my-documents')}")`);
+  await click('#window-my-documents [data-explorer-forward]');
+  await page.waitForTimeout(250);
+  check(await explorerAddr('my-documents') === PICS_PATH, `Explorer Forward did not re-apply My Pictures (address "${await explorerAddr('my-documents')}")`);
   await close('my-documents');
+
+  // My Computer: same open-on-double-click rule for drive items; Up walks to the parent.
+  await open('my-computer');
+  check(await explorerAddr('my-computer') === 'My Computer', `My Computer address bar shows "${await explorerAddr('my-computer')}"`);
+  const cDriveItem = '#window-my-computer .explorer__item:has-text("Local Disk")';
+  await page.click(cDriveItem);
+  check(await explorerAddr('my-computer') === 'My Computer', 'single click opened the drive instead of just selecting');
+  await page.dblclick(cDriveItem);
+  await page.waitForTimeout(250);
+  check(await explorerAddr('my-computer') === 'C:\\', `double-clicking "Local Disk (C:)" did not navigate (address "${await explorerAddr('my-computer')}")`);
+  await click('#window-my-computer [data-explorer-up]');
+  await page.waitForTimeout(250);
+  check(await explorerAddr('my-computer') === 'My Computer', `Up did not return to My Computer (address "${await explorerAddr('my-computer')}")`);
+  await close('my-computer');
 
   // My Pictures: slideshow task opens the picture viewer; Escape closes it.
   await open('my-pictures');
@@ -185,14 +237,29 @@ try {
   check([...titles].filter(Boolean).length >= 2, `GD info panel barely changed: ${[...titles].join(' | ')}`);
   await close('projects');
 
-  // Portfolio hub: open a project detail panel.
+  // Portfolio hub: landing address bar, project detail panel, Back/Forward history.
   await open('portfolio');
+  const HUB_PATH = 'C:\\Kien Pham';
+  const hubAddr = async () => (await page.textContent('#window-portfolio [data-hub-address-text]')).trim();
+  check(await hubAddr() === HUB_PATH, `hub landing address shows "${await hubAddr()}"`);
+  check(await page.isDisabled('#window-portfolio [data-hub-back]'), 'hub Back is enabled at the landing page');
   const hasProj = await page.evaluate(() => !!document.querySelector('[data-proj-open]'));
   check(hasProj, 'hub has no project tiles');
   if (hasProj) {
     await click('[data-proj-open]');
     await page.waitForTimeout(300);
+    check((await hubAddr()).startsWith(`${HUB_PATH}\\Projects\\`), `hub project detail address shows "${await hubAddr()}"`);
     await page.screenshot({ path: join(OUT, '21-hub-detail.png'), animations: 'disabled' });
+    // The detail's close X returns to the landing page and enters history.
+    await click('#hub-detail .hub__detail-close');
+    await page.waitForTimeout(300);
+    check(await hubAddr() === HUB_PATH, `hub address after closing detail shows "${await hubAddr()}"`);
+    check(await page.evaluate(() => document.getElementById('hub-detail').hidden), 'detail close X did not close the hub detail panel');
+    check(!(await page.isDisabled('#window-portfolio [data-hub-back]')), 'hub Back is still disabled after closing a detail');
+    await click('#window-portfolio [data-hub-back]');
+    await page.waitForTimeout(300);
+    check((await hubAddr()).startsWith(`${HUB_PATH}\\Projects\\`), `hub Back did not reopen a detail (address "${await hubAddr()}")`);
+    check(await page.evaluate(() => !document.getElementById('hub-detail').hidden), 'hub Back did not reopen the detail panel');
     await page.keyboard.press('Escape');
     check(await page.evaluate(() => document.getElementById('hub-detail').hidden), 'Escape did not close the hub detail panel');
     check(await isOpen('portfolio'), 'Escape on hub detail also closed the window');
@@ -206,6 +273,23 @@ try {
   await click('[data-hub-action="toggle-sidebar"]');
   check(await page.evaluate(() => document.querySelector('#window-portfolio .hub').classList.contains('hub--no-sidebar')), 'hub Task Pane toggle failed');
   await click('[data-hub-action="toggle-sidebar"]');
+
+  // Minimize then restore from the taskbar: the hub must re-open at its history
+  // position (detail panel visible), not reset to the landing page.
+  await click('[data-proj-open]');
+  await page.waitForTimeout(300);
+  check(await page.evaluate(() => !document.getElementById('hub-detail').hidden), 'hub detail did not open before minimize/restore');
+  await click('#window-portfolio [data-minimize]');
+  await page.waitForTimeout(250);
+  check(!(await isOpen('portfolio')), 'hub window did not minimize');
+  await click('#nav-windows .taskbar-btn[data-window="portfolio"]');
+  await page.waitForTimeout(300);
+  check(await isOpen('portfolio'), 'taskbar button did not restore the minimized hub window');
+  check(await page.evaluate(() => !document.getElementById('hub-detail').hidden), 'hub detail lost after minimize/restore (history position not re-applied)');
+  check((await hubAddr()).startsWith(`${HUB_PATH}\\Projects\\`), `hub address after restore shows "${await hubAddr()}"`);
+  // Back to the landing page so the final screenshots match the baseline.
+  await click('#hub-detail .hub__detail-close');
+  await page.waitForTimeout(300);
 
   // Mobile width renders without errors.
   await page.setViewportSize({ width: 375, height: 800 });

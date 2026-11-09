@@ -126,13 +126,22 @@ export function initPortfolioHub() {
   document.getElementById('hub-status').textContent =
     `${EXPERIENCE.length} positions, ${projects.length} projects · Click a project for details and demo video`;
 
-  // ----- Project detail ("Properties") panel -----
+  // ----- Project detail ("Properties") panel + Back/Forward history -----
   const detail = document.getElementById('hub-detail');
+  const addrTextEl = hubWin.querySelector('[data-hub-address-text]');
+  const backBtn = hubWin.querySelector('[data-hub-back]');
+  const fwdBtn = hubWin.querySelector('[data-hub-forward]');
+  const HUB_PATH = 'C:\\Kien Pham';
+  const LANDING = { view: 'landing' };
   let lastOpener = null;
 
-  function openDetail(i) {
+  // History tracks detail open/close only — menu-bar View scrolling never enters.
+  // Same shape as js/apps/explorer/index.js history, kept local to avoid importing explorer.
+  let history = [LANDING];
+  let historyIndex = 0;
+
+  function renderDetail(i) {
     const p = projects[i];
-    if (!p) return;
     const yt = p.mediaEmbed;
     const media = yt
       ? `<iframe class="hub__detail-media" src="${escapeHtml(yt)}" title="${escapeHtml(p.mediaText || p.title)}" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`
@@ -158,7 +167,7 @@ export function initPortfolioHub() {
     detail.querySelector('.hub__detail-close').focus();
   }
 
-  function closeDetail() {
+  function hideDetail() {
     if (detail.hidden) return;
     detail.hidden = true;
     detail.innerHTML = ''; // stops any playing video/iframe
@@ -166,14 +175,55 @@ export function initPortfolioHub() {
     lastOpener?.focus();
   }
 
+  // Renders the state for one history entry (detail open or landing) and syncs
+  // the address bar and nav buttons to it. Does not touch the history itself.
+  function applyEntry(entry) {
+    const projectId = entry.view === 'detail' ? entry.projectId : -1;
+    if (projects[projectId]) {
+      renderDetail(projectId);
+      // textContent (not innerHTML) so project titles can't inject markup.
+      addrTextEl.textContent = `${HUB_PATH}\\Projects\\${projects[projectId].title}`;
+    } else {
+      hideDetail();
+      addrTextEl.textContent = HUB_PATH;
+    }
+    backBtn.disabled = historyIndex <= 0;
+    fwdBtn.disabled = historyIndex >= history.length - 1;
+  }
+
+  // Records a new location (like explorer's navigate()): drop any forward branch,
+  // append, and render. Used by user navigation; window-hide must not call this.
+  function pushEntry(entry) {
+    if (entry.view === 'detail' && !projects[entry.projectId]) return;
+    // Adjacent duplicate (e.g. double-clicking a project tile) is not a move:
+    // skip the push so one Back press still leaves the detail.
+    const current = history[historyIndex];
+    if (current.view === entry.view && current.projectId === entry.projectId) return;
+    history = history.slice(0, historyIndex + 1);
+    history.push(entry);
+    historyIndex = history.length - 1;
+    applyEntry(entry);
+  }
+
   hubWin.addEventListener('click', (e) => {
     const opener = e.target.closest('[data-proj-open]');
-    if (opener) { lastOpener = opener; openDetail(Number(opener.dataset.projOpen)); return; }
-    if (e.target.closest('.hub__detail-close')) { closeDetail(); return; }
+    if (opener) { lastOpener = opener; pushEntry({ view: 'detail', projectId: Number(opener.dataset.projOpen) }); return; }
+    if (e.target.closest('.hub__detail-close')) { pushEntry(LANDING); return; }
     const winLink = e.target.closest('[data-hub-open]');
     if (winLink) { e.preventDefault(); toggleOrFocusWindow(winLink.dataset.hubOpen); return; }
     const header = e.target.closest('.explorer__sidebar-header');
     if (header) header.closest('.explorer__sidebar-section').classList.toggle('explorer__sidebar-section--collapsed');
+  });
+
+  backBtn.addEventListener('click', () => {
+    if (historyIndex <= 0) return;
+    historyIndex--;
+    applyEntry(history[historyIndex]);
+  });
+  fwdBtn.addEventListener('click', () => {
+    if (historyIndex >= history.length - 1) return;
+    historyIndex++;
+    applyEntry(history[historyIndex]);
   });
 
   initHubMenubar(hubWin);
@@ -182,15 +232,30 @@ export function initPortfolioHub() {
   window.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape' || detail.hidden || hubWin.hidden || !isTopWindow('portfolio')) return;
     e.stopImmediatePropagation();
-    closeDetail();
+    pushEntry(LANDING);
   }, true);
 
-  // Stop all media when the window is minimized or closed.
+  // Stop all media when the window is minimized or closed. Hiding the window is
+  // not navigation, so this hides the detail bare instead of pushing a history
+  // entry; on restore, applyEntry re-renders the real history position (the bare
+  // hide above left the view on the landing page). applyEntry never touches
+  // hubWin.hidden, so this cannot loop.
   new MutationObserver(() => {
-    if (!hubWin.hidden) return;
+    if (!hubWin.hidden) {
+      applyEntry(history[historyIndex]);
+      return;
+    }
     hubWin.querySelectorAll('video').forEach(v => v.pause());
-    closeDetail();
+    hideDetail();
+    addrTextEl.textContent = HUB_PATH;
   }).observe(hubWin, { attributes: true, attributeFilter: ['hidden'] });
+
+  // Closing (X button) resets navigation history; minimizing does not.
+  hubWin.addEventListener('windowclosed', () => {
+    history = [LANDING];
+    historyIndex = 0;
+    applyEntry(LANDING);
+  });
 
   // Land maximized on desktop so everything is visible immediately.
   if (!isMobile() && !hubWin.hidden && !hubWin.classList.contains('window--maximized')) {
