@@ -127,7 +127,6 @@ export function initPortfolioHub() {
     `${EXPERIENCE.length} positions, ${projects.length} projects · Click a project for details and demo video`;
 
   // ----- Project detail page + Back/Forward history -----
-  const detail = document.getElementById('hub-detail');
   const projectPage = document.getElementById('hub-project-page');
   const addrTextEl = hubWin.querySelector('[data-hub-address-text]');
   const backBtn = hubWin.querySelector('[data-hub-back]');
@@ -178,7 +177,6 @@ export function initPortfolioHub() {
       return `<a class="${btnClass}" href="${escapeHtml(l[0])}"${ext}>${escapeHtml(l[1])}</a>`;
     }).join('');
 
-    detail.hidden = true;
     projectPage.hidden = false;
 
     projGrid.querySelectorAll('.hub__proj-tile').forEach(t => t.classList.toggle('hub__proj-tile--selected', t.dataset.proj === String(i)));
@@ -186,15 +184,13 @@ export function initPortfolioHub() {
   }
 
   function hideDetail() {
-    if (projectPage.hidden && detail.hidden) return;
+    if (projectPage.hidden) return;
     
-    // Stop all media in both detail views
+    // stops any playing video/iframe
     hubWin.querySelectorAll('video').forEach(v => v.pause());
     hubWin.querySelectorAll('iframe').forEach(i => i.src = '');
     
     projectPage.hidden = true;
-    detail.hidden = true;
-    detail.innerHTML = ''; // stops any playing video/iframe
     
     projGrid.querySelectorAll('.hub__proj-tile--selected').forEach(t => t.classList.remove('hub__proj-tile--selected'));
     
@@ -219,8 +215,10 @@ export function initPortfolioHub() {
     } else {
       hideDetail();
       addrTextEl.textContent = HUB_PATH;
-      backBtn.disabled = true;
-      fwdBtn.disabled = true;
+      // Honour history (hideDetail() above blanket-disables as a reset): after
+      // Escape closes a detail there is still a real entry behind the landing.
+      backBtn.disabled = historyIndex <= 0;
+      fwdBtn.disabled = historyIndex >= history.length - 1;
     }
   }
 
@@ -250,8 +248,6 @@ export function initPortfolioHub() {
       }
       return;
     }
-    if (e.target.closest('.hub__detail-close')) { pushEntry(LANDING); return; }
-    if (e.target.closest('[data-hub-back-to-grid]')) { pushEntry(LANDING); return; }
     const winLink = e.target.closest('[data-hub-open]');
     if (winLink) { e.preventDefault(); toggleOrFocusWindow(winLink.dataset.hubOpen); return; }
     const header = e.target.closest('.explorer__sidebar-header');
@@ -271,9 +267,9 @@ export function initPortfolioHub() {
 
   initHubMenubar(hubWin);
 
-  // Esc closes the detail panel / project page first instead of the whole window.
+  // Esc closes the project page first instead of the whole window.
   window.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape' || (detail.hidden && projectPage.hidden) || hubWin.hidden || !isTopWindow('portfolio')) return;
+    if (e.key !== 'Escape' || projectPage.hidden || hubWin.hidden || !isTopWindow('portfolio')) return;
     e.stopImmediatePropagation();
     pushEntry(LANDING);
   }, true);

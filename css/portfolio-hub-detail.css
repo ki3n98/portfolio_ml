@@ -19,103 +19,6 @@
   display: none;
 }
 
-/* ----- Detail ("Properties") panel ----- */
-.hub__detail {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: min(440px, 100%);
-  display: flex;
-  flex-direction: column;
-  background: #ECE9D8;
-  border-left: 1px solid var(--xp-titlebar-dark, #0A246A);
-  box-shadow: -4px 0 14px rgba(0, 0, 0, 0.25);
-  z-index: 3;
-}
-
-.hub__detail[hidden] {
-  display: none;
-}
-
-.hub__detail-titlebar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.3rem 0.4rem 0.3rem 0.7rem;
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 0.85rem;
-  color: #fff;
-  background: linear-gradient(to bottom, #0997FF 0%, #0053EE 10%, #0050EE 90%, #0066FF 100%);
-}
-
-.hub__detail-close {
-  position: relative;
-  flex-shrink: 0;
-}
-
-.hub__detail-body {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  padding: 0.9rem;
-  font-family: var(--font-body);
-}
-
-.hub__detail-media {
-  display: block;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  border: 1px solid var(--xp-bevel-dark);
-  background: #000;
-  object-fit: contain;
-}
-
-.hub__detail-name {
-  margin: 0.75rem 0 0;
-  font-size: 1.05rem;
-  color: #0A246A;
-}
-
-.hub__detail-desc {
-  margin: 0.5rem 0 0;
-  font-size: 0.82rem;
-  line-height: 1.5;
-}
-
-.hub__detail-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.9rem;
-}
-
-/* Back button in project page */
-.hub__back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin-bottom: 1rem;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.8rem;
-  color: var(--text);
-  text-decoration: none;
-  background: linear-gradient(to bottom, #fff 0%, #ECEBE6 85%, #D6D0C5 100%);
-  border: 1px solid #003C74;
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-.hub__back-btn:hover {
-  box-shadow: inset 0 0 0 2px #F8B33A;
-}
-
-.hub__back-btn:focus-visible {
-  outline: 1px dotted #000;
-  outline-offset: 2px;
-}
-
 /* Media container with 16:9 aspect ratio */
 .hub__project-media {
   width: 100%;
@@ -342,11 +245,6 @@
   #hub-project-page {
     left: 0;
     padding: 1rem;
-  }
-
-  .hub__back-btn {
-    font-size: 0.75rem;
-    padding: 0.3rem 0.6rem;
   }
 
   .hub__project-title {

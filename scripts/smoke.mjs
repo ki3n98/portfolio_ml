@@ -247,11 +247,12 @@ try {
     await page.waitForTimeout(300);
     check((await hubAddr()).startsWith(`${HUB_PATH}\\Projects\\`), `hub project detail address shows "${await hubAddr()}"`);
     await page.screenshot({ path: join(OUT, '21-hub-detail.png'), animations: 'disabled' });
-    // The project page's back button returns to the landing page and enters history.
-    await click('[data-hub-back-to-grid]');
+    check(await page.evaluate(() => !document.querySelector('[data-hub-back-to-grid]') && !document.getElementById('hub-detail')), 'removed hub back button / legacy detail panel is still in the DOM');
+    // The address-bar panel Back button returns to the landing page and enters history.
+    await click('#window-portfolio [data-hub-back]');
     await page.waitForTimeout(300);
     check(await hubAddr() === HUB_PATH, `hub address after closing detail shows "${await hubAddr()}"`);
-    check(await page.evaluate(() => document.getElementById('hub-project-page').hidden), 'project page back button did not close the hub project page');
+    check(await page.evaluate(() => document.getElementById('hub-project-page').hidden), 'hub panel Back did not close the hub project page');
     check(await page.isDisabled('#window-portfolio [data-hub-back]'), 'hub Back is disabled after closing the project page');
     // Open the project page again and test Back/Forward
     await click('[data-proj-open]');
@@ -261,6 +262,17 @@ try {
     await page.keyboard.press('Escape');
     check(await page.evaluate(() => document.getElementById('hub-project-page').hidden), 'Escape did not close the hub project page');
     check(await isOpen('portfolio'), 'Escape on hub project page also closed the window');
+    // Escape enters history, so hub Back must stay enabled and re-open the escaped page.
+    check(!(await page.isDisabled('#window-portfolio [data-hub-back]')), 'hub Back is disabled after closing a project page with Escape');
+    await click('#window-portfolio [data-hub-back]');
+    await page.waitForTimeout(300);
+    check(await page.evaluate(() => !document.getElementById('hub-project-page').hidden), 'hub Back did not reopen the project page after Escape');
+    check((await hubAddr()).startsWith(`${HUB_PATH}\\Projects\\`), `hub Back after Escape shows address "${await hubAddr()}"`);
+    // Back once more so the run is back on the landing view and later steps are unaffected.
+    await click('#window-portfolio [data-hub-back]');
+    await page.waitForTimeout(300);
+    check(await page.evaluate(() => document.getElementById('hub-project-page').hidden), 'hub Back did not return to the landing view after Escape');
+    check(await hubAddr() === HUB_PATH, `hub address after returning from the Escape sequence shows "${await hubAddr()}"`);
   }
   // Hub menu bar: open a menu, Escape closes the menu but not the window.
   await click('[data-hub-menu="View"]');
@@ -286,8 +298,10 @@ try {
   check(await page.evaluate(() => !document.getElementById('hub-project-page').hidden), 'hub project page lost after minimize/restore (history position not re-applied)');
   check((await hubAddr()).startsWith(`${HUB_PATH}\\Projects\\`), `hub address after restore shows "${await hubAddr()}"`);
   // Back to the landing page so the final screenshots match the baseline.
-  await click('[data-hub-back-to-grid]');
+  await click('#window-portfolio [data-hub-back]');
   await page.waitForTimeout(300);
+  check(await page.evaluate(() => document.getElementById('hub-project-page').hidden), 'hub project page still open before 22-mobile.png (mobile baseline expects the landing view)');
+  check(await hubAddr() === HUB_PATH, `hub address before 22-mobile.png shows "${await hubAddr()}" (mobile baseline expects the landing view)`);
 
   // Mobile width renders without errors.
   await page.setViewportSize({ width: 375, height: 800 });
