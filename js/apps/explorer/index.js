@@ -47,7 +47,6 @@ function initExplorerWindow(windowId) {
   const statusEl = explorerEl.querySelector('[data-explorer-status]');
   const backBtn = explorerEl.querySelector('[data-explorer-back]');
   const fwdBtn = explorerEl.querySelector('[data-explorer-forward]');
-  const upBtn = explorerEl.querySelector('[data-explorer-up]');
 
   let history = [rootKey];
   let historyIndex = 0;
@@ -140,7 +139,6 @@ function initExplorerWindow(windowId) {
     if (statusEl) statusEl.textContent = `${folder.items.length} object${folder.items.length === 1 ? '' : 's'}`;
     if (backBtn) backBtn.disabled = historyIndex <= 0;
     if (fwdBtn) fwdBtn.disabled = historyIndex >= history.length - 1;
-    if (upBtn) upBtn.disabled = !folder.parent;
     renderSidebar(key);
   }
 
@@ -160,10 +158,6 @@ function initExplorerWindow(windowId) {
     if (historyIndex >= history.length - 1) return;
     historyIndex++;
     render(history[historyIndex]);
-  });
-  upBtn?.addEventListener('click', () => {
-    const folder = EXPLORER_FOLDERS[history[historyIndex]];
-    if (folder?.parent) navigate(folder.parent);
   });
 
   // Clicking blank space in the content area clears the selection, like XP.

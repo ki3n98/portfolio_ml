@@ -94,6 +94,16 @@
   border-bottom: 1px solid var(--xp-bevel-shadow);
 }
 
+/* Explorer with back/forward buttons on same line as address */
+.explorer__address-with-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.35rem 0.6rem;
+  background: #ECE9D8;
+  border-bottom: 1px solid var(--xp-bevel-shadow);
+}
+
 .explorer__address-label {
   font-family: var(--font-body);
   font-size: 0.78rem;

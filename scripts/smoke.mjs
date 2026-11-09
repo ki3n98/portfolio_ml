@@ -144,7 +144,7 @@ try {
   check(await explorerAddr('my-documents') === PICS_PATH, `Explorer Forward did not re-apply My Pictures (address "${await explorerAddr('my-documents')}")`);
   await close('my-documents');
 
-  // My Computer: same open-on-double-click rule for drive items; Up walks to the parent.
+  // My Computer: same open-on-double-click rule for drive items.
   await open('my-computer');
   check(await explorerAddr('my-computer') === 'My Computer', `My Computer address bar shows "${await explorerAddr('my-computer')}"`);
   const cDriveItem = '#window-my-computer .explorer__item:has-text("Local Disk")';
@@ -153,9 +153,6 @@ try {
   await page.dblclick(cDriveItem);
   await page.waitForTimeout(250);
   check(await explorerAddr('my-computer') === 'C:\\', `double-clicking "Local Disk (C:)" did not navigate (address "${await explorerAddr('my-computer')}")`);
-  await click('#window-my-computer [data-explorer-up]');
-  await page.waitForTimeout(250);
-  check(await explorerAddr('my-computer') === 'My Computer', `Up did not return to My Computer (address "${await explorerAddr('my-computer')}")`);
   await close('my-computer');
 
   // My Pictures: slideshow task opens the picture viewer; Escape closes it.

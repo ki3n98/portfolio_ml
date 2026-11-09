@@ -28,6 +28,21 @@
   color: var(--text);
 }
 
+/* Hub address bar: back/forward buttons + address on same line */
+.hub__address-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.35rem 0.6rem;
+  background: #ECE9D8;
+  border-bottom: 1px solid var(--xp-bevel-shadow);
+}
+
+.hub__address-bar .explorer__address-label {
+  display: none;
+}
+
 /* ----- Header ----- */
 .hub__header {
   display: flex;
