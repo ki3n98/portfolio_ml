@@ -220,6 +220,22 @@
   margin-bottom: 0.25rem;
 }
 
+.hub__exp-list-items li[hidden] {
+  display: none;
+}
+
+.hub__exp-toggle {
+  margin: 0 0 0.5rem;
+  padding: 0;
+  font: inherit;
+  font-size: 0.78rem;
+  color: #00178F;
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 /* ----- Project tiles ----- */
 .hub__proj-grid {
   display: grid;

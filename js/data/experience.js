@@ -13,8 +13,8 @@ export const PORTFOLIO_EXPERIENCE = [
     icon: '../assets/icons/briefcase.png',
     context: 'Spotlight (Canary × TRSS) surfaces suspected trafficking victims to law enforcement from ~150K ads/day and has helped identify 28,459 children since 2016. Its juvenile flag relied on images alone; I explored and benchmarked text models to add a second signal.',
     bullets: [
-      'Built and benchmarked <b>86 text-classification models</b> (11 embedding methods × up to 10 classifiers, plus a zero-shot LLM baseline) to flag suspected juvenile victims in escort ads.',
       'Detected juvenile victims of sex trafficking in escort ads using an embedding → classifier pipeline (OpenAI text-embedding-3-large + Logistic Regression), lifting recall from <b>0.620</b> to <b>0.795</b> and F1 from <b>0.50</b> to <b>0.64</b> at unchanged precision.',
+      'Built and benchmarked <b>86 text-classification models</b> (11 embedding methods × up to 10 classifiers, plus a zero-shot LLM baseline) to flag suspected juvenile victims in escort ads.',
       'Combined the text model\'s output with the existing image classifier, catching <b>23%</b> more true juvenile victims than the image classifier alone — roughly 350 additional confirmed cases per 6,000 ads reviewed.',
       'Stress-tested models on held-out 2024 ads: the 2025 leaders\' recall collapsed (e.g. <b>0.612 → 0.313</b>) while OpenAI embeddings + Logistic Regression held steady (<b>0.750 → 0.744</b>), so I recommended the model that generalizes, not the leaderboard winner.',
       'Measured concept drift (words shifting in juvenile signal year over year) and showed it tracks F1 decline across models, proposing drift monitoring as an early-warning retraining trigger.',

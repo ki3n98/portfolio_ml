@@ -54,22 +54,20 @@
   font-weight: 700;
 }
 
+/* Plain wrapper: the badge itself is the inner .hub__award span */
 .hub__project-award {
-  display: inline-block;
+  display: flex;
   margin: 0 0 1rem;
-  font-size: 0.8rem;
-  font-weight: 700;
-  padding: 0.2rem 0.6rem;
-  color: #44464B;
-  background: #F1EFE2;
-  border: 1px solid var(--xp-bevel-shadow);
-  border-radius: 2px;
 }
 
-.hub__project-award--win {
-  color: #6B4A00;
-  background: #FFF4C2;
-  border-color: #E0B84A;
+.hub__project-award[hidden] {
+  display: none;
+}
+
+.hub__project-award .hub__award {
+  margin: 0;
+  font-size: 0.8rem;
+  padding: 0.2rem 0.6rem;
 }
 
 /* Project description */

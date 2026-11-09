@@ -42,15 +42,7 @@ export function initPortfolioHub() {
       sideBtn('Gradient Descent.exe', '../assets/icons/slideshow.png', 'projects') +
       sideBtn('About Me', '../assets/icons/my-computer.png', 'hero') +
       sideBtn('My Documents', '../assets/icons/my-documents.png', 'my-documents') +
-      sideBtn('Paint', '../assets/icons/paint.png', 'paint')) +
-    sidebarSection('Details',
-      `<div class="explorer__sidebar-details">
-        <span class="explorer__sidebar-details-icon" style="--icon-url: url('../assets/icons/local-disk.png')" aria-hidden="true"></span>
-        <span class="explorer__sidebar-details-text">
-          <span class="explorer__sidebar-details-title">Kien Pham</span>
-          <span class="explorer__sidebar-details-desc">Data Scientist<br>${EXPERIENCE.length} positions &middot; ${projects.length} projects<br>${awards} awards won</span>
-        </span>
-      </div>`);
+      sideBtn('Paint', '../assets/icons/paint.png', 'paint'));
 
   // Mobile-only quick link row (sidebar is hidden on small screens)
   document.getElementById('hub-quick').innerHTML =
@@ -69,6 +61,8 @@ export function initPortfolioHub() {
     + `<span><span class="hub__highlight-big">${escapeHtml(big)}</span><span class="hub__highlight-small">${escapeHtml(small)}</span></span></div>`).join('');
 
   // ----- Experience -----
+  // Bullets past this count start collapsed (matches the shortest entry's length).
+  const EXP_VISIBLE_BULLETS = 4;
   document.getElementById('hub-exp-heading').textContent = `Experience (${EXPERIENCE.length})`;
   document.getElementById('hub-exp').innerHTML = EXPERIENCE.map(e => {
     return `<article class="hub__exp-tile">
@@ -80,7 +74,8 @@ export function initPortfolioHub() {
         </div>
         <p class="hub__exp-role">${escapeHtml(e.role)}</p>
         ${e.context ? `<p class="hub__exp-context">${escapeHtml(e.context)}</p>` : ''}
-        <ul class="hub__exp-list-items">${e.bullets.map(b => `<li>${b}</li>`).join('')}</ul>
+        <ul class="hub__exp-list-items">${e.bullets.map((b, n) => `<li${n >= EXP_VISIBLE_BULLETS ? ' class="hub__exp-more" hidden' : ''}>${b}</li>`).join('')}</ul>
+        ${e.bullets.length > EXP_VISIBLE_BULLETS ? `<button type="button" class="hub__exp-toggle" aria-expanded="false">Show ${e.bullets.length - EXP_VISIBLE_BULLETS} more ▾</button>` : ''}
         <div class="hub__tags">${e.tags.map(t => `<span class="hub__tag">${escapeHtml(t)}</span>`).join('')}</div>
         ${e.links ? `<div class="hub__proj-links">${e.links.map(l => linkHtml(l, 'hub__link')).join('')}</div>` : ''}
       </div>
@@ -151,20 +146,20 @@ export function initPortfolioHub() {
 
     // Render project detail page (full screen replacement)
     const titleEl = projectPage.querySelector('#hub-project-page-title');
-    titleEl.textContent = escapeHtml(p.title);
+    titleEl.textContent = p.title;
 
     const roleEl = projectPage.querySelector('#hub-project-page-role');
-    roleEl.textContent = p.role ? escapeHtml(p.role) : '';
+    roleEl.textContent = p.role || '';
 
     const awardEl = projectPage.querySelector('#hub-project-page-award');
-    awardEl.textContent = awardHtml(p, 'span');
+    awardEl.innerHTML = awardHtml(p, 'span');
     awardEl.hidden = !p.award;
 
     const mediaEl = projectPage.querySelector('#hub-project-page-media');
     mediaEl.innerHTML = media;
 
     const descEl = projectPage.querySelector('#hub-project-page-desc');
-    descEl.textContent = escapeHtml(p.desc);
+    descEl.textContent = p.desc;
 
     const tagsEl = projectPage.querySelector('#hub-project-page-tags');
     tagsEl.innerHTML = p.tags.map(t => `<span class="hub__project-tag">${escapeHtml(t)}</span>`).join('');
@@ -246,6 +241,15 @@ export function initPortfolioHub() {
         const opener = tile.querySelector('[data-proj-open]');
         if (opener) { lastOpener = opener; pushEntry({ view: 'detail', projectId: Number(tile.dataset.proj) }); return; }
       }
+      return;
+    }
+    const expToggle = e.target.closest('.hub__exp-toggle');
+    if (expToggle) {
+      const more = expToggle.closest('.hub__exp-main').querySelectorAll('.hub__exp-more');
+      const open = expToggle.getAttribute('aria-expanded') !== 'true';
+      more.forEach(li => { li.hidden = !open; });
+      expToggle.setAttribute('aria-expanded', String(open));
+      expToggle.textContent = open ? 'Show less ▴' : `Show ${more.length} more ▾`;
       return;
     }
     const winLink = e.target.closest('[data-hub-open]');

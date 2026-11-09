@@ -26,7 +26,7 @@ export const PORTFOLIO_PROJECTS = [
   {
     x: -1.9,
     title: 'Shape & Sign',
-    desc: 'Gesture-controlled mini-games that teach kids ASL vocabulary and phrases from a webcam. A two-stage recognizer routes live MediaPipe hand frames into 5 modes, then stacked LSTMs read ASL sequences, sustaining ~93% live accuracy through judging.',
+    desc: 'Gesture-controlled mini-games that teach kids ASL vocabulary and phrases from a webcam. A two-stage recognizer routes live MediaPipe hand frames into 5 modes, then stacked LSTMs (run in-browser via TensorFlow.js) read ASL sequences, sustaining ~93% live accuracy through judging.',
     role: 'Team of 4 · I built the Random Forest mode router (5-frame debounce) and the Python backend',
     award: 'BeachHacks 8.0 (2025) • Best Overall',
     tags: ['MediaPipe', 'Random Forest', 'LSTM', 'TensorFlow.js', 'Next.js'],
@@ -60,10 +60,10 @@ export const PORTFOLIO_PROJECTS = [
   {
     x: -0.9,
     title: 'VeriFace',
-    desc: 'End-to-end face-recognition attendance for classrooms and events: MTCNN detection → FaceNet (InceptionResNetV1) 512-dim embeddings, cosine-matched against each event roster and served through FastAPI + PostgreSQL. Also a live WebSocket check-in dashboard, a self-trained EfficientNet-B0 anti-spoofing model, JWT/bcrypt auth with a 5-role RBAC engine and audit logging (I wrote the permission module), 160+ pytest tests, and a reproducible Docker/CUDA stack.',
+    desc: 'Face-recognition attendance for classrooms and events. MTCNN detection and FaceNet embeddings are cosine-matched against each event roster, served via FastAPI + PostgreSQL, with a live WebSocket check-in dashboard and a self-trained EfficientNet-B0 anti-spoofing model.',
     role: 'Team of 6 · Repo founder, backend lead, and top contributor (84 of 182 commits)',
     award: 'CECS Senior Design Award — Outstanding Achievement in Applied AI & ML',
-    tags: ['MTCNN', 'FaceNet', 'PyTorch', 'EfficientNet-B0', 'FastAPI', 'PostgreSQL', 'WebSockets', 'Docker', 'JWT / RBAC', '160+ pytest tests'],
+    tags: ['MTCNN', 'FaceNet', 'PyTorch', 'EfficientNet-B0', 'FastAPI', 'PostgreSQL', 'WebSockets', 'Docker', 'JWT / 5-role RBAC', '160+ pytest tests'],
     link: 'https://github.com/ki3n98/VeriFace',
     ctaLabel: 'Source Code →',
     step: 'Step 3 - Converging',
