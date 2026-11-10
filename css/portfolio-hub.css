@@ -152,9 +152,10 @@
 
 /* ----- Experience tiles ----- */
 .hub__exp-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 0.75rem;
+  max-width: 800px;
 }
 
 .hub__exp-tile {

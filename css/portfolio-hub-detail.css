@@ -219,9 +219,7 @@
     gap: 0.5rem;
   }
 
-  .hub__exp-list {
-    grid-template-columns: 1fr;
-  }
+
 
   .hub__exp-tile {
     padding: 0.5rem 0;
