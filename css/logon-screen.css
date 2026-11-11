@@ -1,0 +1,286 @@
+/* --- Logon Screen (XP "To begin, click your user name") --- */
+.logon-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  flex-direction: column;
+  background: #5a7edc;
+  color: #fff;
+  font-family: var(--font-body);
+  user-select: none;
+}
+
+.logon-screen[hidden] {
+  display: none;
+}
+
+/* Dark-blue top band with a pale highlight line underneath */
+.logon-screen__top {
+  flex: 0 0 12.5%;
+  min-height: 48px;
+  background: #00309c;
+  position: relative;
+}
+
+.logon-screen__top::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #5a7edc 0%, #c0d0ff 35%, #c0d0ff 65%, #5a7edc 100%);
+}
+
+/* Main light-blue area with the soft glow in the top-left corner */
+.logon-screen__middle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background:
+    radial-gradient(circle at 6% 8%, rgba(160, 190, 255, 0.95) 0%, rgba(120, 155, 245, 0.5) 12%, rgba(90, 126, 220, 0) 32%),
+    #5a7edc;
+  overflow: hidden;
+}
+
+.logon-screen__left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-right: 3.5vw;
+  gap: 1.75rem;
+}
+
+.logon-screen__logo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-right: 0.5rem;
+}
+
+.logon-screen__flag {
+  width: 84px;
+  height: auto;
+  margin-right: 1.4rem;
+  margin-bottom: -6px;
+}
+
+.logon-screen__wordmark {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1;
+}
+
+.logon-screen__wordmark-ms {
+  font-family: 'Franklin Gothic Medium', Arial, sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  margin-left: 2px;
+}
+
+.logon-screen__wordmark-ms sup {
+  font-size: 0.6em;
+}
+
+.logon-screen__wordmark-main {
+  font-family: 'Franklin Gothic Medium', 'Trebuchet MS', Arial, sans-serif;
+  font-size: 2.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.logon-screen__wordmark-xp {
+  color: #f0702a;
+  font-size: 0.55em;
+  vertical-align: 0.9em;
+  margin-left: 1px;
+  font-style: italic;
+}
+
+.logon-screen__hint {
+  margin: 0;
+  font-size: 1.3rem;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Faint vertical separator, brightest in the middle */
+.logon-screen__divider {
+  align-self: stretch;
+  width: 1px;
+  margin: 4% 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0) 100%);
+}
+
+.logon-screen__right {
+  flex: 1;
+  padding-left: 3.5vw;
+}
+
+/* User tile: rounded on the left, fades out to the right */
+.logon-screen__user-tile {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px 0 0 8px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.logon-screen__user-tile:hover,
+.logon-screen__user-tile:focus-visible {
+  outline: none;
+  background: linear-gradient(90deg, #00309c 0%, #1a4fc4 55%, rgba(90, 126, 220, 0) 100%);
+  box-shadow: inset 1px 1px 0 rgba(160, 185, 245, 0.8), inset 0 -1px 0 rgba(160, 185, 245, 0.4);
+}
+
+.logon-screen__avatar {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border: 3px solid #f5c443;
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+  background: #fff;
+}
+
+.logon-screen__user-tile:not(:hover):not(:focus-visible) .logon-screen__avatar {
+  border-color: rgba(255, 255, 255, 0.85);
+}
+
+.logon-screen__username {
+  margin-top: 4px;
+  font-size: 1.35rem;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Dark-blue bottom band with an orange highlight line on top */
+.logon-screen__bottom {
+  flex: 0 0 15%;
+  min-height: 64px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0 2rem;
+  background: linear-gradient(90deg, #3a2fc0 0%, #1d3fb8 30%, #0e3aa8 100%);
+}
+
+.logon-screen__bottom::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(90, 126, 220, 0) 0%, #f2a35a 40%, #f2a35a 60%, rgba(90, 126, 220, 0) 100%);
+}
+
+.logon-screen__shut-down {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 4px 6px;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+.logon-screen__shut-down:hover span:last-child,
+.logon-screen__shut-down:focus-visible span:last-child {
+  text-decoration: underline;
+}
+
+.logon-screen__shut-down-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: 1px solid #fff;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #f08a5a 0%, #e0441c 50%, #c8300c 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.logon-screen__shut-down-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+
+.logon-screen__note {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  text-align: left;
+}
+
+/* Tablet / phone: stack the two halves */
+@media (max-width: 768px) {
+  .logon-screen__middle {
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+
+  .logon-screen__left {
+    flex: 0;
+    align-items: center;
+    padding: 0 16px;
+    gap: 1rem;
+  }
+
+  .logon-screen__logo {
+    margin-right: 0;
+  }
+
+  .logon-screen__hint {
+    font-size: 1.05rem;
+    text-align: center;
+  }
+
+  .logon-screen__divider {
+    align-self: auto;
+    width: 70%;
+    height: 1px;
+    margin: 0;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0) 100%);
+  }
+
+  .logon-screen__right {
+    flex: 0;
+    width: 100%;
+    padding: 0 0 0 16px;
+  }
+
+  .logon-screen__bottom {
+    padding: 0 16px;
+  }
+
+  .logon-screen__shut-down {
+    font-size: 1rem;
+  }
+
+  .logon-screen__note {
+    display: none;
+  }
+}

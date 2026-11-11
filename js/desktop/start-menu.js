@@ -2,6 +2,10 @@
 
 const startBtn = document.getElementById('start-btn');
 const navLinks = document.getElementById('nav-links');
+const shutdownButton = document.querySelector('button[data-action="shutdown"]');
+const logoffButton = document.querySelector('button[data-action="logoff"]');
+
+import { showLogonScreen } from '../logon-screen.js';
 
 export function closeStartMenu() {
   navLinks.classList.remove('open');
@@ -28,4 +32,19 @@ export function initStartMenu() {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeStartMenu();
   });
+
+  // Shutdown button: reload the page (full reset)
+  if (shutdownButton) {
+    shutdownButton.addEventListener('click', () => {
+      location.reload();
+    });
+  }
+
+  // Log off button: close start menu, then show logon screen
+  if (logoffButton) {
+    logoffButton.addEventListener('click', () => {
+      closeStartMenu();
+      showLogonScreen();
+    });
+  }
 }

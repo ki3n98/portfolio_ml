@@ -31,6 +31,7 @@ Load only the files for the feature you're changing. Window markup for every fea
 | Entry / init order | `js/main.js` | — |
 | Shared helpers (`escapeHtml`, `isMobile`) | `js/utils.js` | `css/base.css` (variables, reset, fade-in) |
 | Boot screen | `js/boot-screen.js` | `css/boot-screen.css` |
+| Logon screen (Select Your User) | `js/logon-screen.js` | `css/logon-screen.css` |
 | Start menu | `js/desktop/start-menu.js` | `css/taskbar.css` |
 | Window manager, taskbar buttons | `js/desktop/window-manager.js` | `css/window.css`, `css/taskbar.css` |
 | Window drag / resize | `js/desktop/window-drag.js`, `js/desktop/window-resize.js` | `css/window.css` |

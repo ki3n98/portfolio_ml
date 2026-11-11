@@ -8,6 +8,7 @@
   <!-- Stylesheets: order matters (cascade). One file per feature; see AGENTS.md. -->
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/boot-screen.css">
+  <link rel="stylesheet" href="css/logon-screen.css">
   <link rel="stylesheet" href="css/taskbar.css">
   <link rel="stylesheet" href="css/desktop.css">
   <link rel="stylesheet" href="css/window.css">
@@ -44,6 +45,43 @@
       <div class="boot-screen__bar-fill">
         <span></span><span></span><span></span>
       </div>
+    </div>
+  </div>
+
+  <!-- Logon screen: XP "To begin, click your user name" welcome screen (hidden until Log off) -->
+  <div class="logon-screen" id="logon-screen" hidden>
+    <div class="logon-screen__top"></div>
+
+    <div class="logon-screen__middle">
+      <div class="logon-screen__left">
+        <div class="logon-screen__logo">
+          <img class="logon-screen__flag" src="assets/icons/windows-xp.png" alt="" aria-hidden="true">
+          <div class="logon-screen__wordmark">
+            <span class="logon-screen__wordmark-ms">Microsoft<sup>&reg;</sup></span>
+            <span class="logon-screen__wordmark-main">Windows<span class="logon-screen__wordmark-xp">xp</span></span>
+          </div>
+        </div>
+        <p class="logon-screen__hint">To begin, click your user name</p>
+      </div>
+
+      <div class="logon-screen__divider" aria-hidden="true"></div>
+
+      <div class="logon-screen__right">
+        <button class="logon-screen__user-tile" type="button" aria-label="Log on as Guest">
+          <img class="logon-screen__avatar" src="assets/img/emi.jpg" alt="">
+          <span class="logon-screen__username">Guest</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="logon-screen__bottom">
+      <button class="logon-screen__shut-down" type="button">
+        <span class="logon-screen__shut-down-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 3v8" /><path d="M7.05 6.05a7 7 0 1 0 9.9 0" /></svg>
+        </span>
+        <span>Turn off computer</span>
+      </button>
+      <p class="logon-screen__note">After you log on, you can add or change accounts.<br>Just go to Control Panel and click User Accounts.</p>
     </div>
   </div>
 
@@ -133,11 +171,11 @@
               Help and Support
             </button></li>
             <li class="start-menu__divider" role="separator"></li>
-            <li><button type="button" class="start-menu__item start-menu__item--right" disabled>
+            <li><button type="button" class="start-menu__item start-menu__item--right" data-action="logoff">
               <span class="start-menu__item-icon start-menu__item-icon--bordered" style="--icon-url: url('../assets/icons/logoff.png')" aria-hidden="true"></span>
               Log off
             </button></li>
-            <li><button type="button" class="start-menu__item start-menu__item--right" disabled>
+            <li><button type="button" class="start-menu__item start-menu__item--right" data-action="shutdown">
               <span class="start-menu__item-icon" style="--icon-url: url('../assets/icons/turn-off.png')" aria-hidden="true"></span>
               Turn Off Computer
             </button></li>

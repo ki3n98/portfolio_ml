@@ -336,6 +336,28 @@ try {
   await page.waitForTimeout(300);
   await page.screenshot({ path: join(OUT, '22-mobile.png'), animations: 'disabled' });
 
+  // Log off / Turn Off: both must fully reset the page (boot screen reappears).
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await page.waitForTimeout(300);
+  await click('#start-btn');
+  await page.waitForTimeout(250);
+  await click('button[data-action="logoff"]');
+  await page.waitForTimeout(250);
+  check(await page.evaluate(() => { const s = document.getElementById('logon-screen'); return !!s && !s.hidden; }),
+    'Log off did not show the logon screen');
+  await page.screenshot({ path: join(OUT, '99-logon.png'), animations: 'disabled' });
+  await Promise.all([ page.waitForEvent('load', { timeout: 15000 }),
+    page.evaluate(() => document.querySelector('.logon-screen__user-tile').click()) ]);
+  check(await page.evaluate(() => !!document.getElementById('boot-screen')), 'logging on did not reload the page (boot screen missing after log on)');
+  await page.waitForSelector('#boot-screen', { state: 'detached', timeout: 10000 });
+  await page.waitForTimeout(300);
+  await click('#start-btn');
+  await page.waitForTimeout(250);
+  await Promise.all([ page.waitForEvent('load', { timeout: 15000 }),
+    page.evaluate(() => document.querySelector('button[data-action="shutdown"]').click()) ]);
+  check(await page.evaluate(() => !!document.getElementById('boot-screen')), 'Turn Off Computer did not reload the page (boot screen missing after shutdown)');
+  await page.waitForSelector('#boot-screen', { state: 'detached', timeout: 10000 });
+
 } catch (err) {
   failures.push(`crashed: ${err.message.split('\n')[0]}`);
 } finally {

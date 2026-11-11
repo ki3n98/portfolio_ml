@@ -4,6 +4,7 @@
 // Feature -> file map: see AGENTS.md.
 
 import { initBootScreen } from './boot-screen.js';
+import { initLogonScreen } from './logon-screen.js';
 import { initStartMenu } from './desktop/start-menu.js';
 import { initWindowManager } from './desktop/window-manager.js';
 import { initWindowDrag } from './desktop/window-drag.js';
@@ -19,6 +20,7 @@ import { initGradientDescent } from './apps/gradient-descent/index.js';
 import { initPortfolioHub } from './apps/portfolio-hub/index.js';
 
 initBootScreen();
+initLogonScreen();
 initStartMenu();
 initWindowManager();
 initWindowDrag();
