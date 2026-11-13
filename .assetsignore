@@ -1,0 +1,16 @@
+# Files in the repo root that must NOT be served as static assets
+.git
+.gitignore
+.assetsignore
+.wrangler
+.claude
+node_modules
+scripts
+TRSS
+Hermes_obsidian
+text.md
+AGENTS.md
+README.md
+package.json
+package-lock.json
+wrangler.jsonc

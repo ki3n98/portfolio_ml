@@ -4,3 +4,6 @@ node_modules/
 assets/Windows XP High Resolution Icon Pack/
 scripts/.smoke-out/
 Hermes_obsidian
+
+# Cloudflare Wrangler
+.wrangler/
