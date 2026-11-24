@@ -1,6 +1,6 @@
 # Gradient Descent viz (`js/apps/gradient-descent/`)
 
-The scroll-driven project showcase in the `#window-projects` window. Projects are dots on the loss curve L(θ) = θ². Scrolling "descends" the curve: zooming and panning to each dot and swapping the info panel. At the end it zooms out to an overview grid.
+The scroll-driven project showcase in the `#window-projects` window. Projects are dots on the loss curve L(θ) = θ². Scrolling "descends" the curve: zooming and panning to each dot and swapping the info panel. At the end it zooms out to the full-curve finale with CTA buttons.
 
 Markup: `index.html` (`id="window-projects"`, `gd-*` ids). Styles: `css/gradient-descent.css`, `css/gradient-descent-overview.css`. Data: `js/data/projects.js` (each project's `x` is its position on the curve).
 
@@ -11,7 +11,7 @@ Markup: `index.html` (`id="window-projects"`, `gd-*` ids). Styles: `css/gradient
 | `state.js` | `PROJECTS`/`N`, tuning constants (`ZOOM_AMOUNT`, thresholds, `LERP_SPEED`), `state` (what's rendered) and `target` (where scroll wants it), DOM refs, curve bounds, `colors`, and mutable **`S`** (canvas size `W/H/dpr`, padding, plot size, scroll/overview/info bookkeeping) |
 | `math.js` | Pure helpers: `f`, `fPrime`, easing, `lerp`, `seededJitter`, `mathToCanvas` |
 | `draw.js` | `readColors`, `resize`, every `draw*` function, and `render()` |
-| `scroll.js` | `onScroll()` maps scroll progress to `target.*` (intro → per-project → overview), overview cards, `scrollToProjectIndex`, and `animLoop()` (RAF) that lerps `state` toward `target` |
+| `scroll.js` | `onScroll()` maps scroll progress to `target.*` (intro → per-project → overview), `scrollToProjectIndex`, and `animLoop()` (RAF) that lerps `state` toward `target` |
 | `info-panel.js` | `updateInfo(idx)`: fade-swaps the info panel content, media (video/image/YouTube) and links |
 | `index.js` | Mouse hover/click on dots, `init()`, and `initGradientDescent()` (waits for fonts, then inits) |
 

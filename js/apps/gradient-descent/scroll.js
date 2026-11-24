@@ -1,8 +1,7 @@
-// Scroll-driven animation: maps scroll progress to zoom/pan/tangent targets, the
-// overview cards, and the RAF lerp loop that eases state toward those targets.
+// Scroll-driven animation: maps scroll progress to zoom/pan/tangent targets, and
+// the RAF lerp loop that eases state toward those targets.
 
-import { escapeHtml } from '../../utils.js';
-import { PROJECTS, N, ZOOM_AMOUNT, INTRO_DRAW_FRACTION, DOT_APPEAR_START, TANGENT_FADE_THRESHOLD, CARD_HOLD_THRESHOLD, OVERVIEW_SHOW_THRESHOLD, LERP_SPEED, state, target, TOTAL_STEPS, section, scrollRoot, introPanel, infoPanel, overviewPanel, overviewGrid, overviewCta, scrollHint, S } from './state.js';
+import { PROJECTS, N, ZOOM_AMOUNT, INTRO_DRAW_FRACTION, DOT_APPEAR_START, TANGENT_FADE_THRESHOLD, CARD_HOLD_THRESHOLD, OVERVIEW_SHOW_THRESHOLD, LERP_SPEED, state, target, TOTAL_STEPS, section, scrollRoot, introPanel, infoPanel, overviewCta, scrollHint, S } from './state.js';
 import { f, easeOut, lerp, mathToCanvas } from './math.js';
 import { render } from './draw.js';
 import { updateInfo } from './info-panel.js';
@@ -13,27 +12,6 @@ export function getScrollProgress() {
   if (scrollable <= 0) return 0;
   const scrolled = -rect.top;
   return Math.max(0, Math.min(1, scrolled / scrollable));
-}
-
-export function renderOverviewCards() {
-  if (!overviewGrid) return;
-  overviewGrid.innerHTML = PROJECTS.filter(proj => proj.includeInOverview !== false)
-    .map(proj => {
-      const awardMarkup = proj.award
-        ? '<span class="gd-overview__award">' + escapeHtml(proj.award) + '</span>'
-        : '';
-      return (
-        '<a class="gd-overview__card" href="#projects" data-project-index="' + PROJECTS.indexOf(proj) + '">' +
-          '<span class="gd-overview__step">' + proj.step + '</span>' +
-          awardMarkup +
-          '<h4 class="gd-overview__card-title">' + proj.title + '</h4>' +
-          '<p class="gd-overview__desc">' + proj.desc + '</p>' +
-          '<div class="gd-overview__tags">' + proj.tags.map(t =>
-            '<span class="gd-overview__tag">' + escapeHtml(t) + '</span>'
-          ).join('') + '</div>' +
-        '</a>'
-      );
-    }).join('');
 }
 
 export function scrollToProjectIndex(idx) {
@@ -50,21 +28,10 @@ export function scrollToProjectIndex(idx) {
   scrollRoot.scrollTo({ top: targetTop, behavior: 'smooth' });
 }
 
-export function handleOverviewClick(e) {
-  const card = e.target.closest('.gd-overview__card');
-  if (!card) return;
-  e.preventDefault();
-  const idx = Number(card.dataset.projectIndex);
-  if (Number.isNaN(idx)) return;
-  scrollToProjectIndex(idx);
-}
-
 export function setOverviewState(isVisible) {
-  if (!overviewPanel || !infoPanel) return;
+  if (!infoPanel || !overviewCta) return;
   if (isVisible === S.overviewVisible) return;
   S.overviewVisible = isVisible;
-  overviewPanel.classList.toggle('active', isVisible);
-  overviewPanel.setAttribute('aria-hidden', isVisible ? 'false' : 'true');
   infoPanel.classList.toggle('hidden', isVisible);
   if (overviewCta) {
     overviewCta.classList.toggle('active', isVisible);

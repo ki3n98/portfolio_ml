@@ -1,10 +1,10 @@
 // Gradient Descent viz entry: mouse hover/click on dots and initialization.
 // See README.md in this folder for how the modules fit together.
 
-import { PROJECTS, N, state, canvas, scrollRoot, overviewGrid, S } from './state.js';
+import { PROJECTS, N, state, canvas, scrollRoot, S } from './state.js';
 import { f, mathToCanvas } from './math.js';
 import { readColors, resize, render } from './draw.js';
-import { renderOverviewCards, scrollToProjectIndex, handleOverviewClick, onScroll } from './scroll.js';
+import { scrollToProjectIndex, onScroll } from './scroll.js';
 
 function getHoveredDot(cx, cy) {
   const hitRadius = 28;
@@ -47,7 +47,6 @@ function handleClick(e) {
 
 function init() {
   readColors();
-  renderOverviewCards();
   resize();
 
   canvas.addEventListener('mousemove', handleMouseMove);
@@ -57,9 +56,6 @@ function init() {
     render();
   });
   canvas.addEventListener('click', handleClick);
-  if (overviewGrid) {
-    overviewGrid.addEventListener('click', handleOverviewClick);
-  }
 
   // Scroll listener (RAF-throttled) — the Projects window's own scroll
   // container is the scroll root now, not the document.

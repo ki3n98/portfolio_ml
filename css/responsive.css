@@ -67,28 +67,6 @@
     line-height: 1.45;
   }
 
-  .gd-overview {
-    left: 1rem;
-    right: 1rem;
-    width: auto;
-    bottom: calc(var(--nav-height) + 2rem);
-    padding: 1rem;
-  }
-
-  .gd-overview__header {
-    display: block;
-    margin-bottom: 0.85rem;
-  }
-
-  .gd-overview__title {
-    margin-top: 0.25rem;
-    font-size: 1.5rem;
-  }
-
-  .gd-overview__grid {
-    grid-template-columns: 1fr;
-  }
-
   .gd-overview-cta {
     flex-direction: column;
     width: calc(100vw - 3rem);

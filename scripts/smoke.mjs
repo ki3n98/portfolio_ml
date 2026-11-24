@@ -232,6 +232,7 @@ try {
   }
   await page.screenshot({ path: join(OUT, '20-gd-scrolled.png'), animations: 'disabled' });
   check([...titles].filter(Boolean).length >= 2, `GD info panel barely changed: ${[...titles].join(' | ')}`);
+  check(await page.evaluate(() => document.getElementById('gd-overview-cta').classList.contains('active')), 'GD CTA bar not active after scroll to end');
   await close('projects');
 
   // Portfolio hub: landing address bar, project detail page, Back/Forward history.

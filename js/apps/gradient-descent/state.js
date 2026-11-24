@@ -76,8 +76,6 @@ export const infoMediaImg = document.getElementById('gd-info-media-img');
 export const infoMediaEmbed = document.getElementById('gd-info-media-embed');
 export const infoMediaType = document.getElementById('gd-info-media-type');
 export const infoMediaText = document.getElementById('gd-info-media-text');
-export const overviewPanel = document.getElementById('gd-overview');
-export const overviewGrid = document.getElementById('gd-overview-grid');
 export const overviewCta = document.getElementById('gd-overview-cta');
 export const scrollHint = document.getElementById('gd-scroll-hint');
 
