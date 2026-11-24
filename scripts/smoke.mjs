@@ -59,6 +59,148 @@ try {
     check(!(await isOpen(id)), `window ${id} did not close`);
   }
 
+  // ── Desktop context menu (R1–R8, R10–R13) ──────────────────────────────
+  const openCtx = (x, y) => page.evaluate(({ x, y }) => {
+    const d = document.getElementById('desktop');
+    if (d) d.dispatchEvent(new MouseEvent('contextmenu', {
+      bubbles: true, clientX: x, clientY: y,
+    }));
+  }, { x, y });
+
+  // (a) Open menu at center of desktop
+  await openCtx(700, 500);
+  await page.waitForTimeout(100);
+  check(await page.evaluate(() => {
+    const m = document.getElementById('context-menu');
+    if (!m) return false;
+    const r = m.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  }), 'right-click desktop did not open context menu');
+  await page.screenshot({ path: join(OUT, '13-context-menu.png'), animations: 'disabled' });
+
+  // (b) Three parent items with aria-haspopup
+  const parents = await page.evaluate(() =>
+    [...document.querySelectorAll('.context-menu__item--parent')]);
+  check(parents.length === 3, `expected 3 parent items, found ${parents.length}`);
+  const hasAria = await page.evaluate(() =>
+    [...document.querySelectorAll('.context-menu__item--parent')].every(
+      i => i.getAttribute('aria-haspopup') === 'true'));
+  check(hasAria, 'parent items missing aria-haspopup="true"');
+
+  // (c) Hover "View" → submenu opens
+  // Move mouse outside menu first to guarantee mouseenter fires
+  await page.mouse.move(100, 100);
+  await page.waitForTimeout(50);
+  const viewBox = await page.locator('.context-menu__item--parent').first().boundingBox();
+  await page.mouse.move(viewBox.x + 30, viewBox.y + 12, { steps: 5 });
+  await page.waitForTimeout(10);
+  await page.waitForTimeout(180); // 150ms hover timer + buffer
+  check(await page.evaluate(() => {
+    const s = document.querySelector('[data-submenu-for="View"]');
+    if (!s) return false;
+    const r = s.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  }), 'hovering View parent did not open submenu');
+  await page.screenshot({ path: join(OUT, '14-context-menu-submenu.png'), animations: 'disabled' });
+  // Close the menu before continuing
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(50);
+
+  // (d) Edge clamp: right-click near bottom-right corner
+  const { innerWidth, innerHeight } = await page.evaluate(() => ({ innerWidth, innerHeight }));
+  await openCtx(innerWidth - 40, innerHeight - 40);
+  await page.waitForTimeout(100);
+  const clampRect = await page.evaluate(() => {
+    const m = document.getElementById('context-menu');
+    return m ? m.getBoundingClientRect() : null;
+  });
+  check(clampRect !== null, 'context menu not visible after edge-click');
+  check(clampRect && clampRect.right <= innerWidth + 1,
+    `context menu overflows right edge (${clampRect.right} > ${innerWidth})`);
+  check(clampRect && clampRect.bottom <= innerHeight + 1,
+    `context menu overflows bottom edge (${clampRect.bottom} > ${innerHeight})`);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(50);
+
+  // (e) Left-flip: near right edge, hover New → submenu flips left
+  const newX = Math.min(innerWidth - 150, 1200);
+  await openCtx(newX, 300);
+  await page.waitForTimeout(100);
+  // Dispatch mouseenter manually on the 3rd parent ("New")
+  await page.evaluate(() => {
+    const btn = document.querySelectorAll('.context-menu__item--parent')[2];
+    btn.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+  });
+  await page.waitForTimeout(200);
+  const subRect = await page.evaluate(() => {
+    const s = document.querySelector('[data-submenu-for="New"]');
+    return s ? s.getBoundingClientRect() : null;
+  });
+  check(subRect !== null, 'New submenu not visible near right edge');
+  check(subRect && subRect.right <= innerWidth + 1,
+    `New submenu overflows right edge (${subRect.right} > ${innerWidth})`);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(50);
+
+  // (f) Escape closes menu but window stays open
+  await open('notepad');
+  await page.waitForTimeout(100);
+  await openCtx(700, 500);
+  await page.waitForTimeout(100);
+  check(await page.evaluate(() => {
+    const m = document.getElementById('context-menu');
+    if (!m) return false;
+    const r = m.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  }), 'context menu not open with window visible');
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(100);
+  const notepadAfterEsc = await page.evaluate(() =>
+    !document.getElementById('window-notepad').hidden);
+  check(notepadAfterEsc, 'Escape closed notepad window instead of context menu');
+  const menuAfterEsc = await page.evaluate(() => {
+    const m = document.getElementById('context-menu');
+    return !!m;
+  });
+  check(!menuAfterEsc, 'Escape did not close context menu');
+  await close('notepad');
+  await page.waitForTimeout(50);
+
+  // (g) Right-click inside Notepad textarea does NOT open desktop menu
+  await open('notepad');
+  await page.waitForTimeout(100);
+  await page.evaluate(() => {
+    const t = document.querySelector('#window-notepad .notepad__textarea');
+    if (t) t.dispatchEvent(new MouseEvent('contextmenu', {
+      bubbles: true, clientX: 700, clientY: 500,
+    }));
+  });
+  await page.waitForTimeout(100);
+  const menuCount = await page.evaluate(() =>
+    document.querySelectorAll('#context-menu').length);
+  check(menuCount === 0, `right-click in Notepad opened context menu (${menuCount})`);
+  await close('notepad');
+  await page.waitForTimeout(50);
+
+  // (h) Click leaf (Refresh) closes the menu
+  await openCtx(700, 500);
+  await page.waitForTimeout(100);
+  await page.evaluate(() => {
+    document.querySelector('[data-menu-id="refresh"]')?.click();
+  });
+  await page.waitForTimeout(100);
+  check(!await page.evaluate(() => document.getElementById('context-menu')),
+    'clicking leaf did not close the menu');
+  await page.waitForTimeout(50);
+
+  // (i) Cleanup: ensure no menu or window remains
+  check(!await page.evaluate(() => document.getElementById('context-menu')),
+    'cleanup: context menu still present');
+  for (const id of WINDOW_IDS) {
+    if (await isOpen(id)) await close(id);
+  }
+  await page.waitForTimeout(100);
+
   // Window chrome: drag, resize, maximize/restore, Escape closes the top window.
   await open('notepad');
   const winVar = (name) => page.evaluate(n =>

@@ -37,6 +37,7 @@ Load only the files for the feature you're changing. Window markup for every fea
 | Window drag / resize | `js/desktop/window-drag.js`, `js/desktop/window-resize.js` | `css/window.css` |
 | Tray clock | `js/desktop/tray-clock.js` | `css/taskbar.css` |
 | Desktop icons / wallpaper | (window-manager wires `data-window` icons) | `css/desktop.css` |
+| Desktop context menu | `js/desktop/context-menu.js`, `js/desktop/desktop-context-menu.js` | `css/context-menu.css` |
 | About Me (hero) window | (static HTML) | `css/section-hero.css`, `css/section-about.css` |
 | Experience window | `js/apps/experience-window.js` | `css/section-experience.css` |
 | Contact form | `js/apps/contact-form.js` | `css/section-contact.css` |

@@ -1,0 +1,77 @@
+/* =============================================
+   Desktop Context Menu — XP Luna style (flat)
+   ============================================= */
+:root {
+  --xp-menu-highlight: #316AC5;
+}
+
+.context-menu {
+  position: fixed;
+  z-index: 1200; /* > taskbar (1000), < picture-viewer (2000) / save-dialog (2100) */
+  min-width: 190px;
+  padding: 2px;
+  background: var(--xp-face);
+  border: 1px solid #808080;
+  box-shadow: 5px 5px 12px rgba(0, 0, 0, 0.45);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: #000;
+  user-select: none;
+}
+
+.context-menu--submenu {
+  min-width: 160px;
+  top: -2px;
+}
+
+/* ---- menu item (button) ---- */
+.context-menu__item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: #000;
+  background: none;
+  border: 1px solid transparent;
+  padding: 3px 24px 3px 4px;
+  cursor: default;
+  white-space: nowrap;
+  position: relative;
+}
+
+.context-menu__item:hover,
+.context-menu__item[aria-expanded="true"] {
+  color: #fff;
+  background: var(--xp-menu-highlight);
+  border-color: transparent;
+}
+
+/* Hover highlight doesn't cause a border jump — swap to 1px matching-bg border */
+.context-menu__item:hover {
+  border: 1px solid var(--xp-menu-highlight);
+}
+
+.context-menu__item--disabled,
+.context-menu__item[disabled] {
+  color: #808080;
+}
+
+/* ---- parent item arrow ---- */
+.context-menu__arrow {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: inherit;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+/* ---- divider ---- */
+.context-menu__divider {
+  height: 1px;
+  margin: 3px 2px;
+  background: #808080;
+}
